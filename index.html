@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ.SG | System Active</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #00ff41; /* 黑客绿，绝对不是腾讯蓝 */
+            --accent-color: #fff;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace; /* 等宽字体，像代码 */
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            border: 1px solid #333;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            max-width: 90%;
+        }
+        h1 {
+            font-size: 4rem;
+            margin: 0;
+            letter-spacing: -5px;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        p.status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            border: 1px solid var(--text-color);
+            color: var(--text-color);
+            text-decoration: none;
+            transition: 0.3s;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .btn:hover {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--text-color);
+        }
+        footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 10px;
+            color: #444;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>QQ<span class="blink">_</span>SG</h1>
+        <p class="status">> SYSTEM STATUS: ONLINE</p>
+        <p class="status">> LOCATION: SINGAPORE NODE</p>
+        
+        <a href="mailto:hi@qq.sg" class="btn">Initialize Contact</a>
+    </div>
+
+    <footer>
+        &copy; 2024 QQ.SG Network. <br>
+        Independent entity. Not affiliated with Tencent Holdings.
+    </footer>
+
+</body>
+</html>
