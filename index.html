@@ -3,89 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QQ.SG | System Active</title>
+    <title>QQ.SG | Private Collection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-color: #050505;
-            --text-color: #00ff41; /* 黑客绿，绝对不是腾讯蓝 */
-            --accent-color: #fff;
+            --text-main: #e0e0e0;
+            --text-sub: #888;
+            --gold-accent: #d4af37; /* 经典的香槟金 */
         }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Courier New', Courier, monospace; /* 等宽字体，像代码 */
-            height: 100vh;
             margin: 0;
+            padding: 0;
+            background-color: #050505;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            cursor: none; /* 隐藏默认鼠标，用高级光标 */
         }
+
+        /* 动态流光背景 */
+        .ambient-light {
+            position: absolute;
+            width: 150vw;
+            height: 150vh;
+            background: radial-gradient(circle at 50% 50%, rgba(30, 30, 40, 0.4), transparent 60%);
+            animation: breathe 10s infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* 噪点纹理，增加胶片质感 */
+        .noise {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAA5OTkAAAAAAAAAAABMTExERERmZmUZhPpMAAAABCHRSTlMAMwA1MzMzM7O0s14AAABSSURBVDjLY2AYBaNgKLMJQkwwCgYwKCMFCYJQ2hQhCgIYGWMYUAOMjIwwCqgBxshIqAFGSEiIAUZEhKABRhgZgQYYYWQEgmMEA1QwjIJRMAqQAwBRcH4Hz99u7wAAAABJRU5ErkJggg==');
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 主容器：玻璃拟态 */
         .container {
+            position: relative;
+            z-index: 10;
             text-align: center;
-            border: 1px solid #333;
-            padding: 40px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
-            max-width: 90%;
+            padding: 80px 120px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            transition: transform 0.1s ease-out;
         }
+
         h1 {
-            font-size: 4rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 8rem;
             margin: 0;
-            letter-spacing: -5px;
-            color: var(--accent-color);
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            color: var(--text-main);
+            letter-spacing: -2px;
+            font-weight: 400;
+            font-style: italic;
+            /* 渐变金文字 */
+            background: linear-gradient(135deg, #fff 40%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
         }
-        p.status {
-            margin-top: 10px;
-            font-size: 0.9rem;
+
+        .subtitle {
+            margin-top: 20px;
+            font-size: 0.75rem;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--gold-accent);
             opacity: 0.8;
-        }
-        .blink {
-            animation: blinker 1s linear infinite;
-        }
-        @keyframes blinker {
-            50% { opacity: 0; }
-        }
-        .btn {
+            position: relative;
             display: inline-block;
-            margin-top: 30px;
-            padding: 10px 20px;
-            border: 1px solid var(--text-color);
-            color: var(--text-color);
+        }
+
+        /* 两侧装饰线 */
+        .subtitle::before, .subtitle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-accent));
+        }
+        .subtitle::before { right: 100%; margin-right: 15px; }
+        .subtitle::after { left: 100%; margin-left: 15px; transform: scaleX(-1); }
+
+        /* 交互按钮 */
+        .action-area {
+            margin-top: 60px;
+        }
+
+        a.contact {
             text-decoration: none;
-            transition: 0.3s;
             font-size: 0.8rem;
+            color: #666;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 30px;
+            transition: all 0.5s ease;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
-        .btn:hover {
-            background-color: var(--text-color);
-            color: var(--bg-color);
-            box-shadow: 0 0 15px var(--text-color);
+
+        a.contact:hover {
+            color: #fff;
+            border-color: #fff;
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
+
+        /* 自定义光标 */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background 0.3s;
+            mix-blend-mode: difference;
+        }
+        .cursor.hovered {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: transparent;
+        }
+
         footer {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             font-size: 10px;
-            color: #444;
-            font-family: sans-serif;
+            color: #333;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .container { padding: 40px 20px; width: 80%; }
+            h1 { font-size: 4rem; }
+            .subtitle { letter-spacing: 3px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>QQ<span class="blink">_</span>SG</h1>
-        <p class="status">> SYSTEM STATUS: ONLINE</p>
-        <p class="status">> LOCATION: SINGAPORE NODE</p>
+    <div class="ambient-light"></div>
+    <div class="noise"></div>
+    <div class="cursor" id="cursor"></div>
+
+    <div class="container" id="card">
+        <h1>QQ.SG</h1>
+        <div class="subtitle">The Private Collection</div>
         
-        <a href="mailto:hi@qq.sg" class="btn">Initialize Contact</a>
+        <div class="action-area">
+            <a href="mailto:hi@qq.sg" class="contact" onmouseenter="hoverCursor()" onmouseleave="leaveCursor()">Connect</a>
+        </div>
     </div>
 
     <footer>
-        &copy; 2024 QQ.SG Network. <br>
-        Independent entity. Not affiliated with Tencent Holdings.
+        &copy; MMXIV - MMXXVI . SINGAPORE
     </footer>
 
+    <script>
+        // 光标跟随逻辑
+        const cursor = document.getElementById('cursor');
+        const card = document.getElementById('card');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            
+            // 卡片微视差效果 (Parallax)
+            const x = (window.innerWidth - e.pageX * 2) / 100;
+            const y = (window.innerHeight - e.pageY * 2) / 100;
+            card.style.transform = `translateX(${x}px) translateY(${y}px)`;
+        });
+
+        // 按钮悬停变大
+        function hoverCursor() {
+            cursor.classList.add('hovered');
+        }
+        function leaveCursor() {
+            cursor.classList.remove('hovered');
+        }
+    </script>
 </body>
 </html>
