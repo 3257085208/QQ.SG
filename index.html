@@ -21,7 +21,7 @@
             --toast-text: #FFFFFF;
         }
 
-        /* === 深色模式 === */
+        /* === 深色模式 (高亮修正版) === */
         [data-theme="dark"] {
             --bg: #000000;
             --card-bg: #111111;
@@ -29,8 +29,9 @@
             --text-sub: #888888;
             --text-legal: #555555;
             --border: #222222;
-            --clock-line: #1A1A1A;
-            --clock-text: #333333;
+            /* 修正：深色模式下，线条和文字变亮，否则看不清 */
+            --clock-line: #444444; 
+            --clock-text: #DDDDDD; 
             --pointer: #FF453A;
             --toast-bg: rgba(255,255,255,0.9);
             --toast-text: #000000;
@@ -45,37 +46,39 @@
             height: 100dvh;
             overflow: hidden;
             display: flex;
-            /* 默认手机端居中 */
-            align-items: center; 
+            align-items: center;
             justify-content: center;
             overscroll-behavior: none;
             transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
         }
 
-        /* === 1. 背景：右下角巨型时钟 === */
+        /* === 1. 背景：巨型时钟 (智能定位) === */
         .giant-clock-wrapper {
             position: fixed;
-            bottom: 0;
-            right: 0;
-            /* 手机端：稍微缩小一点，并且透明度调低，防止“乱” */
-            width: 100vh;
-            height: 100vh;
-            transform: translate(40%, 40%); /* 往角落藏一点 */
-            
             z-index: 0;
             pointer-events: none;
-            opacity: 0.3; /* 手机端：低透明度，降噪 */
+            width: 120vh;
+            height: 120vh;
+            opacity: 0.3; /* 手机端淡一点 */
             transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
+
+            /* 手机端默认：右上角 */
+            top: 0;
+            right: 0;
+            transform: translate(50%, -50%); /* 圆心对准右上角 */
         }
 
-        /* 电脑端时钟：变大、变亮 */
+        /* 电脑端：右下角 */
         @media (min-width: 1024px) {
             .giant-clock-wrapper {
+                top: auto; /* 取消 top */
+                bottom: 0; /* 钉在底部 */
+                right: 0;
                 width: 160vh;
                 height: 160vh;
-                transform: translate(50%, 50%); /* 完美的四分之一圆 */
-                opacity: 0.8; /* 电脑屏幕大，可以亮一点 */
+                transform: translate(50%, 50%); /* 圆心对准右下角 */
+                opacity: 0.8; /* 电脑端亮一点 */
             }
         }
 
@@ -83,16 +86,26 @@
         .dial-ring { transform-origin: 50% 50%; transition: transform 1s cubic-bezier(0.2, 0, 0, 1); }
         .seconds-ring { transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); }
 
-        /* 45度 激光指针 */
+        /* 激光指针 (智能旋转) */
         .laser-pointer-line {
             position: absolute;
             top: 50%; left: 50%; width: 55%; height: 2px;
             background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
             z-index: 1;
             transform-origin: left center;
-            transform: rotate(-135deg);
             box-shadow: 0 0 15px rgba(255, 59, 48, 0.5);
+            
+            /* 手机端：右上角圆心 -> 指向左下 (135度) */
+            transform: rotate(135deg); 
         }
+
+        @media (min-width: 1024px) {
+            .laser-pointer-line {
+                /* 电脑端：右下角圆心 -> 指向左上 (-135度) */
+                transform: rotate(-135deg); 
+            }
+        }
+
         .laser-pointer-line::after {
             content: 'UTC+8';
             position: absolute; right: 10px; bottom: 10px;
@@ -113,27 +126,23 @@
             min-height: 100%;
             position: relative;
             z-index: 10;
-            transition: all 0.5s ease;
         }
 
-        /* === 3. 电脑端布局重构：左侧悬浮 === */
+        /* 电脑端布局：左侧悬浮 */
         @media (min-width: 1024px) {
             .container {
-                /* 绝对定位到左侧，打破居中 */
                 position: absolute;
                 left: 8vw;
                 top: 50%;
                 transform: translateY(-50%);
-                
-                max-width: 600px; /* 宽度放开 */
+                max-width: 600px;
                 padding: 0;
-                align-items: flex-start; /* 左对齐 */
             }
         }
 
-        /* 顶部按钮 */
+        /* === 3. 主题按钮 (智能定位) === */
         .theme-toggle {
-            position: absolute; top: 30px; left: 30px;
+            position: absolute; 
             width: 44px; height: 44px; border-radius: 50%;
             border: 1px solid var(--border);
             background: rgba(255,255,255,0.01);
@@ -141,24 +150,31 @@
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; color: var(--text-main);
             transition: all 0.2s; z-index: 100;
+            
+            /* 手机端：左上角 (因为右上角有时钟) */
+            top: 30px; left: 30px; 
         }
+
+        @media (min-width: 1024px) {
+            .theme-toggle {
+                /* 电脑端：右上角 */
+                left: auto; 
+                right: 40px; 
+            }
+        }
+
         .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
         /* 头部信息 */
         .header {
             margin-bottom: 40px;
             display: flex; flex-direction: column; gap: 20px;
-            text-align: center;
-            width: 100%;
+            text-align: center; width: 100%;
         }
         
         @media (min-width: 1024px) {
             .header { 
-                flex-direction: row; /* 电脑上头像和文字并排 */
-                align-items: center; 
-                text-align: left;
-                gap: 24px;
-                margin-bottom: 50px;
+                flex-direction: row; align-items: center; text-align: left; gap: 24px; margin-bottom: 50px;
             }
         }
 
@@ -169,42 +185,17 @@
             background-color: var(--card-bg);
             border: 1px solid var(--border);
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            margin: 0 auto; /* 手机居中 */
-            transition: all 0.3s;
+            margin: 0 auto;
         }
-        
-        @media (min-width: 1024px) {
-            .avatar { margin: 0; width: 100px; height: 100px; border-radius: 24px; }
-        }
+        @media (min-width: 1024px) { .avatar { margin: 0; width: 100px; height: 100px; border-radius: 24px; } }
 
-        .identity { display: flex; flex-direction: column; }
-        
-        .identity h1 { 
-            font-size: 32px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -1px; 
-            transition: font-size 0.3s;
-        }
-        .identity p { 
-            font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; 
-            transition: font-size 0.3s;
-        }
+        .identity h1 { font-size: 32px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -1px; }
+        .identity p { font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; }
+        @media (min-width: 1024px) { .identity h1 { font-size: 48px; letter-spacing: -2px; } .identity p { font-size: 18px; } }
 
-        @media (min-width: 1024px) {
-            .identity h1 { font-size: 48px; letter-spacing: -2px; } /* 电脑上超大字 */
-            .identity p { font-size: 18px; }
-        }
-
-        /* === 4. 卡片布局重构：Bento Grid === */
-        .grid { 
-            display: flex; flex-direction: column; gap: 14px; width: 100%;
-        }
-
-        @media (min-width: 1024px) {
-            .grid {
-                display: grid; /* 电脑上变成网格 */
-                grid-template-columns: 1fr 1fr; /* 两列 */
-                gap: 20px;
-            }
-        }
+        /* 卡片布局 */
+        .grid { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+        @media (min-width: 1024px) { .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
 
         .card {
             background: rgba(255, 255, 255, 0.65);
@@ -217,29 +208,14 @@
             display: flex; align-items: center; justify-content: space-between;
             cursor: pointer;
             backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
         }
         [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.65); }
 
-        .card:hover { 
-            border-color: var(--text-main); 
-            background: var(--card-bg); 
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
-        }
+        .card:hover { border-color: var(--text-main); background: var(--card-bg); transform: translateY(-2px); }
         .card:active { transform: scale(0.98); }
 
-        /* 邮箱卡片：电脑上横跨两列 */
         .card.featured { padding: 24px 24px; }
-        
-        @media (min-width: 1024px) {
-            .card.featured { 
-                grid-column: span 2; /* 横跨整行 */
-                padding: 32px; /* 更大的内边距 */
-            }
-            .card.featured .value { font-size: 24px; } /* 更大的字体 */
-        }
+        @media (min-width: 1024px) { .card.featured { grid-column: span 2; padding: 32px; } .card.featured .value { font-size: 24px; } }
 
         .card-content { display: flex; flex-direction: column; gap: 4px; }
         .label { font-size: 11px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -250,29 +226,16 @@
         .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
 
         /* 底部 */
-        footer {
-            margin-top: 60px;
-            display: flex; flex-direction: column; gap: 12px;
-            align-items: center; text-align: center;
-        }
-        @media (min-width: 1024px) { 
-            footer { align-items: flex-start; text-align: left; margin-top: 40px; } 
-        }
+        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
+        @media (min-width: 1024px) { footer { align-items: flex-start; text-align: left; margin-top: 40px; } }
 
         .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
-        
-        .disclaimer { 
-            font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; 
-            max-width: 300px;
-        }
+        .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; max-width: 300px; }
 
-        /* 提示条 */
         .toast {
-            position: fixed; bottom: 40px; left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--toast-bg); backdrop-filter: blur(10px);
-            color: var(--toast-text); padding: 10px 24px; border-radius: 30px;
-            font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none;
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--toast-bg); backdrop-filter: blur(10px); color: var(--toast-text);
+            padding: 10px 24px; border-radius: 30px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none;
             transition: all 0.4s; z-index: 200;
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -331,12 +294,15 @@
                 </div>
             </a>
 
-            <div class="card" style="opacity: 0.5; cursor: default;">
+            <a href="https://聶.net" target="_blank" class="card">
                 <div class="card-content">
-                    <span class="label">Project</span>
-                    <span class="value">Coming Soon</span>
+                    <span class="label">Blog</span>
+                    <span class="value">聶.net</span>
                 </div>
-            </div>
+                <div class="icon-box">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </div>
+            </a>
         </div>
 
         <footer>
@@ -348,7 +314,6 @@
     <div class="toast" id="toast">Copied to clipboard</div>
 
     <script>
-        // SVG & Clock Logic
         const svgNS = "http://www.w3.org/2000/svg";
         function createText(x, y, content, size, color, weight="500") {
             const text = document.createElementNS(svgNS, "text");
@@ -370,8 +335,7 @@
         for(let i=1; i<=12; i++) {
             const angle = (i * 30 - 90) * (Math.PI / 180);
             const r = 120;
-            const x = 250 + r * Math.cos(angle);
-            const y = 250 + r * Math.sin(angle);
+            const x = 250 + r * Math.cos(angle); const y = 250 + r * Math.sin(angle);
             const text = createText(x, y, i, 18, "var(--text-main)", "800");
             text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
             hourGroup.appendChild(text);
@@ -409,11 +373,31 @@
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const sgTime = new Date(utc + (3600000 * 8));
             const h = sgTime.getHours(); const m = sgTime.getMinutes(); const s = sgTime.getSeconds(); const ms = sgTime.getMilliseconds();
-            const OFFSET = -45;
+            
+            // 修正角度：手机上指针在135度，电脑上在-135度
+            // 我们统一让 12点 对应指针的位置。
+            // 手机：指针指向左下(135)。12点刻度要在135位置。正常12点在-90。 需要+225度?
+            // 电脑：指针指向左上(-135)。12点刻度要在-135位置。正常12点在-90。 需要-45度。
+            
+            // 为了简化，我们用 CSS Media Query 控制指针旋转，
+            // 这里我们固定让刻度盘转到"标准位置" (0度在12点)，然后所有盘整体偏移一个基础值。
+            // 实际上，因为指针是固定的，所以我们需要反向旋转盘面。
+            
+            // 这里的 OFFSET 需要根据屏幕宽度动态判断，但这太复杂。
+            // 简单方案：我们假设指针永远指着 "当前时间"。
+            // 如果现在是 12:00，指针指向12点刻度。
+            // 如果指针物理位置在 135度(手机)，那12点刻度也得转到135度。
+            // 正常12点在-90度。所以 OFFSET = 135 - (-90) = 225 deg (手机)
+            // 电脑：指针在 -135度。 OFFSET = -135 - (-90) = -45 deg (电脑)
+            
+            const isDesktop = window.innerWidth >= 1024;
+            const OFFSET = isDesktop ? -45 : 225;
+
             const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
             const minDeg = -1 * ((m + s/60) * 6) + OFFSET;
             const h12 = h % 12 || 12;
             const hourDeg = -1 * ((h12 + m/60) * 30) + OFFSET;
+            
             document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
             document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
             document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
@@ -421,7 +405,6 @@
         }
         requestAnimationFrame(updateClock);
 
-        // Features
         function copyEmail() {
             navigator.clipboard.writeText("ME@QQ.SG").then(() => {
                 const toast = document.getElementById('toast');
