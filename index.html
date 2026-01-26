@@ -7,19 +7,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* === 浅色模式变量 (默认) === */
+            /* === 浅色模式 === */
             --bg: #FAFAFA;
             --card-bg: #FFFFFF;
             --text-main: #111111;
             --text-sub: #666666;
             --text-legal: #CCCCCC;
             --border: #E5E5E5;
-            --icon-color: #111111;
-            --toast-bg: #000000;
+            --icon-normal: #999999; /* 修复：图标颜色加深，不再断触 */
+            --icon-active: #111111;
+            --success: #10B981;     /* 成功时的绿色 */
+            --toast-bg: rgba(0,0,0,0.8);
             --toast-text: #FFFFFF;
         }
 
-        /* === 深色模式变量 === */
+        /* === 深色模式 === */
         [data-theme="dark"] {
             --bg: #000000;
             --card-bg: #111111;
@@ -27,8 +29,9 @@
             --text-sub: #888888;
             --text-legal: #444444;
             --border: #222222;
-            --icon-color: #FFFFFF;
-            --toast-bg: #FFFFFF;
+            --icon-normal: #555555;
+            --icon-active: #FFFFFF;
+            --toast-bg: rgba(255,255,255,0.9);
             --toast-text: #000000;
         }
 
@@ -44,7 +47,13 @@
             align-items: center;
             justify-content: center;
             overscroll-behavior: none;
-            transition: background-color 0.3s ease, color 0.3s ease; /* 丝滑切换动画 */
+            transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* 关键动画：元素依次上浮 */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .container {
@@ -59,13 +68,13 @@
             position: relative;
         }
 
-        /* === 主题切换按钮 (右上角) === */
+        /* === 1. 顶部切换按钮 === */
         .theme-toggle {
             position: absolute;
             top: 24px;
             right: 24px;
-            width: 40px;
-            height: 40px;
+            width: 44px; /* 加大触控面积 */
+            height: 44px;
             border-radius: 50%;
             border: 1px solid var(--border);
             background: transparent;
@@ -73,99 +82,112 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            color: var(--icon-color);
+            color: var(--text-main);
             transition: all 0.2s;
             z-index: 100;
-            -webkit-tap-highlight-color: transparent;
+            opacity: 0; /* 初始隐藏，用于动画 */
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; /* 0s延迟 */
         }
         
         .theme-toggle:active {
-            transform: scale(0.9);
+            transform: scale(0.92);
             background-color: var(--card-bg);
         }
 
         .theme-toggle svg {
             width: 20px;
             height: 20px;
-            stroke-width: 1.5; /* 极细线条 */
+            stroke-width: 1.8; /* 线条加粗，防止断触 */
         }
 
-        /* 头部区域 */
+        /* === 2. 头部信息 === */
         .header {
             margin-bottom: 36px;
             display: flex;
             flex-direction: column; 
             gap: 16px;
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            animation-delay: 0.1s; /* 延迟出现 */
         }
 
         .avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 64px;
+            height: 64px;
+            border-radius: 14px; /* 更平滑的圆角 */
             background-image: url('https://github.com/3257085208.png');
             background-size: cover;
             background-position: center;
             background-color: var(--card-bg);
             border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 微弱阴影增加立体感 */
         }
 
         .identity h1 {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
             margin: 0 0 6px 0;
             letter-spacing: -0.5px;
         }
 
         .identity p {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-sub);
             margin: 0;
             line-height: 1.5;
-            opacity: 0.8;
         }
 
-        /* 列表区域 */
+        /* === 3. 卡片列表 === */
         .grid {
             display: flex;
             flex-direction: column;
             gap: 12px;
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            animation-delay: 0.2s;
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px 20px;
+            border-radius: 14px;
+            padding: 18px 20px;
             text-decoration: none;
             color: var(--text-main);
-            transition: border-color 0.2s, transform 0.1s;
+            /* 关键升级：物理回弹效果 */
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                        border-color 0.2s, 
+                        background-color 0.2s;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+            position: relative;
         }
 
+        /* 触感反馈：按下时明显缩小 */
         .card:active {
-            transform: scale(0.99);
+            transform: scale(0.96);
+            background-color: var(--bg); /* 按下变暗一点点 */
         }
 
         .card:hover {
-            border-color: var(--text-main); /* 悬停时边框变文字色 */
+            border-color: var(--text-main);
         }
 
         .card.featured {
-            padding: 20px;
+            padding: 22px 20px; /* 邮箱卡片更大 */
         }
 
         .card-content {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 4px;
         }
 
         .label {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-sub);
             font-weight: 600;
             text-transform: uppercase;
@@ -173,29 +195,43 @@
         }
 
         .value {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 500;
             font-family: 'Inter', monospace;
         }
 
-        .arrow {
-            color: var(--border); /* 箭头颜色跟随边框变量，深色模式自动变暗 */
-            font-size: 16px;
+        /* 关键升级：图标容器 */
+        .icon-box {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--icon-normal);
             transition: color 0.2s;
         }
-        
-        .card:hover .arrow {
-            color: var(--text-main);
+
+        .card:hover .icon-box {
+            color: var(--icon-active);
         }
 
-        /* === 底部区域：绝对居中对称 === */
+        /* 成功状态时的图标颜色 */
+        .icon-box.success {
+            color: var(--success) !important;
+            transform: scale(1.1); /* 稍微放大 */
+        }
+
+        /* === 4. 底部 === */
         footer {
             margin-top: 60px;
             display: flex;
             flex-direction: column;
-            align-items: center; /* 核心：居中对齐 */
-            text-align: center;  /* 核心：文字居中 */
+            align-items: center;
+            text-align: center;
             gap: 12px;
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            animation-delay: 0.3s;
         }
 
         .copyright-row {
@@ -205,31 +241,32 @@
             letter-spacing: 0.5px;
         }
 
-        /* 免责声明 */
         .disclaimer {
             font-size: 10px;
             color: var(--text-legal);
             line-height: 1.4;
-            max-width: 80%; /* 防止文字太长一行撑满，限制宽度更美观 */
-            opacity: 0.5;
+            max-width: 80%;
+            opacity: 0.6;
         }
 
-        /* 提示条 */
+        /* === 5. 提示条 (毛玻璃效果) === */
         .toast {
             position: fixed;
             bottom: 40px;
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             background: var(--toast-bg);
+            backdrop-filter: blur(10px); /* 磨砂玻璃感 */
             color: var(--toast-text);
-            padding: 8px 20px;
+            padding: 10px 24px;
             border-radius: 30px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 200;
         }
         
         .toast.show {
@@ -255,15 +292,17 @@
 
         <div class="grid">
             
-            <div class="card featured" onclick="copyEmail()">
+            <div class="card featured" id="emailCard" onclick="copyEmail()">
                 <div class="card-content">
                     <span class="label">Primary Email</span>
                     <span class="value">ME@QQ.SG</span>
                 </div>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3;">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2-2v1"></path>
-                </svg>
+                <div class="icon-box" id="copyIconBox">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </div>
             </div>
 
             <a href="https://github.com/3257085208" target="_blank" class="card">
@@ -271,10 +310,15 @@
                     <span class="label">Code</span>
                     <span class="value">GitHub Profile</span>
                 </div>
-                <span class="arrow">→</span>
+                <div class="icon-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
             </a>
 
-            <div class="card" style="opacity: 0.4; cursor: default;">
+            <div class="card" style="opacity: 0.5; cursor: default;">
                 <div class="card-content">
                     <span class="label">Project</span>
                     <span class="value">Website Coming Soon</span>
@@ -292,75 +336,61 @@
 
     </div>
 
-    <div class="toast" id="toast">Copied</div>
+    <div class="toast" id="toast">Copied to clipboard</div>
 
     <script>
-        // === 1. 复制功能 ===
+        // === 1. 复制功能与图标变形 (核心升级) ===
         function copyEmail() {
             navigator.clipboard.writeText("ME@QQ.SG").then(() => {
                 const toast = document.getElementById('toast');
+                const iconBox = document.getElementById('copyIconBox');
+                
+                // 1. 保存原始图标 HTML
+                const originalIcon = iconBox.innerHTML;
+                
+                // 2. 切换为“对号”图标 (加粗线条)
+                // 这是一个完美的对号 SVG
+                iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                iconBox.classList.add('success'); // 变绿
+
+                // 3. 显示提示条
                 toast.classList.add('show');
+                
+                // 4. 2秒后恢复原状
                 setTimeout(() => {
                     toast.classList.remove('show');
+                    iconBox.classList.remove('success'); // 恢复颜色
+                    iconBox.innerHTML = originalIcon;    // 恢复图标
                 }, 2000);
             });
         }
 
-        // === 2. 主题切换逻辑 (极简线条版) ===
+        // === 2. 主题切换 (无变化，保持好用) ===
         const themeBtn = document.getElementById('themeBtn');
         const html = document.documentElement;
-
-        // 图标 SVG 数据 (纯线条，无颜色)
         const icons = {
-            light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`, // 太阳
-            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`, // 月亮
-            system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>` // 显示器(系统)
+            light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
+            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
+            system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`
         };
-
-        // 状态循环：System -> Light -> Dark -> System
         const modes = ['system', 'light', 'dark'];
-        
-        function getStoredTheme() {
-            return localStorage.getItem('theme') || 'system';
-        }
-
+        function getStoredTheme() { return localStorage.getItem('theme') || 'system'; }
         function setTheme(mode) {
-            // 设置图标
             themeBtn.innerHTML = icons[mode];
-            
-            // 应用主题
             if (mode === 'system') {
                 localStorage.removeItem('theme');
                 html.removeAttribute('data-theme');
-                // 检测系统偏好
-                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    // 系统是深色，不需要额外操作，因为CSS里默认跟随
-                    // 但为了保证 JS 逻辑统一，这里可以让CSS处理，也可以强制加
-                }
             } else {
                 localStorage.setItem('theme', mode);
                 html.setAttribute('data-theme', mode);
             }
         }
-
-        // 初始化
         let currentMode = getStoredTheme();
         setTheme(currentMode);
-
-        // 点击事件
         themeBtn.addEventListener('click', () => {
-            const currentIndex = modes.indexOf(currentMode);
-            const nextIndex = (currentIndex + 1) % modes.length;
+            const nextIndex = (modes.indexOf(currentMode) + 1) % modes.length;
             currentMode = modes[nextIndex];
             setTheme(currentMode);
-        });
-
-        // 监听系统变化 (当处于 System 模式时)
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (!localStorage.getItem('theme')) {
-                // 如果当前是 system 模式，不需要做任何事，CSS 会自动响应
-                // 这里只是为了以后可能的扩展
-            }
         });
     </script>
 </body>
