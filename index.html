@@ -14,9 +14,9 @@
             --text-sub: #666666;
             --text-legal: #CCCCCC;
             --border: #E5E5E5;
-            --clock-line: #E0E0E0; /* 表盘线条颜色 */
-            --clock-text: #A0A0A0; /* 表盘刻度数字颜色 */
-            --pointer: #FF3B30;    /* 红色指针 */
+            --clock-line: #E5E5E5; /* 调淡一点，防止太抢眼 */
+            --clock-text: #B0B0B0;
+            --pointer: #FF3B30;
             --toast-bg: rgba(0,0,0,0.8);
             --toast-text: #FFFFFF;
         }
@@ -29,8 +29,8 @@
             --text-sub: #888888;
             --text-legal: #444444;
             --border: #222222;
-            --clock-line: #222222;
-            --clock-text: #444444;
+            --clock-line: #1A1A1A;
+            --clock-text: #333333;
             --pointer: #FF453A;
             --toast-bg: rgba(255,255,255,0.9);
             --toast-text: #000000;
@@ -46,74 +46,91 @@
             overflow: hidden;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* 内容依然居中 */
             overscroll-behavior: none;
             transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
         }
 
-        /* === 巨大的背景时钟容器 === */
+        /* === 核心修改：巨型右置时钟 === */
         .giant-clock-wrapper {
-            position: absolute;
-            top: -15vh; /* 往上提一点，让圆心大约在屏幕上半部分 */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120vw; /* 超出屏幕宽度，制造巨大感 */
-            height: 120vw;
-            max-width: 800px;
-            max-height: 800px;
-            z-index: 0; /* 在最底层 */
-            pointer-events: none; /* 不影响点击 */
-            opacity: 1;
-            transition: opacity 0.5s;
+            position: fixed; /* 固定定位，雷打不动 */
+            top: 50%;
+            /* 核心布局逻辑：
+               1. 宽度设为 160vh (屏幕高度的1.6倍)，保证巨大。
+               2. right: -60vh; 把圆心往右推，让左半部分露出来。
+            */
+            width: 160vh;  
+            height: 160vh;
+            right: -60vh; 
+            transform: translateY(-50%); /* 垂直居中 */
+            
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.8; /* 稍微透明一点，增加层次感 */
         }
 
-        /* 时钟SVG样式 */
+        /* 移动端特殊调整：手机屏幕窄，往右推多一点 */
+        @media (max-width: 768px) {
+            .giant-clock-wrapper {
+                width: 140vh;
+                height: 140vh;
+                right: -70vh; /* 手机上只露出一小半，防止文字看不清 */
+                opacity: 0.6; /* 手机上淡一点 */
+            }
+        }
+
         .clock-svg {
             width: 100%;
             height: 100%;
             overflow: visible;
         }
 
-        /* 转盘动画过渡 */
         .dial-ring {
             transform-origin: 50% 50%;
-            transition: transform 1s cubic-bezier(0.2, 0, 0, 1); /* 丝滑的转动效果 */
+            transition: transform 1s cubic-bezier(0.2, 0, 0, 1);
         }
         
-        /* 秒针盘需要线性转动，或者跳动 */
         .seconds-ring {
-            transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); /* 机械回弹感 */
+            transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5);
         }
 
-        /* 指针 */
+        /* 指针：现在在右边，需要重新定位吗？
+           不需要，因为它是相对于 SVG 居中的，SVG 本身右移了，指针自然跟着右移。
+           但因为我们只显示左半边，指针（在12点方向）可能看不见。
+           我们需要把指针改成“水平指向左边” (9点钟方向) 看起来更酷？
+           
+           不，保持 12 点方向（向上）是最自然的 UTC 时间显示。
+           由于圆心在屏幕右侧边缘附近，12点方向的指针会在屏幕右上角边缘，看起来很合理。
+        */
         .static-pointer {
             position: absolute;
-            top: 12%; /* 指针位置 */
+            top: 10%; /* 靠近圆周 */
             left: 50%;
             transform: translateX(-50%);
-            width: 2px;
-            height: 40px;
+            width: 3px; /* 加粗一点 */
+            height: 60px; /* 加长 */
             background: var(--pointer);
             z-index: 1;
-            border-radius: 2px;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); /* 给指针加点光晕 */
         }
         
         .static-pointer::after {
             content: 'UTC+8';
             position: absolute;
-            top: -20px;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 800;
             color: var(--pointer);
             font-family: 'JetBrains Mono', monospace;
             white-space: nowrap;
+            text-shadow: 0 0 10px rgba(255, 59, 48, 0.3);
         }
 
-
-        /* === 前景内容容器 === */
+        /* === 前景内容 === */
         .container {
             width: 100%;
             max-width: 380px;
@@ -124,22 +141,32 @@
             justify-content: center;
             min-height: 100%;
             position: relative;
-            z-index: 10; /* 浮在时钟上面 */
-            /* 背景稍微模糊一点，让文字看得清 */
-            /* backdrop-filter: blur(2px); */ 
+            z-index: 10;
+            
+            /* 在电脑端，因为右边有时钟，我们把内容稍微往左偏一点，保持平衡 */
+            margin-right: 0; 
+            transition: margin 0.3s;
+        }
+
+        /* 电脑端适配：内容左移，避让大时钟 */
+        @media (min-width: 1024px) {
+            .container {
+                margin-right: 20vw; /* 内容往左挪，把右边留给大时钟 */
+                max-width: 440px;
+            }
         }
 
         /* 顶部切换按钮 */
         .theme-toggle {
             position: absolute;
-            top: 24px;
-            right: 24px;
+            top: 30px;
+            left: 30px; /* 改到左上角！因为右上角被时钟占了 */
             width: 44px;
             height: 44px;
             border-radius: 50%;
             border: 1px solid var(--border);
-            /* 给按钮加个背景，防止被时钟线条干扰 */
-            background: var(--bg); 
+            background: rgba(255,255,255,0.1); /* 微透明 */
+            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -151,54 +178,44 @@
         
         .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
-        /* 头部信息 */
+        /* 头部 */
         .header {
             margin-bottom: 32px;
             display: flex;
             flex-direction: column; 
             gap: 16px;
-            text-align: center; /* 配合大时钟，居中更好看 */
+            /* 电脑上左对齐，手机上居中 */
+            text-align: center; 
+        }
+        @media (min-width: 1024px) {
+            .header { text-align: left; align-items: flex-start; }
+            .avatar { margin: 0; } /* 头像不居中 */
         }
 
         .avatar {
-            width: 80px; /* 头像加大 */
+            width: 80px;
             height: 80px;
             border-radius: 20px;
             background-image: url('https://github.com/3257085208.png');
             background-size: cover;
             background-position: center;
             background-color: var(--card-bg);
-            border: 4px solid var(--bg); /* 加个边框把背景隔开 */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             margin: 0 auto;
         }
 
-        .identity h1 {
-            font-size: 28px;
-            font-weight: 800;
-            margin: 0 0 6px 0;
-            letter-spacing: -0.5px;
-        }
+        .identity h1 { font-size: 32px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -1px; }
+        .identity p { font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; }
 
-        .identity p {
-            font-size: 15px;
-            color: var(--text-sub);
-            margin: 0;
-            line-height: 1.5;
-        }
-
-        /* 卡片列表 */
-        .grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        /* 卡片 */
+        .grid { display: flex; flex-direction: column; gap: 14px; }
 
         .card {
-            background: rgba(255, 255, 255, 0.8); /* 浅色模式半透明 */
+            background: rgba(255, 255, 255, 0.6); /* 更透明，透出背景 */
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 18px 24px;
+            padding: 20px 24px;
             text-decoration: none;
             color: var(--text-main);
             transition: all 0.2s ease;
@@ -206,26 +223,21 @@
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            backdrop-filter: blur(10px); /* 毛玻璃，透出后面的时钟 */
+            backdrop-filter: blur(20px); /* 强毛玻璃 */
         }
         
-        [data-theme="dark"] .card {
-            background: rgba(17, 17, 17, 0.8);
-        }
+        [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.6); }
 
         .card:active { transform: scale(0.98); }
-        .card:hover { border-color: var(--text-main); }
+        .card:hover { border-color: var(--text-main); background: var(--card-bg); } /* 悬停变实心 */
 
-        .card.featured { padding: 22px 24px; }
-
+        .card.featured { padding: 24px 24px; }
         .card-content { display: flex; flex-direction: column; gap: 4px; }
         .label { font-size: 11px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .value { font-size: 16px; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+        .value { font-size: 17px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
 
-        .icon-box {
-            color: var(--icon-normal);
-            transition: color 0.2s;
-        }
+        .icon-box { color: var(--icon-normal); transition: color 0.2s; }
+        .card:hover .icon-box { color: var(--icon-active); }
         .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
 
         /* 底部 */
@@ -233,10 +245,9 @@
             margin-top: 60px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
             gap: 12px;
         }
+        @media (min-width: 1024px) { footer { align-items: flex-start; } }
 
         .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
         .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; }
@@ -258,37 +269,27 @@
             z-index: 200;
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        
-        /* 电脑适配 */
-        @media (min-width: 768px) {
-            .container { max-width: 500px; }
-            .giant-clock-wrapper {
-                width: 80vh; height: 80vh;
-                top: -10vh;
-            }
-        }
     </style>
 </head>
 <body>
 
     <div class="giant-clock-wrapper">
         <div class="static-pointer"></div>
-        
         <svg class="clock-svg" viewBox="0 0 500 500">
             <g class="dial-ring hour-ring" id="hourRing">
-                <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1" />
-                </g>
+                <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1.5" />
+            </g>
             
             <g class="dial-ring minute-ring" id="minuteRing">
                 <circle cx="250" cy="250" r="190" fill="none" stroke="var(--border)" stroke-width="1" />
-                </g>
+            </g>
 
             <g class="dial-ring seconds-ring" id="secondRing">
-                <circle cx="250" cy="250" r="240" fill="none" stroke="var(--clock-line)" stroke-width="1" />
-                <path d="M250 10 L250 30" stroke="var(--text-main)" stroke-width="2" />
-                <path d="M250 470 L250 490" stroke="var(--border)" stroke-width="2" />
-                <path d="M10 250 L30 250" stroke="var(--border)" stroke-width="2" />
-                <path d="M470 250 L490 250" stroke="var(--border)" stroke-width="2" />
+                <circle cx="250" cy="250" r="240" fill="none" stroke="var(--clock-line)" stroke-width="0.5" />
+                <path d="M250 5 L250 30" stroke="var(--text-main)" stroke-width="3" />
+                <path d="M250 470 L250 495" stroke="var(--border)" stroke-width="2" />
+                <path d="M5 250 L30 250" stroke="var(--border)" stroke-width="2" />
+                <path d="M470 250 L495 250" stroke="var(--border)" stroke-width="2" />
             </g>
         </svg>
     </div>
@@ -348,10 +349,10 @@
     <div class="toast" id="toast">Copied to clipboard</div>
 
     <script>
-        // === 1. 构建时钟刻度 (SVG生成) ===
+        // === 1. 构建时钟 (SVG) ===
         const svgNS = "http://www.w3.org/2000/svg";
         
-        function createText(x, y, content, size, color) {
+        function createText(x, y, content, size, color, weight="500") {
             const text = document.createElementNS(svgNS, "text");
             text.setAttribute("x", x);
             text.setAttribute("y", y);
@@ -360,7 +361,7 @@
             text.setAttribute("text-anchor", "middle");
             text.setAttribute("dominant-baseline", "middle");
             text.setAttribute("font-family", "JetBrains Mono");
-            text.setAttribute("font-weight", "500");
+            text.setAttribute("font-weight", weight);
             text.textContent = content;
             return text;
         }
@@ -376,48 +377,39 @@
             return line;
         }
 
-        // 初始化小时盘 (12个数字)
         const hourGroup = document.getElementById('hourRing');
         for(let i=1; i<=12; i++) {
             const angle = (i * 30 - 90) * (Math.PI / 180);
-            const r = 120; // 半径
+            const r = 120;
             const x = 250 + r * Math.cos(angle);
             const y = 250 + r * Math.sin(angle);
-            
-            // 调整文字角度，让数字永远正立，还是跟随旋转？
-            // 想要高级感，数字底部朝向圆心。
-            const text = createText(x, y, i, 16, "var(--clock-text)");
-            // 旋转文字使其垂直于圆心
+            const text = createText(x, y, i, 18, "var(--text-main)", "800");
             text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
             hourGroup.appendChild(text);
         }
 
-        // 初始化分钟盘 (刻度线)
         const minGroup = document.getElementById('minuteRing');
         for(let i=0; i<60; i++) {
             const angle = (i * 6 - 90) * (Math.PI / 180);
             const r1 = 180;
-            const r2 = i % 5 === 0 ? 165 : 175; // 长短刻度
+            const r2 = i % 5 === 0 ? 160 : 175;
             const x1 = 250 + r1 * Math.cos(angle);
             const y1 = 250 + r1 * Math.sin(angle);
             const x2 = 250 + r2 * Math.cos(angle);
             const y2 = 250 + r2 * Math.sin(angle);
-            
             const line = createLine(x1, y1, x2, y2, i % 5 === 0 ? 2 : 1, "var(--clock-line)");
             minGroup.appendChild(line);
             
-            // 每5分钟加数字
             if(i % 5 === 0) {
-                const rText = 150;
+                const rText = 145;
                 const tx = 250 + rText * Math.cos(angle);
                 const ty = 250 + rText * Math.sin(angle);
-                const text = createText(tx, ty, i === 0 ? "60" : i, 10, "var(--clock-text)");
+                const text = createText(tx, ty, i === 0 ? "60" : i, 12, "var(--clock-text)");
                 text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`);
                 minGroup.appendChild(text);
             }
         }
 
-        // 初始化秒盘 (细密刻度)
         const secGroup = document.getElementById('secondRing');
         for(let i=0; i<60; i++) {
             const angle = (i * 6 - 90) * (Math.PI / 180);
@@ -431,43 +423,30 @@
             secGroup.appendChild(line);
         }
 
-        // === 2. 核心逻辑：UTC+8 驱动转盘 ===
+        // === 2. 逻辑 ===
         function updateClock() {
             const now = new Date();
-            // 计算 UTC+8 时间
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const sgTime = new Date(utc + (3600000 * 8));
+            const sgTime = new Date(utc + (3600000 * 8)); // 锁定 UTC+8
 
             const h = sgTime.getHours();
             const m = sgTime.getMinutes();
             const s = sgTime.getSeconds();
             const ms = sgTime.getMilliseconds();
-
-            // 计算角度 (反向旋转，因为指针不动，盘在动)
-            // 比如现在是 15分 (90度)，盘子要逆时针转90度 (-90) 才能让 15 对准顶部
             
-            // 秒盘：带毫秒，平滑转动
             const secDeg = -1 * ((s + ms/1000) * 6);
-            
-            // 分盘：稍微带一点秒的偏移
             const minDeg = -1 * ((m + s/60) * 6);
-            
-            // 时盘：12小时制
             const h12 = h % 12 || 12;
             const hourDeg = -1 * ((h12 + m/60) * 30);
 
-            // 应用旋转
             document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
             document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
             document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
-
             requestAnimationFrame(updateClock);
         }
-        
         requestAnimationFrame(updateClock);
 
-
-        // === 3. 其他功能 (复制、主题) ===
+        // === 3. 功能 ===
         function copyEmail() {
             navigator.clipboard.writeText("ME@QQ.SG").then(() => {
                 const toast = document.getElementById('toast');
