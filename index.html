@@ -7,12 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 极简配色系统 */
-            --bg: #FAFAFA;       /* 护眼灰白底 */
-            --card-bg: #FFFFFF;  /* 纯白卡片 */
+            --bg: #FAFAFA;
+            --card-bg: #FFFFFF;
             --text-main: #111111;
             --text-sub: #666666;
-            --border: #E5E5E5;   /* 极细边框 */
+            --text-legal: #999999; /* 专门给免责声明用的浅色 */
+            --border: #E5E5E5;
         }
 
         body {
@@ -21,24 +21,24 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            
-            /* --- 核心修复：解决滚动条问题 --- */
-            height: 100dvh;        /* 动态视口高度，自动扣除 Safari 地址栏 */
-            overflow: hidden;      /* 强制禁止滚动 */
-            display: flex;         /* 垂直居中布局 */
+            height: 100dvh;        /* 完美适配移动端高度 */
+            overflow: hidden;      /* 禁止滚动 */
+            display: flex;
             align-items: center;
             justify-content: center;
-            overscroll-behavior: none; /* 禁止橡皮筋回弹 */
+            overscroll-behavior: none;
         }
 
         .container {
             width: 100%;
-            max-width: 380px;      /* 限制宽度，防止在大屏上太宽 */
+            max-width: 380px;
             padding: 24px;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 头部区域：左对齐 */
+        /* 头部区域 */
         .header {
             margin-bottom: 32px;
             display: flex;
@@ -49,8 +49,7 @@
         .avatar {
             width: 64px;
             height: 64px;
-            border-radius: 12px;   /* 稍大一点的圆角，更有现代感 */
-            /* 自动抓取你的 GitHub 头像 */
+            border-radius: 12px;
             background-image: url('https://github.com/3257085208.png');
             background-size: cover;
             background-position: center;
@@ -66,10 +65,10 @@
         }
 
         .identity p {
-            font-size: 14px;
+            font-size: 15px; /* 稍微调大一点，更清晰 */
             color: var(--text-sub);
             margin: 0;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         /* 列表区域 */
@@ -91,16 +90,13 @@
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            user-select: none; /* 防止长按选中文字影响体验 */
-            -webkit-tap-highlight-color: transparent; /* 去除移动端点击高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 悬停/点击效果：仅边框变黑 */
         .card:active, .card:hover {
             border-color: #000;
         }
 
-        /* 邮箱卡片稍微大一点 */
         .card.featured {
             padding: 22px 20px;
         }
@@ -135,7 +131,29 @@
             color: #000;
         }
 
-        /* 复制成功的提示条 */
+        /* 底部版权区域 - 专门优化布局 */
+        footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column; /* 改为垂直排列，放下长句子 */
+            gap: 8px;
+        }
+
+        .copyright {
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        .disclaimer {
+            font-size: 11px; /* 字号稍微小一点 */
+            color: var(--text-legal); /* 颜色更淡，不喧宾夺主 */
+            line-height: 1.4;
+        }
+
+        /* 提示条 */
         .toast {
             position: fixed;
             bottom: 40px;
@@ -151,22 +169,12 @@
             pointer-events: none;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            white-space: nowrap;
         }
         
         .toast.show {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
-        }
-
-        /* 底部版权 */
-        footer {
-            margin-top: 48px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            font-size: 12px;
-            color: #bbb;
-            display: flex;
-            justify-content: space-between;
         }
     </style>
 </head>
@@ -178,7 +186,7 @@
             <div class="avatar"></div>
             <div class="identity">
                 <h1>NKX</h1>
-                <p>Digital Playground<br>based in Singapore.</p>
+                <p>This is the channel of MarkNKX.</p>
             </div>
         </div>
 
@@ -213,8 +221,8 @@
         </div>
 
         <footer>
-            <span>© 2026 NKX</span>
-            <span>QQ.SG</span>
+            <div class="copyright">© 2026 NKX</div>
+            <div class="disclaimer">QQ.SG has nothing to do with Tencent Group.</div>
         </footer>
 
     </div>
