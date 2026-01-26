@@ -11,7 +11,7 @@
             --bg: #FAFAFA;
             --card-bg: #FFFFFF;
             --text-main: #111111;
-            --text-sub: #666666;
+            --text-sub: #666666; /* 时钟将使用这个颜色 */
             --text-legal: #CCCCCC;
             --border: #E5E5E5;
             --icon-normal: #999999;
@@ -26,7 +26,7 @@
             --bg: #000000;
             --card-bg: #111111;
             --text-main: #FFFFFF;
-            --text-sub: #888888;
+            --text-sub: #888888; /* 深色模式下的时钟颜色 */
             --text-legal: #444444;
             --border: #222222;
             --icon-normal: #555555;
@@ -55,11 +55,9 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* === 核心布局容器 === */
         .container {
             width: 100%;
-            /* 默认手机宽度 */
-            max-width: 380px; 
+            max-width: 380px;
             padding: 24px;
             box-sizing: border-box;
             display: flex;
@@ -67,8 +65,52 @@
             justify-content: center;
             min-height: 100%;
             position: relative;
-            transition: max-width 0.3s ease; /* 丝滑变宽 */
+            transition: max-width 0.3s ease;
         }
+
+        /* === 🆕 新增：Beta 时钟容器 === */
+        .beta-clock-container {
+            position: absolute;
+            top: 24px;
+            right: 80px; /* 放在主题按钮左侧 (24px + 44px宽 + 12px间距) */
+            width: 44px;
+            height: 44px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-sub); /* 使用次级颜色，低调一点 */
+            /* 入场动画 */
+            opacity: 0;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* 时钟 SVG 样式 */
+        .beta-svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor; /* 跟随文字颜色 */
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap="round";
+        }
+
+        /* === 🆕 核心动画：表盘旋转 === */
+        .clock-face {
+            transform-origin: 50% 50%; /* 围绕中心点旋转 */
+            animation: spinFace 12s linear infinite; /* 12秒转一圈，匀速，无限循环 */
+        }
+
+        @keyframes spinFace {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 指针保持不动 */
+        .clock-hand {
+            /* 不需要动画，静止 */
+        }
+        
 
         /* 顶部切换按钮 */
         .theme-toggle {
@@ -123,7 +165,7 @@
             background-color: var(--card-bg);
             border: 1px solid var(--border);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: width 0.3s, height 0.3s; /* 尺寸变化过渡 */
+            transition: width 0.3s, height 0.3s;
         }
 
         .identity h1 {
@@ -162,7 +204,7 @@
             transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
                         border-color 0.2s, 
                         background-color 0.2s,
-                        padding 0.3s; /* 间距变化过渡 */
+                        padding 0.3s;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -172,14 +214,14 @@
         }
 
         .card:active {
-            transform: scale(0.98); /* 电脑上震动幅度改小一点 */
+            transform: scale(0.98);
             background-color: var(--bg);
         }
 
         .card:hover {
             border-color: var(--text-main);
-            transform: translateY(-2px); /* 电脑上增加悬浮感 */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 电脑上增加阴影 */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .card.featured {
@@ -278,41 +320,23 @@
             opacity: 1;
         }
 
-        /* === 💡 核心升级：电脑端适配 (Media Query) === */
+        /* 电脑端适配 */
         @media (min-width: 768px) {
-            /* 1. 容器变宽 */
             .container {
-                max-width: 560px; /* 宽度增加到 560px */
-                padding: 40px;    /* 留白增加 */
+                max-width: 560px;
+                padding: 40px;
             }
-
-            /* 2. 头像变大 */
-            .avatar {
-                width: 80px;
-                height: 80px;
-                border-radius: 18px;
-            }
-
-            /* 3. 字体整体放大，更有张力 */
+            .avatar { width: 80px; height: 80px; border-radius: 18px; }
             .identity h1 { font-size: 32px; }
             .identity p { font-size: 16px; }
-
-            /* 4. 卡片舒展 */
-            .grid { gap: 16px; } /* 卡片间距变大 */
-            
-            .card {
-                padding: 24px 28px; /* 卡片内边距变大 */
-            }
-            
-            .card.featured {
-                padding: 28px 28px;
-            }
-
+            .grid { gap: 16px; }
+            .card { padding: 24px 28px; }
+            .card.featured { padding: 28px 28px; }
             .label { font-size: 12px; }
-            .value { font-size: 18px; } /* 关键信息字体变大 */
-            
-            /* 5. 底部也松快一点 */
+            .value { font-size: 18px; }
             footer { margin-top: 80px; }
+            /* 电脑上调整一下时钟的位置，让它更协调 */
+            .beta-clock-container { right: 96px; }
         }
 
     </style>
@@ -321,6 +345,18 @@
 
     <div class="container">
         
+        <div class="beta-clock-container" title="Beta Version">
+            <svg class="beta-svg" viewBox="0 0 24 24">
+                <g class="clock-face">
+                    <circle cx="12" cy="12" r="10" vector-effect="non-scaling-stroke"></circle>
+                    <line x1="12" y1="2" x2="12" y2="4"></line>
+                    <line x1="12" y1="20" x2="12" y2="22"></line>
+                </g>
+                <line class="clock-hand" x1="12" y1="12" x2="12" y2="6" stroke-width="2.5" stroke-linecap="round"></line>
+                <circle class="clock-hand" cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+            </svg>
+        </div>
+
         <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme">
             </button>
 
@@ -345,87 +381,3 @@
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
                 </div>
-            </div>
-
-            <a href="https://github.com/3257085208" target="_blank" class="card">
-                <div class="card-content">
-                    <span class="label">Code</span>
-                    <span class="value">GitHub Profile</span>
-                </div>
-                <div class="icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </div>
-            </a>
-
-            <div class="card" style="opacity: 0.5; cursor: default;">
-                <div class="card-content">
-                    <span class="label">Project</span>
-                    <span class="value">Website Coming Soon</span>
-                </div>
-            </div>
-
-        </div>
-
-        <footer>
-            <div class="copyright-row">
-                © 2026 NKX &nbsp;·&nbsp; QQ.SG
-            </div>
-            <div class="disclaimer">Disclaimer: QQ.SG has nothing to do with Tencent Group.</div>
-        </footer>
-
-    </div>
-
-    <div class="toast" id="toast">Copied to clipboard</div>
-
-    <script>
-        function copyEmail() {
-            navigator.clipboard.writeText("ME@QQ.SG").then(() => {
-                const toast = document.getElementById('toast');
-                const iconBox = document.getElementById('copyIconBox');
-                const originalIcon = iconBox.innerHTML;
-                
-                iconBox.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                iconBox.classList.add('success'); 
-
-                toast.classList.add('show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    iconBox.classList.remove('success'); 
-                    iconBox.innerHTML = originalIcon;
-                }, 2000);
-            });
-        }
-
-        const themeBtn = document.getElementById('themeBtn');
-        const html = document.documentElement;
-        const icons = {
-            light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
-            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
-            system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`
-        };
-        const modes = ['system', 'light', 'dark'];
-        function getStoredTheme() { return localStorage.getItem('theme') || 'system'; }
-        function setTheme(mode) {
-            themeBtn.innerHTML = icons[mode];
-            if (mode === 'system') {
-                localStorage.removeItem('theme');
-                html.removeAttribute('data-theme');
-            } else {
-                localStorage.setItem('theme', mode);
-                html.setAttribute('data-theme', mode);
-            }
-        }
-        let currentMode = getStoredTheme();
-        setTheme(currentMode);
-        themeBtn.addEventListener('click', () => {
-            const nextIndex = (modes.indexOf(currentMode) + 1) % modes.length;
-            currentMode = modes[nextIndex];
-            setTheme(currentMode);
-        });
-    </script>
-</body>
-</html>
