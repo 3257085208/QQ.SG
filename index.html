@@ -7,13 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 极简配色：只有黑、白、灰 */
-            --bg: #FAFAFA; /* 极浅的灰白底，比纯白护眼 */
-            --card-bg: #FFFFFF;
+            /* 极简配色系统 */
+            --bg: #FAFAFA;       /* 护眼灰白底 */
+            --card-bg: #FFFFFF;  /* 纯白卡片 */
             --text-main: #111111;
             --text-sub: #666666;
-            --border: #E5E5E5; /* 极细的边框 */
-            --accent: #000000; /* 强调色就是纯黑 */
+            --border: #E5E5E5;   /* 极细边框 */
         }
 
         body {
@@ -22,23 +21,26 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            min-height: 100vh;
-            display: flex;
+            
+            /* --- 核心修复：解决滚动条问题 --- */
+            height: 100dvh;        /* 动态视口高度，自动扣除 Safari 地址栏 */
+            overflow: hidden;      /* 强制禁止滚动 */
+            display: flex;         /* 垂直居中布局 */
             align-items: center;
             justify-content: center;
+            overscroll-behavior: none; /* 禁止橡皮筋回弹 */
         }
 
         .container {
             width: 100%;
-            max-width: 380px; /* 限制最大宽度，防止布局散架 */
+            max-width: 380px;      /* 限制宽度，防止在大屏上太宽 */
             padding: 24px;
-            box-sizing: border-box; /* 防止边距撑破布局 */
+            box-sizing: border-box;
         }
 
-        /* 1. 顶部身份区：极简排列 */
+        /* 头部区域：左对齐 */
         .header {
-            margin-bottom: 40px;
-            /* 修正布局：让头像和文字自然左对齐，不搞复杂的居中 */
+            margin-bottom: 32px;
             display: flex;
             flex-direction: column; 
             gap: 16px;
@@ -47,9 +49,11 @@
         .avatar {
             width: 64px;
             height: 64px;
-            border-radius: 8px; /* 稍微圆角，不要正圆，更有建筑感 */
+            border-radius: 12px;   /* 稍大一点的圆角，更有现代感 */
+            /* 自动抓取你的 GitHub 头像 */
             background-image: url('https://github.com/3257085208.png');
             background-size: cover;
+            background-position: center;
             background-color: #eee;
             border: 1px solid var(--border);
         }
@@ -57,7 +61,7 @@
         .identity h1 {
             font-size: 24px;
             font-weight: 600;
-            margin: 0 0 4px 0;
+            margin: 0 0 6px 0;
             letter-spacing: -0.5px;
         }
 
@@ -68,7 +72,7 @@
             line-height: 1.5;
         }
 
-        /* 2. 功能区：卡片式列表，干干净净 */
+        /* 列表区域 */
         .grid {
             display: flex;
             flex-direction: column;
@@ -79,27 +83,26 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 20px;
+            padding: 18px 20px;
             text-decoration: none;
             color: var(--text-main);
-            transition: all 0.15s ease-out; /* 快速响应，不要慢吞吞的过渡 */
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            user-select: none; /* 防止长按选中文字影响体验 */
+            -webkit-tap-highlight-color: transparent; /* 去除移动端点击高亮 */
         }
 
-        /* 悬停效果：只有边框变黑，极其克制 */
+        /* 悬停/点击效果：仅边框变黑 */
         .card:active, .card:hover {
             border-color: #000;
-            transform: translateY(-1px);
         }
 
-        /* 重点卡片：邮箱 */
+        /* 邮箱卡片稍微大一点 */
         .card.featured {
-            padding: 24px;
+            padding: 22px 20px;
         }
 
         .card-content {
@@ -109,9 +112,9 @@
         }
 
         .label {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-sub);
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -119,11 +122,11 @@
         .value {
             font-size: 16px;
             font-weight: 500;
-            font-family: 'Inter', monospace; /* 数字/邮箱用等宽字体 */
+            font-family: 'Inter', monospace;
         }
 
         .arrow {
-            color: #ccc;
+            color: #ddd;
             font-size: 18px;
             transition: color 0.2s;
         }
@@ -132,21 +135,22 @@
             color: #000;
         }
 
-        /* 复制成功的提示：极简的小黑条 */
+        /* 复制成功的提示条 */
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: #000;
+            background: #111;
             color: #fff;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 10px 24px;
+            border-radius: 30px;
             font-size: 13px;
             font-weight: 500;
             opacity: 0;
             pointer-events: none;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
         
         .toast.show {
@@ -154,27 +158,15 @@
             opacity: 1;
         }
 
-        /* 底部声明：不像AI生成的那么显眼，融入背景 */
+        /* 底部版权 */
         footer {
-            margin-top: 60px;
+            margin-top: 48px;
             padding-top: 20px;
             border-top: 1px solid var(--border);
             font-size: 12px;
-            color: #999;
+            color: #bbb;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-        }
-
-        footer span {
-            opacity: 0.6;
-        }
-
-        /* 移动端适配修正 */
-        @media (max-width: 480px) {
-            .container { padding: 20px; }
-            .header { gap: 12px; margin-bottom: 30px; }
-            .avatar { width: 56px; height: 56px; }
         }
     </style>
 </head>
@@ -197,7 +189,7 @@
                     <span class="label">Primary Email</span>
                     <span class="value">ME@QQ.SG</span>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
@@ -227,7 +219,7 @@
 
     </div>
 
-    <div class="toast" id="toast">Email Copied</div>
+    <div class="toast" id="toast">Copied to clipboard</div>
 
     <script>
         function copyEmail() {
