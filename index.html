@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NKX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             /* === 浅色模式 === */
             --bg: #FAFAFA;
             --card-bg: #FFFFFF;
             --text-main: #111111;
-            --text-sub: #666666; /* 时钟将使用这个颜色 */
+            --text-sub: #666666;
             --text-legal: #CCCCCC;
             --border: #E5E5E5;
-            --icon-normal: #999999;
-            --icon-active: #111111;
-            --success: #10B981;
+            --clock-line: #E0E0E0; /* 表盘线条颜色 */
+            --clock-text: #A0A0A0; /* 表盘刻度数字颜色 */
+            --pointer: #FF3B30;    /* 红色指针 */
             --toast-bg: rgba(0,0,0,0.8);
             --toast-text: #FFFFFF;
         }
@@ -26,11 +26,12 @@
             --bg: #000000;
             --card-bg: #111111;
             --text-main: #FFFFFF;
-            --text-sub: #888888; /* 深色模式下的时钟颜色 */
+            --text-sub: #888888;
             --text-legal: #444444;
             --border: #222222;
-            --icon-normal: #555555;
-            --icon-active: #FFFFFF;
+            --clock-line: #222222;
+            --clock-text: #444444;
+            --pointer: #FF453A;
             --toast-bg: rgba(255,255,255,0.9);
             --toast-text: #000000;
         }
@@ -48,13 +49,71 @@
             justify-content: center;
             overscroll-behavior: none;
             transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
         }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* === 巨大的背景时钟容器 === */
+        .giant-clock-wrapper {
+            position: absolute;
+            top: -15vh; /* 往上提一点，让圆心大约在屏幕上半部分 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120vw; /* 超出屏幕宽度，制造巨大感 */
+            height: 120vw;
+            max-width: 800px;
+            max-height: 800px;
+            z-index: 0; /* 在最底层 */
+            pointer-events: none; /* 不影响点击 */
+            opacity: 1;
+            transition: opacity 0.5s;
         }
 
+        /* 时钟SVG样式 */
+        .clock-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /* 转盘动画过渡 */
+        .dial-ring {
+            transform-origin: 50% 50%;
+            transition: transform 1s cubic-bezier(0.2, 0, 0, 1); /* 丝滑的转动效果 */
+        }
+        
+        /* 秒针盘需要线性转动，或者跳动 */
+        .seconds-ring {
+            transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); /* 机械回弹感 */
+        }
+
+        /* 指针 */
+        .static-pointer {
+            position: absolute;
+            top: 12%; /* 指针位置 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background: var(--pointer);
+            z-index: 1;
+            border-radius: 2px;
+        }
+        
+        .static-pointer::after {
+            content: 'UTC+8';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--pointer);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+
+
+        /* === 前景内容容器 === */
         .container {
             width: 100%;
             max-width: 380px;
@@ -65,52 +124,10 @@
             justify-content: center;
             min-height: 100%;
             position: relative;
-            transition: max-width 0.3s ease;
+            z-index: 10; /* 浮在时钟上面 */
+            /* 背景稍微模糊一点，让文字看得清 */
+            /* backdrop-filter: blur(2px); */ 
         }
-
-        /* === 🆕 新增：Beta 时钟容器 === */
-        .beta-clock-container {
-            position: absolute;
-            top: 24px;
-            right: 80px; /* 放在主题按钮左侧 (24px + 44px宽 + 12px间距) */
-            width: 44px;
-            height: 44px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-sub); /* 使用次级颜色，低调一点 */
-            /* 入场动画 */
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-
-        /* 时钟 SVG 样式 */
-        .beta-svg {
-            width: 24px;
-            height: 24px;
-            stroke: currentColor; /* 跟随文字颜色 */
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap="round";
-        }
-
-        /* === 🆕 核心动画：表盘旋转 === */
-        .clock-face {
-            transform-origin: 50% 50%; /* 围绕中心点旋转 */
-            animation: spinFace 12s linear infinite; /* 12秒转一圈，匀速，无限循环 */
-        }
-
-        @keyframes spinFace {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* 指针保持不动 */
-        .clock-hand {
-            /* 不需要动画，静止 */
-        }
-        
 
         /* 顶部切换按钮 */
         .theme-toggle {
@@ -121,7 +138,8 @@
             height: 44px;
             border-radius: 50%;
             border: 1px solid var(--border);
-            background: transparent;
+            /* 给按钮加个背景，防止被时钟线条干扰 */
+            background: var(--bg); 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -129,20 +147,9 @@
             color: var(--text-main);
             transition: all 0.2s;
             z-index: 100;
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
         
-        .theme-toggle:active {
-            transform: scale(0.92);
-            background-color: var(--card-bg);
-        }
-
-        .theme-toggle svg {
-            width: 20px;
-            height: 20px;
-            stroke-width: 1.8;
-        }
+        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
         /* 头部信息 */
         .header {
@@ -150,30 +157,27 @@
             display: flex;
             flex-direction: column; 
             gap: 16px;
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            animation-delay: 0.1s;
+            text-align: center; /* 配合大时钟，居中更好看 */
         }
 
         .avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: 14px;
+            width: 80px; /* 头像加大 */
+            height: 80px;
+            border-radius: 20px;
             background-image: url('https://github.com/3257085208.png');
             background-size: cover;
             background-position: center;
             background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: width 0.3s, height 0.3s;
+            border: 4px solid var(--bg); /* 加个边框把背景隔开 */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 0 auto;
         }
 
         .identity h1 {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 800;
             margin: 0 0 6px 0;
             letter-spacing: -0.5px;
-            transition: font-size 0.3s;
         }
 
         .identity p {
@@ -181,7 +185,6 @@
             color: var(--text-sub);
             margin: 0;
             line-height: 1.5;
-            transition: font-size 0.3s;
         }
 
         /* 卡片列表 */
@@ -189,86 +192,43 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            animation-delay: 0.2s;
         }
 
         .card {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.8); /* 浅色模式半透明 */
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 18px 20px;
+            border-radius: 16px;
+            padding: 18px 24px;
             text-decoration: none;
             color: var(--text-main);
-            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
-                        border-color 0.2s, 
-                        background-color 0.2s,
-                        padding 0.3s;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            position: relative;
+            backdrop-filter: blur(10px); /* 毛玻璃，透出后面的时钟 */
+        }
+        
+        [data-theme="dark"] .card {
+            background: rgba(17, 17, 17, 0.8);
         }
 
-        .card:active {
-            transform: scale(0.98);
-            background-color: var(--bg);
-        }
+        .card:active { transform: scale(0.98); }
+        .card:hover { border-color: var(--text-main); }
 
-        .card:hover {
-            border-color: var(--text-main);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+        .card.featured { padding: 22px 24px; }
 
-        .card.featured {
-            padding: 22px 20px;
-        }
-
-        .card-content {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .label {
-            font-size: 11px;
-            color: var(--text-sub);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .value {
-            font-size: 16px;
-            font-weight: 500;
-            font-family: 'Inter', monospace;
-            transition: font-size 0.3s;
-        }
+        .card-content { display: flex; flex-direction: column; gap: 4px; }
+        .label { font-size: 11px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .value { font-size: 16px; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
 
         .icon-box {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: var(--icon-normal);
             transition: color 0.2s;
         }
+        .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
 
-        .card:hover .icon-box {
-            color: var(--icon-active);
-        }
-
-        .icon-box.success {
-            color: var(--success) !important;
-            transform: scale(1.1);
-        }
-
-        /* 底部区域 */
+        /* 底部 */
         footer {
             margin-top: 60px;
             display: flex;
@@ -276,25 +236,10 @@
             align-items: center;
             text-align: center;
             gap: 12px;
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            animation-delay: 0.3s;
         }
 
-        .copyright-row {
-            font-size: 12px;
-            color: var(--text-sub);
-            opacity: 0.8;
-            letter-spacing: 0.5px;
-        }
-
-        .disclaimer {
-            font-size: 10px;
-            color: var(--text-legal);
-            line-height: 1.4;
-            max-width: 80%;
-            opacity: 0.6;
-        }
+        .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
+        .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; }
 
         .toast {
             position: fixed;
@@ -302,7 +247,6 @@
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             background: var(--toast-bg);
-            backdrop-filter: blur(10px);
             color: var(--toast-text);
             padding: 10px 24px;
             border-radius: 30px;
@@ -310,66 +254,57 @@
             font-weight: 500;
             opacity: 0;
             pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.4s;
             z-index: 200;
         }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        /* 电脑端适配 */
+        /* 电脑适配 */
         @media (min-width: 768px) {
-            .container {
-                max-width: 560px;
-                padding: 40px;
+            .container { max-width: 500px; }
+            .giant-clock-wrapper {
+                width: 80vh; height: 80vh;
+                top: -10vh;
             }
-            .avatar { width: 80px; height: 80px; border-radius: 18px; }
-            .identity h1 { font-size: 32px; }
-            .identity p { font-size: 16px; }
-            .grid { gap: 16px; }
-            .card { padding: 24px 28px; }
-            .card.featured { padding: 28px 28px; }
-            .label { font-size: 12px; }
-            .value { font-size: 18px; }
-            footer { margin-top: 80px; }
-            /* 电脑上调整一下时钟的位置，让它更协调 */
-            .beta-clock-container { right: 96px; }
         }
-
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="giant-clock-wrapper">
+        <div class="static-pointer"></div>
         
-        <div class="beta-clock-container" title="Beta Version">
-            <svg class="beta-svg" viewBox="0 0 24 24">
-                <g class="clock-face">
-                    <circle cx="12" cy="12" r="10" vector-effect="non-scaling-stroke"></circle>
-                    <line x1="12" y1="2" x2="12" y2="4"></line>
-                    <line x1="12" y1="20" x2="12" y2="22"></line>
+        <svg class="clock-svg" viewBox="0 0 500 500">
+            <g class="dial-ring hour-ring" id="hourRing">
+                <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1" />
                 </g>
-                <line class="clock-hand" x1="12" y1="12" x2="12" y2="6" stroke-width="2.5" stroke-linecap="round"></line>
-                <circle class="clock-hand" cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
-            </svg>
-        </div>
+            
+            <g class="dial-ring minute-ring" id="minuteRing">
+                <circle cx="250" cy="250" r="190" fill="none" stroke="var(--border)" stroke-width="1" />
+                </g>
 
-        <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme">
-            </button>
+            <g class="dial-ring seconds-ring" id="secondRing">
+                <circle cx="250" cy="250" r="240" fill="none" stroke="var(--clock-line)" stroke-width="1" />
+                <path d="M250 10 L250 30" stroke="var(--text-main)" stroke-width="2" />
+                <path d="M250 470 L250 490" stroke="var(--border)" stroke-width="2" />
+                <path d="M10 250 L30 250" stroke="var(--border)" stroke-width="2" />
+                <path d="M470 250 L490 250" stroke="var(--border)" stroke-width="2" />
+            </g>
+        </svg>
+    </div>
+
+    <div class="container">
+        <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
 
         <div class="header">
             <div class="avatar"></div>
             <div class="identity">
                 <h1>NKX</h1>
-                <p>This is the channel of MarkNKX.</p>
+                <p>Digital Playground based in Singapore.</p>
             </div>
         </div>
 
         <div class="grid">
-            
             <div class="card featured" id="emailCard" onclick="copyEmail()">
                 <div class="card-content">
                     <span class="label">Primary Email</span>
@@ -381,3 +316,200 @@
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
                 </div>
+            </div>
+
+            <a href="https://github.com/3257085208" target="_blank" class="card">
+                <div class="card-content">
+                    <span class="label">Code</span>
+                    <span class="value">GitHub Profile</span>
+                </div>
+                <div class="icon-box">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
+            </a>
+
+            <div class="card" style="opacity: 0.5; cursor: default;">
+                <div class="card-content">
+                    <span class="label">Project</span>
+                    <span class="value">Website Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="copyright-row">© 2026 NKX · QQ.SG</div>
+            <div class="disclaimer">Disclaimer: QQ.SG has nothing to do with Tencent Group.</div>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast">Copied to clipboard</div>
+
+    <script>
+        // === 1. 构建时钟刻度 (SVG生成) ===
+        const svgNS = "http://www.w3.org/2000/svg";
+        
+        function createText(x, y, content, size, color) {
+            const text = document.createElementNS(svgNS, "text");
+            text.setAttribute("x", x);
+            text.setAttribute("y", y);
+            text.setAttribute("font-size", size);
+            text.setAttribute("fill", color);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "middle");
+            text.setAttribute("font-family", "JetBrains Mono");
+            text.setAttribute("font-weight", "500");
+            text.textContent = content;
+            return text;
+        }
+
+        function createLine(x1, y1, x2, y2, width, color) {
+            const line = document.createElementNS(svgNS, "line");
+            line.setAttribute("x1", x1);
+            line.setAttribute("y1", y1);
+            line.setAttribute("x2", x2);
+            line.setAttribute("y2", y2);
+            line.setAttribute("stroke", color);
+            line.setAttribute("stroke-width", width);
+            return line;
+        }
+
+        // 初始化小时盘 (12个数字)
+        const hourGroup = document.getElementById('hourRing');
+        for(let i=1; i<=12; i++) {
+            const angle = (i * 30 - 90) * (Math.PI / 180);
+            const r = 120; // 半径
+            const x = 250 + r * Math.cos(angle);
+            const y = 250 + r * Math.sin(angle);
+            
+            // 调整文字角度，让数字永远正立，还是跟随旋转？
+            // 想要高级感，数字底部朝向圆心。
+            const text = createText(x, y, i, 16, "var(--clock-text)");
+            // 旋转文字使其垂直于圆心
+            text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
+            hourGroup.appendChild(text);
+        }
+
+        // 初始化分钟盘 (刻度线)
+        const minGroup = document.getElementById('minuteRing');
+        for(let i=0; i<60; i++) {
+            const angle = (i * 6 - 90) * (Math.PI / 180);
+            const r1 = 180;
+            const r2 = i % 5 === 0 ? 165 : 175; // 长短刻度
+            const x1 = 250 + r1 * Math.cos(angle);
+            const y1 = 250 + r1 * Math.sin(angle);
+            const x2 = 250 + r2 * Math.cos(angle);
+            const y2 = 250 + r2 * Math.sin(angle);
+            
+            const line = createLine(x1, y1, x2, y2, i % 5 === 0 ? 2 : 1, "var(--clock-line)");
+            minGroup.appendChild(line);
+            
+            // 每5分钟加数字
+            if(i % 5 === 0) {
+                const rText = 150;
+                const tx = 250 + rText * Math.cos(angle);
+                const ty = 250 + rText * Math.sin(angle);
+                const text = createText(tx, ty, i === 0 ? "60" : i, 10, "var(--clock-text)");
+                text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`);
+                minGroup.appendChild(text);
+            }
+        }
+
+        // 初始化秒盘 (细密刻度)
+        const secGroup = document.getElementById('secondRing');
+        for(let i=0; i<60; i++) {
+            const angle = (i * 6 - 90) * (Math.PI / 180);
+            const r1 = 240;
+            const r2 = 230;
+            const x1 = 250 + r1 * Math.cos(angle);
+            const y1 = 250 + r1 * Math.sin(angle);
+            const x2 = 250 + r2 * Math.cos(angle);
+            const y2 = 250 + r2 * Math.sin(angle);
+            const line = createLine(x1, y1, x2, y2, 1, "var(--border)");
+            secGroup.appendChild(line);
+        }
+
+        // === 2. 核心逻辑：UTC+8 驱动转盘 ===
+        function updateClock() {
+            const now = new Date();
+            // 计算 UTC+8 时间
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const sgTime = new Date(utc + (3600000 * 8));
+
+            const h = sgTime.getHours();
+            const m = sgTime.getMinutes();
+            const s = sgTime.getSeconds();
+            const ms = sgTime.getMilliseconds();
+
+            // 计算角度 (反向旋转，因为指针不动，盘在动)
+            // 比如现在是 15分 (90度)，盘子要逆时针转90度 (-90) 才能让 15 对准顶部
+            
+            // 秒盘：带毫秒，平滑转动
+            const secDeg = -1 * ((s + ms/1000) * 6);
+            
+            // 分盘：稍微带一点秒的偏移
+            const minDeg = -1 * ((m + s/60) * 6);
+            
+            // 时盘：12小时制
+            const h12 = h % 12 || 12;
+            const hourDeg = -1 * ((h12 + m/60) * 30);
+
+            // 应用旋转
+            document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
+            document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
+            document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
+
+            requestAnimationFrame(updateClock);
+        }
+        
+        requestAnimationFrame(updateClock);
+
+
+        // === 3. 其他功能 (复制、主题) ===
+        function copyEmail() {
+            navigator.clipboard.writeText("ME@QQ.SG").then(() => {
+                const toast = document.getElementById('toast');
+                const iconBox = document.getElementById('copyIconBox');
+                const originalIcon = iconBox.innerHTML;
+                iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                iconBox.classList.add('success'); 
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    iconBox.classList.remove('success'); 
+                    iconBox.innerHTML = originalIcon;
+                }, 2000);
+            });
+        }
+
+        const themeBtn = document.getElementById('themeBtn');
+        const html = document.documentElement;
+        const icons = {
+            light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
+            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
+            system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`
+        };
+        const modes = ['system', 'light', 'dark'];
+        function getStoredTheme() { return localStorage.getItem('theme') || 'system'; }
+        function setTheme(mode) {
+            themeBtn.innerHTML = icons[mode];
+            if (mode === 'system') {
+                localStorage.removeItem('theme');
+                html.removeAttribute('data-theme');
+            } else {
+                localStorage.setItem('theme', mode);
+                html.setAttribute('data-theme', mode);
+            }
+        }
+        let currentMode = getStoredTheme();
+        setTheme(currentMode);
+        themeBtn.addEventListener('click', () => {
+            const nextIndex = (modes.indexOf(currentMode) + 1) % modes.length;
+            currentMode = modes[nextIndex];
+            setTheme(currentMode);
+        });
+    </script>
+</body>
+</html>
