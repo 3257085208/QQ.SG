@@ -41,8 +41,8 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100dvh;        /* 完美适配移动端 */
-            overflow: hidden;      /* 禁止滚动 */
+            height: 100dvh;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -50,15 +50,16 @@
             transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* 入场动画 */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* === 核心布局容器 === */
         .container {
             width: 100%;
-            max-width: 380px;
+            /* 默认手机宽度 */
+            max-width: 380px; 
             padding: 24px;
             box-sizing: border-box;
             display: flex;
@@ -66,6 +67,7 @@
             justify-content: center;
             min-height: 100%;
             position: relative;
+            transition: max-width 0.3s ease; /* 丝滑变宽 */
         }
 
         /* 顶部切换按钮 */
@@ -102,7 +104,7 @@
 
         /* 头部信息 */
         .header {
-            margin-bottom: 36px;
+            margin-bottom: 32px;
             display: flex;
             flex-direction: column; 
             gap: 16px;
@@ -121,6 +123,7 @@
             background-color: var(--card-bg);
             border: 1px solid var(--border);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: width 0.3s, height 0.3s; /* 尺寸变化过渡 */
         }
 
         .identity h1 {
@@ -128,6 +131,7 @@
             font-weight: 600;
             margin: 0 0 6px 0;
             letter-spacing: -0.5px;
+            transition: font-size 0.3s;
         }
 
         .identity p {
@@ -135,6 +139,7 @@
             color: var(--text-sub);
             margin: 0;
             line-height: 1.5;
+            transition: font-size 0.3s;
         }
 
         /* 卡片列表 */
@@ -156,7 +161,8 @@
             color: var(--text-main);
             transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
                         border-color 0.2s, 
-                        background-color 0.2s;
+                        background-color 0.2s,
+                        padding 0.3s; /* 间距变化过渡 */
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -166,12 +172,14 @@
         }
 
         .card:active {
-            transform: scale(0.96);
+            transform: scale(0.98); /* 电脑上震动幅度改小一点 */
             background-color: var(--bg);
         }
 
         .card:hover {
             border-color: var(--text-main);
+            transform: translateY(-2px); /* 电脑上增加悬浮感 */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 电脑上增加阴影 */
         }
 
         .card.featured {
@@ -196,6 +204,7 @@
             font-size: 16px;
             font-weight: 500;
             font-family: 'Inter', monospace;
+            transition: font-size 0.3s;
         }
 
         .icon-box {
@@ -217,13 +226,13 @@
             transform: scale(1.1);
         }
 
-        /* === 底部区域：回归居中 === */
+        /* 底部区域 */
         footer {
             margin-top: 60px;
             display: flex;
             flex-direction: column;
-            align-items: center; /* 居中对齐 */
-            text-align: center;  /* 文字居中 */
+            align-items: center;
+            text-align: center;
             gap: 12px;
             opacity: 0;
             animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
@@ -245,7 +254,6 @@
             opacity: 0.6;
         }
 
-        /* 提示条 */
         .toast {
             position: fixed;
             bottom: 40px;
@@ -269,6 +277,44 @@
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
+        /* === 💡 核心升级：电脑端适配 (Media Query) === */
+        @media (min-width: 768px) {
+            /* 1. 容器变宽 */
+            .container {
+                max-width: 560px; /* 宽度增加到 560px */
+                padding: 40px;    /* 留白增加 */
+            }
+
+            /* 2. 头像变大 */
+            .avatar {
+                width: 80px;
+                height: 80px;
+                border-radius: 18px;
+            }
+
+            /* 3. 字体整体放大，更有张力 */
+            .identity h1 { font-size: 32px; }
+            .identity p { font-size: 16px; }
+
+            /* 4. 卡片舒展 */
+            .grid { gap: 16px; } /* 卡片间距变大 */
+            
+            .card {
+                padding: 24px 28px; /* 卡片内边距变大 */
+            }
+            
+            .card.featured {
+                padding: 28px 28px;
+            }
+
+            .label { font-size: 12px; }
+            .value { font-size: 18px; } /* 关键信息字体变大 */
+            
+            /* 5. 底部也松快一点 */
+            footer { margin-top: 80px; }
+        }
+
     </style>
 </head>
 <body>
@@ -294,7 +340,7 @@
                     <span class="value">ME@QQ.SG</span>
                 </div>
                 <div class="icon-box" id="copyIconBox">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
@@ -307,7 +353,7 @@
                     <span class="value">GitHub Profile</span>
                 </div>
                 <div class="icon-box">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
                     </svg>
@@ -341,7 +387,7 @@
                 const iconBox = document.getElementById('copyIconBox');
                 const originalIcon = iconBox.innerHTML;
                 
-                iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                iconBox.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                 iconBox.classList.add('success'); 
 
                 toast.classList.add('show');
