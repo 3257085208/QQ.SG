@@ -4,31 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NKX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             /* === 浅色模式 === */
             --bg: #FAFAFA;
-            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-bg: #FFFFFF;
             --text-main: #111111;
             --text-sub: #666666;
             --text-legal: #999999;
-            --border: rgba(0, 0, 0, 0.08);
+            --border: #E5E5E5;
             --clock-line: #E0E0E0;
+            --clock-text: #B0B0B0;
             --pointer: #FF3B30;
-            --toast-bg: rgba(0,0,0,0.8);
+            --toast-bg: rgba(0,0,0,0.9);
             --toast-text: #FFFFFF;
         }
 
         /* === 深色模式 === */
         [data-theme="dark"] {
-            --bg: #050505; /* 极深灰，不是纯黑，更有质感 */
-            --card-bg: rgba(30, 30, 30, 0.6);
+            --bg: #000000;
+            --card-bg: #111111;
             --text-main: #FFFFFF;
             --text-sub: #888888;
             --text-legal: #555555;
-            --border: rgba(255, 255, 255, 0.1);
+            --border: #222222;
             --clock-line: #1A1A1A;
+            --clock-text: #333333;
             --pointer: #FF453A;
             --toast-bg: rgba(255,255,255,0.9);
             --toast-text: #000000;
@@ -40,13 +42,15 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            min-height: 100dvh; /* 允许内容撑开 */
+            height: 100dvh;
+            overflow: hidden;
             display: flex;
-            align-items: center;
+            /* 默认手机端居中 */
+            align-items: center; 
             justify-content: center;
-            transition: background-color 0.4s ease;
+            overscroll-behavior: none;
+            transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
-            overflow-x: hidden; /* 防止横向滚动 */
         }
 
         /* === 1. 背景：右下角巨型时钟 === */
@@ -54,23 +58,24 @@
             position: fixed;
             bottom: 0;
             right: 0;
-            transform: translate(50%, 50%); /* 圆心对准右下角 */
-            z-index: 0;
-            pointer-events: none;
-            
-            /* 手机端优化：大幅降低透明度，防止"乱" */
+            /* 手机端：稍微缩小一点，并且透明度调低，防止“乱” */
             width: 100vh;
             height: 100vh;
-            opacity: 0.15; /* 只有隐约可见 */
-            transition: opacity 0.5s ease;
+            transform: translate(40%, 40%); /* 往角落藏一点 */
+            
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.3; /* 手机端：低透明度，降噪 */
+            transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
         }
-        
-        /* 电脑端优化：放大并增加不透明度，因为屏幕大不显乱 */
+
+        /* 电脑端时钟：变大、变亮 */
         @media (min-width: 1024px) {
             .giant-clock-wrapper {
                 width: 160vh;
                 height: 160vh;
-                opacity: 0.4; /* 稍微明显一点 */
+                transform: translate(50%, 50%); /* 完美的四分之一圆 */
+                opacity: 0.8; /* 电脑屏幕大，可以亮一点 */
             }
         }
 
@@ -78,217 +83,199 @@
         .dial-ring { transform-origin: 50% 50%; transition: transform 1s cubic-bezier(0.2, 0, 0, 1); }
         .seconds-ring { transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); }
 
-        /* 45度激光指针 */
+        /* 45度 激光指针 */
         .laser-pointer-line {
             position: absolute;
-            top: 50%; left: 50%;
-            width: 55%; height: 2px;
+            top: 50%; left: 50%; width: 55%; height: 2px;
             background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
+            z-index: 1;
             transform-origin: left center;
             transform: rotate(-135deg);
-            box-shadow: 0 0 15px rgba(255, 59, 48, 0.3);
+            box-shadow: 0 0 15px rgba(255, 59, 48, 0.5);
         }
         .laser-pointer-line::after {
             content: 'UTC+8';
-            position: absolute;
-            right: 10px; bottom: 10px;
+            position: absolute; right: 10px; bottom: 10px;
             font-size: 14px; font-weight: 800; color: var(--pointer);
             font-family: 'JetBrains Mono', monospace;
             transform: rotate(180deg);
         }
 
-
-        /* === 2. 主容器：响应式布局核心 === */
+        /* === 2. 内容容器 === */
         .container {
-            position: relative;
-            z-index: 10;
             width: 100%;
-            max-width: 1200px; /* 电脑端最大宽度 */
-            padding: 40px;
+            max-width: 400px;
+            padding: 24px;
             box-sizing: border-box;
-            
-            /* 默认手机端：垂直居中单列 */
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            justify-content: center;
+            min-height: 100%;
+            position: relative;
+            z-index: 10;
+            transition: all 0.5s ease;
         }
 
-        /* === 电脑端布局重构：左右分栏 === */
+        /* === 3. 电脑端布局重构：左侧悬浮 === */
         @media (min-width: 1024px) {
             .container {
-                flex-direction: row; /* 改为横向 */
-                align-items: center;
-                justify-content: space-between; /* 两端对齐 */
-                gap: 80px;
-                padding: 0 80px; /* 两侧留白 */
-                height: 100vh;   /* 电脑端撑满全屏 */
+                /* 绝对定位到左侧，打破居中 */
+                position: absolute;
+                left: 8vw;
+                top: 50%;
+                transform: translateY(-50%);
+                
+                max-width: 600px; /* 宽度放开 */
+                padding: 0;
+                align-items: flex-start; /* 左对齐 */
             }
         }
 
-        /* === 左侧：身份信息 (Identity) === */
-        .header-section {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            text-align: center;
-            /* 手机端稍微加个入场动画 */
-            animation: fadeUp 0.6s ease forwards; 
+        /* 顶部按钮 */
+        .theme-toggle {
+            position: absolute; top: 30px; left: 30px;
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.01);
+            backdrop-filter: blur(5px);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-main);
+            transition: all 0.2s; z-index: 100;
         }
+        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
+        /* 头部信息 */
+        .header {
+            margin-bottom: 40px;
+            display: flex; flex-direction: column; gap: 20px;
+            text-align: center;
+            width: 100%;
+        }
+        
         @media (min-width: 1024px) {
-            .header-section {
-                text-align: left; /* 电脑端左对齐 */
-                align-items: flex-start;
-                flex: 1; /* 占据左侧空间 */
+            .header { 
+                flex-direction: row; /* 电脑上头像和文字并排 */
+                align-items: center; 
+                text-align: left;
+                gap: 24px;
+                margin-bottom: 50px;
             }
         }
 
         .avatar {
-            width: 80px; height: 80px;
-            border-radius: 20px;
+            width: 80px; height: 80px; border-radius: 20px;
             background-image: url('https://github.com/3257085208.png');
-            background-size: cover;
+            background-size: cover; background-position: center;
+            background-color: var(--card-bg);
             border: 1px solid var(--border);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             margin: 0 auto; /* 手机居中 */
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }
         
         @media (min-width: 1024px) {
-            .avatar { 
-                margin: 0; /* 电脑取消居中 */
-                width: 100px; height: 100px; /* 电脑头像更大 */
-            }
-            .avatar:hover { transform: scale(1.05) rotate(-2deg); }
+            .avatar { margin: 0; width: 100px; height: 100px; border-radius: 24px; }
         }
 
-        .identity-text h1 {
-            font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -1px;
-            background: linear-gradient(to bottom right, var(--text-main) 30%, var(--text-sub));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .identity { display: flex; flex-direction: column; }
+        
+        .identity h1 { 
+            font-size: 32px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -1px; 
+            transition: font-size 0.3s;
         }
-        @media (min-width: 1024px) {
-            .identity-text h1 { font-size: 64px; /* 电脑端超大字体 */ line-height: 1.1; }
-        }
-
-        .identity-text p {
-            font-size: 15px; color: var(--text-sub); margin-top: 8px; line-height: 1.5;
-        }
-        @media (min-width: 1024px) {
-            .identity-text p { font-size: 18px; margin-top: 16px; max-width: 400px; }
-        }
-
-
-        /* === 右侧：功能卡片 (Links) === */
-        .links-section {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            width: 100%;
-            max-width: 400px; /* 限制卡片最大宽度 */
-            margin: 0 auto;   /* 手机居中 */
-            animation: fadeUp 0.6s ease forwards 0.1s;
+        .identity p { 
+            font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; 
+            transition: font-size 0.3s;
         }
 
         @media (min-width: 1024px) {
-            .links-section {
-                margin: 0; /* 电脑靠右 */
-                max-width: 420px;
+            .identity h1 { font-size: 48px; letter-spacing: -2px; } /* 电脑上超大字 */
+            .identity p { font-size: 18px; }
+        }
+
+        /* === 4. 卡片布局重构：Bento Grid === */
+        .grid { 
+            display: flex; flex-direction: column; gap: 14px; width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                display: grid; /* 电脑上变成网格 */
+                grid-template-columns: 1fr 1fr; /* 两列 */
+                gap: 20px;
             }
         }
 
         .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.65);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 20px 24px;
             text-decoration: none;
             color: var(--text-main);
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex; align-items: center; justify-content: space-between;
             cursor: pointer;
-            transition: all 0.2s ease;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
         }
+        [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.65); }
 
-        .card:hover {
+        .card:hover { 
+            border-color: var(--text-main); 
+            background: var(--card-bg); 
             transform: translateY(-2px);
-            border-color: var(--text-main);
-            background: rgba(255,255,255,0.9);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
         }
-        [data-theme="dark"] .card:hover { background: rgba(40,40,40,0.9); }
         .card:active { transform: scale(0.98); }
 
-        .card-content { display: flex; flex-direction: column; gap: 4px; }
-        .label { font-size: 11px; color: var(--text-sub); font-weight: 700; letter-spacing: 0.5px; opacity: 0.7; }
-        .value { font-size: 16px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+        /* 邮箱卡片：电脑上横跨两列 */
+        .card.featured { padding: 24px 24px; }
+        
+        @media (min-width: 1024px) {
+            .card.featured { 
+                grid-column: span 2; /* 横跨整行 */
+                padding: 32px; /* 更大的内边距 */
+            }
+            .card.featured .value { font-size: 24px; } /* 更大的字体 */
+        }
 
-        .icon-box { color: var(--text-sub); transition: color 0.2s; }
-        .card:hover .icon-box { color: var(--text-main); }
+        .card-content { display: flex; flex-direction: column; gap: 4px; }
+        .label { font-size: 11px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .value { font-size: 17px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+        .icon-box { color: var(--icon-normal); transition: color 0.2s; }
+        .card:hover .icon-box { color: var(--icon-active); }
         .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
 
-
-        /* === 底部：页脚优化 === */
+        /* 底部 */
         footer {
-            margin-top: auto; /* 推到底部 */
-            padding-top: 40px;
-            padding-bottom: 20px; /* 手机端底部留白 */
-            text-align: center;
-            width: 100%;
-            /* 手机端优化：底部加个渐变遮罩，防止文字看不清 */
-            background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+            margin-top: 60px;
+            display: flex; flex-direction: column; gap: 12px;
+            align-items: center; text-align: center;
+        }
+        @media (min-width: 1024px) { 
+            footer { align-items: flex-start; text-align: left; margin-top: 40px; } 
         }
 
-        @media (min-width: 1024px) {
-            footer {
-                position: absolute;
-                bottom: 40px;
-                left: 80px; /* 跟随左侧内容对齐 */
-                text-align: left;
-                width: auto;
-                background: none; /* 电脑端不需要遮罩 */
-                padding: 0;
-            }
+        .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
+        
+        .disclaimer { 
+            font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; 
+            max-width: 300px;
         }
 
-        .footer-content {
-            display: flex; flex-direction: column; gap: 6px;
-        }
-        .copyright { font-size: 12px; color: var(--text-main); font-weight: 500; }
-        .disclaimer { font-size: 11px; color: var(--text-legal); }
-
-        /* === 悬浮组件 === */
-        /* 主题按钮：固定左上角 */
-        .theme-toggle {
-            position: absolute;
-            top: 24px; left: 24px;
-            width: 44px; height: 44px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-main);
-            z-index: 100;
-        }
-        @media (min-width: 1024px) {
-            .theme-toggle { top: 40px; left: 40px; }
-        }
-
+        /* 提示条 */
         .toast {
-            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--toast-bg); color: var(--toast-text);
-            padding: 10px 24px; border-radius: 30px;
-            font-size: 13px; font-weight: 500;
-            opacity: 0; pointer-events: none; transition: all 0.4s; z-index: 200;
+            position: fixed; bottom: 40px; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--toast-bg); backdrop-filter: blur(10px);
+            color: var(--toast-text); padding: 10px 24px; border-radius: 30px;
+            font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none;
+            transition: all 0.4s; z-index: 200;
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
     </style>
 </head>
 <body>
@@ -297,113 +284,136 @@
         <div class="laser-pointer-line"></div>
         <svg class="clock-svg" viewBox="0 0 500 500">
             <g class="dial-ring hour-ring" id="hourRing">
-                <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1" />
+                <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1.5" />
             </g>
             <g class="dial-ring minute-ring" id="minuteRing">
                 <circle cx="250" cy="250" r="190" fill="none" stroke="var(--border)" stroke-width="1" />
             </g>
             <g class="dial-ring seconds-ring" id="secondRing">
                 <circle cx="250" cy="250" r="240" fill="none" stroke="var(--clock-line)" stroke-width="0.5" />
-                <path d="M250 5 L250 20" stroke="var(--text-main)" stroke-width="2" />
-                <path d="M5 250 L20 250" stroke="var(--border)" stroke-width="2" />
+                <path d="M250 5 L250 30" stroke="var(--text-main)" stroke-width="3" />
+                <path d="M250 470 L250 495" stroke="var(--border)" stroke-width="2" />
+                <path d="M5 250 L30 250" stroke="var(--border)" stroke-width="2" />
+                <path d="M470 250 L495 250" stroke="var(--border)" stroke-width="2" />
             </g>
         </svg>
     </div>
 
-    <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
-
     <div class="container">
-        
-        <div class="header-section">
+        <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
+
+        <div class="header">
             <div class="avatar"></div>
-            <div class="identity-text">
+            <div class="identity">
                 <h1>NKX</h1>
                 <p>Digital Playground based in Singapore.</p>
             </div>
-            
-            <footer class="desktop-footer">
-                <div class="footer-content">
-                    <span class="copyright">© 2026 NKX · QQ.SG</span>
-                    <span class="disclaimer">Disclaimer: QQ.SG has nothing to do with Tencent Group.</span>
-                </div>
-            </footer>
         </div>
 
-        <div class="links-section">
+        <div class="grid">
             <div class="card featured" id="emailCard" onclick="copyEmail()">
                 <div class="card-content">
-                    <span class="label">CONTACT</span>
+                    <span class="label">Primary Email</span>
                     <span class="value">ME@QQ.SG</span>
                 </div>
                 <div class="icon-box" id="copyIconBox">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </div>
             </div>
 
             <a href="https://github.com/3257085208" target="_blank" class="card">
                 <div class="card-content">
-                    <span class="label">CODE</span>
-                    <span class="value">GitHub Profile</span>
+                    <span class="label">Code</span>
+                    <span class="value">GitHub</span>
                 </div>
                 <div class="icon-box">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </div>
             </a>
 
-            <div class="card" style="opacity: 0.6; cursor: default;">
+            <div class="card" style="opacity: 0.5; cursor: default;">
                 <div class="card-content">
-                    <span class="label">PROJECT</span>
-                    <span class="value">Website Coming Soon</span>
+                    <span class="label">Project</span>
+                    <span class="value">Coming Soon</span>
                 </div>
             </div>
         </div>
 
+        <footer>
+            <div class="copyright-row">© 2026 NKX · QQ.SG</div>
+            <div class="disclaimer">Disclaimer: QQ.SG has nothing to do with Tencent Group.</div>
+        </footer>
     </div>
 
     <div class="toast" id="toast">Copied to clipboard</div>
 
     <script>
-        // === 时钟逻辑 (优化版) ===
+        // SVG & Clock Logic
         const svgNS = "http://www.w3.org/2000/svg";
-        
-        // 辅助函数：创建刻度
-        function createMark(group, count, radius, width, color) {
-            for(let i=0; i<count; i++) {
-                const angle = (i * (360/count) - 90) * (Math.PI / 180);
-                const x1 = 250 + radius * Math.cos(angle);
-                const y1 = 250 + radius * Math.sin(angle);
-                const x2 = 250 + (radius - 10) * Math.cos(angle);
-                const y2 = 250 + (radius - 10) * Math.sin(angle);
-                const line = document.createElementNS(svgNS, "line");
-                line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-                line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-                line.setAttribute("stroke", color);
-                line.setAttribute("stroke-width", width);
-                group.appendChild(line);
+        function createText(x, y, content, size, color, weight="500") {
+            const text = document.createElementNS(svgNS, "text");
+            text.setAttribute("x", x); text.setAttribute("y", y);
+            text.setAttribute("font-size", size); text.setAttribute("fill", color);
+            text.setAttribute("text-anchor", "middle"); text.setAttribute("dominant-baseline", "middle");
+            text.setAttribute("font-family", "JetBrains Mono"); text.setAttribute("font-weight", weight);
+            text.textContent = content; return text;
+        }
+        function createLine(x1, y1, x2, y2, width, color) {
+            const line = document.createElementNS(svgNS, "line");
+            line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+            line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+            line.setAttribute("stroke", color); line.setAttribute("stroke-width", width);
+            return line;
+        }
+
+        const hourGroup = document.getElementById('hourRing');
+        for(let i=1; i<=12; i++) {
+            const angle = (i * 30 - 90) * (Math.PI / 180);
+            const r = 120;
+            const x = 250 + r * Math.cos(angle);
+            const y = 250 + r * Math.sin(angle);
+            const text = createText(x, y, i, 18, "var(--text-main)", "800");
+            text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
+            hourGroup.appendChild(text);
+        }
+
+        const minGroup = document.getElementById('minuteRing');
+        for(let i=0; i<60; i++) {
+            const angle = (i * 6 - 90) * (Math.PI / 180);
+            const r1 = 180; const r2 = i % 5 === 0 ? 160 : 175;
+            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
+            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
+            const line = createLine(x1, y1, x2, y2, i % 5 === 0 ? 2 : 1, "var(--clock-line)");
+            minGroup.appendChild(line);
+            if(i % 5 === 0) {
+                const rText = 145;
+                const tx = 250 + rText * Math.cos(angle); const ty = 250 + rText * Math.sin(angle);
+                const text = createText(tx, ty, i === 0 ? "60" : i, 12, "var(--clock-text)");
+                text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`);
+                minGroup.appendChild(text);
             }
         }
-        
-        // 生成刻度
-        createMark(document.getElementById('hourRing'), 12, 140, 2, "var(--border)");
-        createMark(document.getElementById('minuteRing'), 60, 190, 1, "var(--border)");
+
+        const secGroup = document.getElementById('secondRing');
+        for(let i=0; i<60; i++) {
+            const angle = (i * 6 - 90) * (Math.PI / 180);
+            const r1 = 240; const r2 = 230;
+            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
+            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
+            const line = createLine(x1, y1, x2, y2, 1, "var(--border)");
+            secGroup.appendChild(line);
+        }
 
         function updateClock() {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const sgTime = new Date(utc + (3600000 * 8));
-            
-            const h = sgTime.getHours();
-            const m = sgTime.getMinutes();
-            const s = sgTime.getSeconds();
-            const ms = sgTime.getMilliseconds();
-            
-            const OFFSET = -45; // 对齐45度角
-            
+            const h = sgTime.getHours(); const m = sgTime.getMinutes(); const s = sgTime.getSeconds(); const ms = sgTime.getMilliseconds();
+            const OFFSET = -45;
             const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
             const minDeg = -1 * ((m + s/60) * 6) + OFFSET;
             const h12 = h % 12 || 12;
             const hourDeg = -1 * ((h12 + m/60) * 30) + OFFSET;
-
             document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
             document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
             document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
@@ -411,20 +421,15 @@
         }
         requestAnimationFrame(updateClock);
 
-        // === 功能逻辑 ===
+        // Features
         function copyEmail() {
             navigator.clipboard.writeText("ME@QQ.SG").then(() => {
                 const toast = document.getElementById('toast');
                 const iconBox = document.getElementById('copyIconBox');
                 const originalIcon = iconBox.innerHTML;
                 iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                iconBox.classList.add('success'); 
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    iconBox.classList.remove('success'); 
-                    iconBox.innerHTML = originalIcon;
-                }, 2000);
+                iconBox.classList.add('success'); toast.classList.add('show');
+                setTimeout(() => { toast.classList.remove('show'); iconBox.classList.remove('success'); iconBox.innerHTML = originalIcon; }, 2000);
             });
         }
 
@@ -439,20 +444,12 @@
         function getStoredTheme() { return localStorage.getItem('theme') || 'system'; }
         function setTheme(mode) {
             themeBtn.innerHTML = icons[mode];
-            if (mode === 'system') {
-                localStorage.removeItem('theme');
-                html.removeAttribute('data-theme');
-            } else {
-                localStorage.setItem('theme', mode);
-                html.setAttribute('data-theme', mode);
-            }
+            if (mode === 'system') { localStorage.removeItem('theme'); html.removeAttribute('data-theme'); } 
+            else { localStorage.setItem('theme', mode); html.setAttribute('data-theme', mode); }
         }
-        let currentMode = getStoredTheme();
-        setTheme(currentMode);
+        let currentMode = getStoredTheme(); setTheme(currentMode);
         themeBtn.addEventListener('click', () => {
-            const nextIndex = (modes.indexOf(currentMode) + 1) % modes.length;
-            currentMode = modes[nextIndex];
-            setTheme(currentMode);
+            currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length]; setTheme(currentMode);
         });
     </script>
 </body>
