@@ -14,7 +14,7 @@
             --text-sub: #666666;
             --text-legal: #CCCCCC;
             --border: #E5E5E5;
-            --clock-line: #E5E5E5; /* 调淡一点，防止太抢眼 */
+            --clock-line: #E5E5E5;
             --clock-text: #B0B0B0;
             --pointer: #FF3B30;
             --toast-bg: rgba(0,0,0,0.8);
@@ -46,44 +46,36 @@
             overflow: hidden;
             display: flex;
             align-items: center;
-            justify-content: center; /* 内容依然居中 */
+            justify-content: center;
             overscroll-behavior: none;
             transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
         }
 
-        /* === 核心修改：巨型右置时钟 === */
+        /* === 核心：右下角巨型时钟 === */
         .giant-clock-wrapper {
-            position: fixed; /* 固定定位，雷打不动 */
-            top: 50%;
-            /* 核心布局逻辑：
-               1. 宽度设为 160vh (屏幕高度的1.6倍)，保证巨大。
-               2. right: -60vh; 把圆心往右推，让左半部分露出来。
+            position: fixed;
+            /* 1. 默认手机端逻辑：还是居中或者偏下比较好看，
+                  但为了统一风格，手机端我们也尝试放右下角，或者稍微收敛一点。
+                  这里先写通用逻辑，下面 media query 再针对电脑放大。
             */
-            width: 160vh;  
-            height: 160vh;
-            right: -60vh; 
-            transform: translateY(-50%); /* 垂直居中 */
+            bottom: 0;
+            right: 0;
+            /* 使用 transform 将圆心对准右下角 */
+            transform: translate(50%, 50%); 
             
+            width: 120vh;
+            height: 120vh;
             z-index: 0;
             pointer-events: none;
-            opacity: 0.8; /* 稍微透明一点，增加层次感 */
-        }
-
-        /* 移动端特殊调整：手机屏幕窄，往右推多一点 */
-        @media (max-width: 768px) {
-            .giant-clock-wrapper {
-                width: 140vh;
-                height: 140vh;
-                right: -70vh; /* 手机上只露出一小半，防止文字看不清 */
-                opacity: 0.6; /* 手机上淡一点 */
-            }
+            opacity: 0.8;
+            transition: all 0.5s ease;
         }
 
         .clock-svg {
             width: 100%;
             height: 100%;
-            overflow: visible;
+            overflow: visible; /* 允许指针画出框外 */
         }
 
         .dial-ring {
@@ -95,42 +87,41 @@
             transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5);
         }
 
-        /* 指针：现在在右边，需要重新定位吗？
-           不需要，因为它是相对于 SVG 居中的，SVG 本身右移了，指针自然跟着右移。
-           但因为我们只显示左半边，指针（在12点方向）可能看不见。
-           我们需要把指针改成“水平指向左边” (9点钟方向) 看起来更酷？
-           
-           不，保持 12 点方向（向上）是最自然的 UTC 时间显示。
-           由于圆心在屏幕右侧边缘附近，12点方向的指针会在屏幕右上角边缘，看起来很合理。
-        */
-        .static-pointer {
+        /* === 45度 激光指针 === */
+        .laser-pointer-line {
             position: absolute;
-            top: 10%; /* 靠近圆周 */
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            width: 3px; /* 加粗一点 */
-            height: 60px; /* 加长 */
-            background: var(--pointer);
+            /* 长度设为半径长一点 */
+            width: 55%; 
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
             z-index: 1;
-            border-radius: 4px;
-            box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); /* 给指针加点光晕 */
+            /* 旋转逻辑：
+               -90deg 是向上 (12点)
+               -135deg 是左上 (45度方向)
+            */
+            transform-origin: left center; /* 以圆心(左端点)为轴 */
+            transform: rotate(-135deg); 
+            
+            box-shadow: 0 0 15px rgba(255, 59, 48, 0.5);
         }
         
-        .static-pointer::after {
+        /* 指针末端的文字 UTC+8 */
+        .laser-pointer-line::after {
             content: 'UTC+8';
             position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 10px; /* 在线的末端 */
+            bottom: 10px;
             font-size: 14px;
             font-weight: 800;
             color: var(--pointer);
             font-family: 'JetBrains Mono', monospace;
-            white-space: nowrap;
-            text-shadow: 0 0 10px rgba(255, 59, 48, 0.3);
+            transform: rotate(180deg); /* 文字矫正，或者不转 */
+            /* 让文字水平显示，稍微复杂点，不如直接用绝对定位 */
         }
 
-        /* === 前景内容 === */
+        /* === 前景内容容器 === */
         .container {
             width: 100%;
             max-width: 380px;
@@ -142,31 +133,34 @@
             min-height: 100%;
             position: relative;
             z-index: 10;
-            
-            /* 在电脑端，因为右边有时钟，我们把内容稍微往左偏一点，保持平衡 */
-            margin-right: 0; 
             transition: margin 0.3s;
         }
 
-        /* 电脑端适配：内容左移，避让大时钟 */
+        /* 电脑端适配：极大化 */
         @media (min-width: 1024px) {
+            .giant-clock-wrapper {
+                width: 180vh;  /* 变得极其巨大 */
+                height: 180vh;
+            }
+            
+            /* 内容稍微往左上角避让一下，或者居中即可 */
             .container {
-                margin-right: 20vw; /* 内容往左挪，把右边留给大时钟 */
-                max-width: 440px;
+                max-width: 460px;
+                /* margin-right: 10vw; */ 
             }
         }
 
-        /* 顶部切换按钮 */
+        /* 顶部切换按钮 (左上角) */
         .theme-toggle {
             position: absolute;
             top: 30px;
-            left: 30px; /* 改到左上角！因为右上角被时钟占了 */
+            left: 30px;
             width: 44px;
             height: 44px;
             border-radius: 50%;
             border: 1px solid var(--border);
-            background: rgba(255,255,255,0.1); /* 微透明 */
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.01);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -175,7 +169,6 @@
             transition: all 0.2s;
             z-index: 100;
         }
-        
         .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
         /* 头部 */
@@ -184,12 +177,12 @@
             display: flex;
             flex-direction: column; 
             gap: 16px;
-            /* 电脑上左对齐，手机上居中 */
-            text-align: center; 
+            text-align: center;
         }
+        /* 电脑上左对齐 */
         @media (min-width: 1024px) {
             .header { text-align: left; align-items: flex-start; }
-            .avatar { margin: 0; } /* 头像不居中 */
+            .avatar { margin: 0; }
         }
 
         .avatar {
@@ -212,7 +205,7 @@
         .grid { display: flex; flex-direction: column; gap: 14px; }
 
         .card {
-            background: rgba(255, 255, 255, 0.6); /* 更透明，透出背景 */
+            background: rgba(255, 255, 255, 0.65);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 20px 24px;
@@ -223,13 +216,13 @@
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            backdrop-filter: blur(20px); /* 强毛玻璃 */
+            backdrop-filter: blur(20px);
         }
         
-        [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.6); }
+        [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.65); }
 
         .card:active { transform: scale(0.98); }
-        .card:hover { border-color: var(--text-main); background: var(--card-bg); } /* 悬停变实心 */
+        .card:hover { border-color: var(--text-main); background: var(--card-bg); }
 
         .card.featured { padding: 24px 24px; }
         .card-content { display: flex; flex-direction: column; gap: 4px; }
@@ -258,6 +251,7 @@
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             background: var(--toast-bg);
+            backdrop-filter: blur(10px);
             color: var(--toast-text);
             padding: 10px 24px;
             border-radius: 30px;
@@ -274,7 +268,8 @@
 <body>
 
     <div class="giant-clock-wrapper">
-        <div class="static-pointer"></div>
+        <div class="laser-pointer-line"></div>
+        
         <svg class="clock-svg" viewBox="0 0 500 500">
             <g class="dial-ring hour-ring" id="hourRing">
                 <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1.5" />
@@ -349,7 +344,7 @@
     <div class="toast" id="toast">Copied to clipboard</div>
 
     <script>
-        // === 1. 构建时钟 (SVG) ===
+        // === 1. SVG 生成逻辑 (保持不变) ===
         const svgNS = "http://www.w3.org/2000/svg";
         
         function createText(x, y, content, size, color, weight="500") {
@@ -423,21 +418,27 @@
             secGroup.appendChild(line);
         }
 
-        // === 2. 逻辑 ===
+        // === 2. 核心逻辑：带偏移的 UTC+8 校准 ===
         function updateClock() {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const sgTime = new Date(utc + (3600000 * 8)); // 锁定 UTC+8
+            const sgTime = new Date(utc + (3600000 * 8));
 
             const h = sgTime.getHours();
             const m = sgTime.getMinutes();
             const s = sgTime.getSeconds();
             const ms = sgTime.getMilliseconds();
             
-            const secDeg = -1 * ((s + ms/1000) * 6);
-            const minDeg = -1 * ((m + s/60) * 6);
+            // 核心修正：
+            // 因为指针在 -45度 (-135deg CSS旋转)，
+            // 所以转盘需要额外旋转 -45度，才能让当前时间对准那个斜线。
+            // 原始逻辑是 0度对准 12点。现在 12点在 -45度。
+            const OFFSET = -45; 
+
+            const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
+            const minDeg = -1 * ((m + s/60) * 6) + OFFSET;
             const h12 = h % 12 || 12;
-            const hourDeg = -1 * ((h12 + m/60) * 30);
+            const hourDeg = -1 * ((h12 + m/60) * 30) + OFFSET;
 
             document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
             document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
@@ -446,7 +447,7 @@
         }
         requestAnimationFrame(updateClock);
 
-        // === 3. 功能 ===
+        // === 3. 其他 ===
         function copyEmail() {
             navigator.clipboard.writeText("ME@QQ.SG").then(() => {
                 const toast = document.getElementById('toast');
