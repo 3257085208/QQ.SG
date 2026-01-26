@@ -1,0 +1,19 @@
+{
+  "caches": [
+    {
+      "source": "/index.html",
+      "cacheTtl": 31536000
+    }
+  ],
+  "headers": [
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "max-age=31536000"
+        }
+      ]
+    }
+  ]
+}
