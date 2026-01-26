@@ -7,12 +7,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* === 浅色模式变量 (默认) === */
             --bg: #FAFAFA;
             --card-bg: #FFFFFF;
             --text-main: #111111;
             --text-sub: #666666;
-            --text-legal: #999999; /* 专门给免责声明用的浅色 */
+            --text-legal: #CCCCCC;
             --border: #E5E5E5;
+            --icon-color: #111111;
+            --toast-bg: #000000;
+            --toast-text: #FFFFFF;
+        }
+
+        /* === 深色模式变量 === */
+        [data-theme="dark"] {
+            --bg: #000000;
+            --card-bg: #111111;
+            --text-main: #FFFFFF;
+            --text-sub: #888888;
+            --text-legal: #444444;
+            --border: #222222;
+            --icon-color: #FFFFFF;
+            --toast-bg: #FFFFFF;
+            --toast-text: #000000;
         }
 
         body {
@@ -21,12 +38,13 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100dvh;        /* 完美适配移动端高度 */
-            overflow: hidden;      /* 禁止滚动 */
+            height: 100dvh;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             overscroll-behavior: none;
+            transition: background-color 0.3s ease, color 0.3s ease; /* 丝滑切换动画 */
         }
 
         .container {
@@ -36,39 +54,74 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            justify-content: center;
+            min-height: 100%;
+            position: relative;
+        }
+
+        /* === 主题切换按钮 (右上角) === */
+        .theme-toggle {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--icon-color);
+            transition: all 0.2s;
+            z-index: 100;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .theme-toggle:active {
+            transform: scale(0.9);
+            background-color: var(--card-bg);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 1.5; /* 极细线条 */
         }
 
         /* 头部区域 */
         .header {
-            margin-bottom: 32px;
+            margin-bottom: 36px;
             display: flex;
             flex-direction: column; 
             gap: 16px;
         }
 
         .avatar {
-            width: 64px;
-            height: 64px;
+            width: 60px;
+            height: 60px;
             border-radius: 12px;
             background-image: url('https://github.com/3257085208.png');
             background-size: cover;
             background-position: center;
-            background-color: #eee;
+            background-color: var(--card-bg);
             border: 1px solid var(--border);
         }
 
         .identity h1 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             margin: 0 0 6px 0;
             letter-spacing: -0.5px;
         }
 
         .identity p {
-            font-size: 15px; /* 稍微调大一点，更清晰 */
+            font-size: 14px;
             color: var(--text-sub);
             margin: 0;
-            line-height: 1.4;
+            line-height: 1.5;
+            opacity: 0.8;
         }
 
         /* 列表区域 */
@@ -82,10 +135,10 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 18px 20px;
+            padding: 16px 20px;
             text-decoration: none;
             color: var(--text-main);
-            transition: all 0.2s ease;
+            transition: border-color 0.2s, transform 0.1s;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -93,22 +146,26 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .card:active, .card:hover {
-            border-color: #000;
+        .card:active {
+            transform: scale(0.99);
+        }
+
+        .card:hover {
+            border-color: var(--text-main); /* 悬停时边框变文字色 */
         }
 
         .card.featured {
-            padding: 22px 20px;
+            padding: 20px;
         }
 
         .card-content {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
 
         .label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-sub);
             font-weight: 600;
             text-transform: uppercase;
@@ -116,41 +173,45 @@
         }
 
         .value {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             font-family: 'Inter', monospace;
         }
 
         .arrow {
-            color: #ddd;
-            font-size: 18px;
+            color: var(--border); /* 箭头颜色跟随边框变量，深色模式自动变暗 */
+            font-size: 16px;
             transition: color 0.2s;
         }
         
         .card:hover .arrow {
-            color: #000;
+            color: var(--text-main);
         }
 
-        /* 底部版权区域 - 专门优化布局 */
+        /* === 底部区域：绝对居中对称 === */
         footer {
-            margin-top: 48px;
-            padding-top: 24px;
-            border-top: 1px solid var(--border);
+            margin-top: 60px;
             display: flex;
-            flex-direction: column; /* 改为垂直排列，放下长句子 */
-            gap: 8px;
+            flex-direction: column;
+            align-items: center; /* 核心：居中对齐 */
+            text-align: center;  /* 核心：文字居中 */
+            gap: 12px;
         }
 
-        .copyright {
+        .copyright-row {
             font-size: 12px;
             color: var(--text-sub);
-            font-weight: 500;
+            opacity: 0.8;
+            letter-spacing: 0.5px;
         }
 
+        /* 免责声明 */
         .disclaimer {
-            font-size: 11px; /* 字号稍微小一点 */
-            color: var(--text-legal); /* 颜色更淡，不喧宾夺主 */
+            font-size: 10px;
+            color: var(--text-legal);
             line-height: 1.4;
+            max-width: 80%; /* 防止文字太长一行撑满，限制宽度更美观 */
+            opacity: 0.5;
         }
 
         /* 提示条 */
@@ -159,17 +220,16 @@
             bottom: 40px;
             left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: #111;
-            color: #fff;
-            padding: 10px 24px;
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            padding: 8px 20px;
             border-radius: 30px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             opacity: 0;
             pointer-events: none;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            white-space: nowrap;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         
         .toast.show {
@@ -182,6 +242,9 @@
 
     <div class="container">
         
+        <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme">
+            </button>
+
         <div class="header">
             <div class="avatar"></div>
             <div class="identity">
@@ -197,9 +260,9 @@
                     <span class="label">Primary Email</span>
                     <span class="value">ME@QQ.SG</span>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3;">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2-2v1"></path>
                 </svg>
             </div>
 
@@ -211,7 +274,7 @@
                 <span class="arrow">→</span>
             </a>
 
-            <div class="card" style="opacity: 0.5; cursor: default;">
+            <div class="card" style="opacity: 0.4; cursor: default;">
                 <div class="card-content">
                     <span class="label">Project</span>
                     <span class="value">Website Coming Soon</span>
@@ -221,15 +284,18 @@
         </div>
 
         <footer>
-            <div class="copyright">© 2026 NKX</div>
-            <div class="disclaimer">QQ.SG has nothing to do with Tencent Group.</div>
+            <div class="copyright-row">
+                © 2026 NKX &nbsp;·&nbsp; QQ.SG
+            </div>
+            <div class="disclaimer">Disclaimer: QQ.SG has nothing to do with Tencent Group.</div>
         </footer>
 
     </div>
 
-    <div class="toast" id="toast">Copied to clipboard</div>
+    <div class="toast" id="toast">Copied</div>
 
     <script>
+        // === 1. 复制功能 ===
         function copyEmail() {
             navigator.clipboard.writeText("ME@QQ.SG").then(() => {
                 const toast = document.getElementById('toast');
@@ -239,6 +305,63 @@
                 }, 2000);
             });
         }
+
+        // === 2. 主题切换逻辑 (极简线条版) ===
+        const themeBtn = document.getElementById('themeBtn');
+        const html = document.documentElement;
+
+        // 图标 SVG 数据 (纯线条，无颜色)
+        const icons = {
+            light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`, // 太阳
+            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`, // 月亮
+            system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>` // 显示器(系统)
+        };
+
+        // 状态循环：System -> Light -> Dark -> System
+        const modes = ['system', 'light', 'dark'];
+        
+        function getStoredTheme() {
+            return localStorage.getItem('theme') || 'system';
+        }
+
+        function setTheme(mode) {
+            // 设置图标
+            themeBtn.innerHTML = icons[mode];
+            
+            // 应用主题
+            if (mode === 'system') {
+                localStorage.removeItem('theme');
+                html.removeAttribute('data-theme');
+                // 检测系统偏好
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    // 系统是深色，不需要额外操作，因为CSS里默认跟随
+                    // 但为了保证 JS 逻辑统一，这里可以让CSS处理，也可以强制加
+                }
+            } else {
+                localStorage.setItem('theme', mode);
+                html.setAttribute('data-theme', mode);
+            }
+        }
+
+        // 初始化
+        let currentMode = getStoredTheme();
+        setTheme(currentMode);
+
+        // 点击事件
+        themeBtn.addEventListener('click', () => {
+            const currentIndex = modes.indexOf(currentMode);
+            const nextIndex = (currentIndex + 1) % modes.length;
+            currentMode = modes[nextIndex];
+            setTheme(currentMode);
+        });
+
+        // 监听系统变化 (当处于 System 模式时)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                // 如果当前是 system 模式，不需要做任何事，CSS 会自动响应
+                // 这里只是为了以后可能的扩展
+            }
+        });
     </script>
 </body>
 </html>
