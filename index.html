@@ -16,8 +16,8 @@
             --border: #E5E5E5;
             --clock-line: #E0E0E0;
             --clock-text: #B0B0B0;
-            /* 修正：指针不再是显眼的红色，而是低调的深灰 */
-            --pointer: #333333; 
+            /* 指针颜色：深灰，清晰可见 */
+            --pointer: #555555; 
             --toast-bg: rgba(0,0,0,0.9);
             --toast-text: #FFFFFF;
         }
@@ -30,8 +30,8 @@
             --text-sub: #888888;
             --text-legal: #555555;
             --border: #222222;
-            --clock-line: #333333;
-            --clock-text: #555555;
+            --clock-line: #444444; 
+            --clock-text: #DDDDDD; 
             --pointer: #FFFFFF;
             --toast-bg: rgba(255,255,255,0.9);
             --toast-text: #000000;
@@ -53,7 +53,27 @@
             position: relative;
         }
 
-        /* === 1. 背景：全平台统一右下角 === */
+        /* === 1. 顶部切换按钮 (移出容器，独立定位) === */
+        .theme-toggle {
+            /* 使用 fixed 绝对定位，相对于整个窗口，而不是某个容器 */
+            position: fixed; 
+            top: 30px; 
+            right: 30px; /* 强制右上角 */
+            
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.01);
+            backdrop-filter: blur(5px);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-main);
+            transition: all 0.2s; z-index: 999; /* 层级最高 */
+        }
+        
+        .theme-toggle:active { transform: scale(0.92); background: var(--card-bg); }
+        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
+
+
+        /* === 2. 背景：巨型时钟 === */
         .giant-clock-wrapper {
             position: fixed;
             bottom: 0;
@@ -67,7 +87,7 @@
             height: 90vh;
             /* 往右下角藏，只露出左上角那部分刻度 */
             transform: translate(40%, 40%); 
-            opacity: 0.2; /* 极淡，不遮挡文字 */
+            opacity: 0.2; /* 手机端淡一点，不遮挡 */
         }
 
         /* 电脑端配置：放大，变亮 */
@@ -76,7 +96,7 @@
                 width: 150vh;
                 height: 150vh;
                 transform: translate(45%, 45%); 
-                opacity: 0.6; /* 稍微明显一点 */
+                opacity: 0.6; 
             }
         }
 
@@ -84,33 +104,38 @@
         .dial-ring { transform-origin: 50% 50%; transition: transform 1s cubic-bezier(0.2, 0, 0, 1); }
         .seconds-ring { transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); }
 
-        /* === 修正：隐形指针 === */
+        /* === 3. 修正：激光指针 (加粗、加深) === */
         .laser-pointer-line {
             position: absolute;
             top: 50%; left: 50%; 
-            width: 52%; /* 稍微超出一点点 */
-            height: 1px; /* 极细 */
+            width: 53%; 
             
-            /* 渐变虚化：从透明 -> 淡淡的颜色 */
-            background: linear-gradient(90deg, transparent 0%, transparent 20%, var(--pointer) 100%);
-            opacity: 0.3; /* 极低透明度 */
+            /* 修改：高度改为 2px，更清晰 */
+            height: 2px; 
+            
+            /* 修改：不透明度提高，渐变起点更实 */
+            background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
+            opacity: 0.8; 
             
             z-index: 1;
             transform-origin: left center;
             /* 统一指向左上角 (-135度) */
             transform: rotate(-135deg);
+            
+            /* 增加一点阴影让它浮起来 */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         .laser-pointer-line::after {
             content: 'UTC+8';
-            position: absolute; right: 0; bottom: 5px;
-            font-size: 10px; font-weight: 500; color: var(--pointer);
+            position: absolute; right: 0; bottom: 8px;
+            font-size: 11px; font-weight: 700; color: var(--pointer);
             font-family: 'JetBrains Mono', monospace;
-            opacity: 0.6;
+            opacity: 1; /* 文字完全不透明 */
             transform: rotate(180deg);
         }
 
-        /* === 2. 内容容器 === */
+        /* === 4. 内容容器 === */
         .container {
             width: 100%;
             max-width: 400px;
@@ -134,24 +159,6 @@
                 padding: 0;
             }
         }
-
-        /* === 3. 按钮归位：统一右上角 === */
-        .theme-toggle {
-            position: absolute; 
-            top: 24px; 
-            right: 24px; /* 强制靠右 */
-            left: auto;  /* 清除左侧定位 */
-            
-            width: 44px; height: 44px; border-radius: 50%;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.01);
-            backdrop-filter: blur(5px);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-main);
-            transition: all 0.2s; z-index: 100;
-        }
-
-        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
         /* 头部 */
         .header {
@@ -229,6 +236,8 @@
 </head>
 <body>
 
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
+
     <div class="giant-clock-wrapper">
         <div class="laser-pointer-line"></div>
         <svg class="clock-svg" viewBox="0 0 500 500">
@@ -249,8 +258,7 @@
     </div>
 
     <div class="container">
-        <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
-
+        
         <div class="header">
             <div class="avatar"></div>
             <div class="identity">
@@ -266,7 +274,7 @@
                     <span class="value">ME@QQ.SG</span>
                 </div>
                 <div class="icon-box" id="copyIconBox">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </div>
             </div>
 
@@ -360,11 +368,6 @@
             const sgTime = new Date(utc + (3600000 * 8));
             const h = sgTime.getHours(); const m = sgTime.getMinutes(); const s = sgTime.getSeconds(); const ms = sgTime.getMilliseconds();
             
-            // 修正角度：所有平台统一让指针指向左上角 (-135deg)
-            // 所以 12点刻度 (0度位置) 需要旋转到 -135度。
-            // 原始 12点位置是 -90deg (CSS rotate 0)。
-            // 目标位置 -135deg。
-            // 差值：-45deg。
             const OFFSET = -45;
 
             const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
