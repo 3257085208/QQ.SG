@@ -3,196 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NKX | Profile</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <title>NKX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0F0F0F; /* 深色背景，不像红色那么俗 */
-            --accent: #fff;
-            --glass: rgba(255, 255, 255, 0.1);
+            /* 极简配色：只有黑、白、灰 */
+            --bg: #FAFAFA; /* 极浅的灰白底，比纯白护眼 */
+            --card-bg: #FFFFFF;
+            --text-main: #111111;
+            --text-sub: #666666;
+            --border: #E5E5E5; /* 极细的边框 */
+            --accent: #000000; /* 强调色就是纯黑 */
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            /* 这里依然可以用你喜欢的背景图，或者保持纯色 */
-            background-image: radial-gradient(circle at 50% 30%, #2b1055 0%, #0F0F0F 70%);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* 关键：把内容撑开，像t.tt那样 */
-            color: white;
-        }
-
-        /* 1. 顶部巨大文字 (模仿“交个朋友”) */
-        .big-title-container {
-            flex: 1;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            z-index: 1;
-            padding-top: 40px;
         }
 
-        .big-text {
-            font-size: 18vw; /* 巨大字体 */
-            font-weight: 900;
-            line-height: 0.8;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.05); /* 淡淡的背景字 */
-            position: absolute;
-            top: 5%;
-            z-index: 0;
+        .container {
             width: 100%;
-            text-align: center;
-            pointer-events: none;
+            max-width: 380px; /* 限制最大宽度，防止布局散架 */
+            padding: 24px;
+            box-sizing: border-box; /* 防止边距撑破布局 */
         }
 
-        .main-hero {
-            z-index: 2;
-            text-align: center;
-            margin-top: 20px;
+        /* 1. 顶部身份区：极简排列 */
+        .header {
+            margin-bottom: 40px;
+            /* 修正布局：让头像和文字自然左对齐，不搞复杂的居中 */
+            display: flex;
+            flex-direction: column; 
+            gap: 16px;
         }
 
-        /* 头像放大 */
         .avatar {
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            border-radius: 8px; /* 稍微圆角，不要正圆，更有建筑感 */
             background-image: url('https://github.com/3257085208.png');
             background-size: cover;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            margin: 0 auto;
+            background-color: #eee;
+            border: 1px solid var(--border);
         }
 
-        .slogan {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-top: 20px;
-            letter-spacing: -1px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        .identity h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
         }
 
-        .sub-slogan {
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.6);
-            margin-top: 5px;
+        .identity p {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin: 0;
+            line-height: 1.5;
         }
 
-        /* 2. 底部导航栏 (模仿 t.tt 的底部菜单) */
-        .bottom-dock {
-            background: rgba(20, 20, 20, 0.8);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding: 20px;
-            padding-bottom: max(20px, env(safe-area-inset-bottom)); /* 适配 iPhone 底部横条 */
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr; /* 三等分 */
-            gap: 10px;
-            z-index: 10;
-        }
-
-        .dock-btn {
+        /* 2. 功能区：卡片式列表，干干净净 */
+        .grid {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255,255,255,0.05);
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 12px 0;
+            padding: 20px;
             text-decoration: none;
-            color: white;
-            transition: all 0.2s;
-            border: 1px solid transparent;
+            color: var(--text-main);
+            transition: all 0.15s ease-out; /* 快速响应，不要慢吞吞的过渡 */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
-        .dock-btn:active {
-            transform: scale(0.95);
-            background: rgba(255,255,255,0.1);
+        /* 悬停效果：只有边框变黑，极其克制 */
+        .card:active, .card:hover {
+            border-color: #000;
+            transform: translateY(-1px);
         }
 
-        .dock-icon {
-            width: 24px;
-            height: 24px;
-            margin-bottom: 5px;
-            fill: white;
+        /* 重点卡片：邮箱 */
+        .card.featured {
+            padding: 24px;
         }
 
-        .dock-text {
-            font-size: 0.75rem;
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: var(--text-sub);
             font-weight: 500;
-            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* 复制提示 */
+        .value {
+            font-size: 16px;
+            font-weight: 500;
+            font-family: 'Inter', monospace; /* 数字/邮箱用等宽字体 */
+        }
+
+        .arrow {
+            color: #ccc;
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+        
+        .card:hover .arrow {
+            color: #000;
+        }
+
+        /* 复制成功的提示：极简的小黑条 */
         .toast {
             position: fixed;
-            top: 50%;
+            bottom: 30px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            padding: 15px 25px;
-            border-radius: 30px;
-            font-size: 0.9rem;
+            transform: translateX(-50%) translateY(20px);
+            background: #000;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
             opacity: 0;
-            transition: opacity 0.3s;
             pointer-events: none;
-            z-index: 999;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
         }
 
-        /* 装饰性背景字，模仿 t.tt 的大字排版 */
-        .bg-text-top { top: 5%; left: -10%; }
-        .bg-text-bottom { bottom: 20%; right: -10%; font-size: 12vw; opacity: 0.03; }
+        /* 底部声明：不像AI生成的那么显眼，融入背景 */
+        footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
+        footer span {
+            opacity: 0.6;
+        }
+
+        /* 移动端适配修正 */
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            .header { gap: 12px; margin-bottom: 30px; }
+            .avatar { width: 56px; height: 56px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="big-text bg-text-top">NKX DEV</div>
-    
-    <div class="big-title-container">
-        <div class="main-hero">
-            <div class="avatar"></div>
-            <div class="slogan">Make Friends with Code</div>
-            <div class="sub-slogan">Digital Playground @ SG</div>
-        </div>
-    </div>
-
-    <div class="bottom-dock">
+    <div class="container">
         
-        <div class="dock-btn" onclick="copyEmail()">
-            <svg class="dock-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            <span class="dock-text">Email</span>
+        <div class="header">
+            <div class="avatar"></div>
+            <div class="identity">
+                <h1>NKX</h1>
+                <p>Digital Playground<br>based in Singapore.</p>
+            </div>
         </div>
 
-        <a href="https://github.com/3257085208" target="_blank" class="dock-btn">
-            <svg class="dock-icon" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-            <span class="dock-text">GitHub</span>
-        </a>
+        <div class="grid">
+            
+            <div class="card featured" onclick="copyEmail()">
+                <div class="card-content">
+                    <span class="label">Primary Email</span>
+                    <span class="value">ME@QQ.SG</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+            </div>
 
-        <div class="dock-btn" style="opacity: 0.5;">
-            <svg class="dock-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-            <span class="dock-text">Website</span>
+            <a href="https://github.com/3257085208" target="_blank" class="card">
+                <div class="card-content">
+                    <span class="label">Code</span>
+                    <span class="value">GitHub Profile</span>
+                </div>
+                <span class="arrow">→</span>
+            </a>
+
+            <div class="card" style="opacity: 0.5; cursor: default;">
+                <div class="card-content">
+                    <span class="label">Project</span>
+                    <span class="value">Website Coming Soon</span>
+                </div>
+            </div>
+
         </div>
+
+        <footer>
+            <span>© 2026 NKX</span>
+            <span>QQ.SG</span>
+        </footer>
 
     </div>
 
-    <div class="toast" id="toast">Copied Email!</div>
+    <div class="toast" id="toast">Email Copied</div>
 
     <script>
         function copyEmail() {
             navigator.clipboard.writeText("ME@QQ.SG").then(() => {
                 const toast = document.getElementById('toast');
-                toast.style.opacity = '1';
+                toast.classList.add('show');
                 setTimeout(() => {
-                    toast.style.opacity = '0';
+                    toast.classList.remove('show');
                 }, 2000);
             });
         }
