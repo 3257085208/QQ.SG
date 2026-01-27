@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NKX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             /* === 浅色模式 === */
@@ -42,6 +41,7 @@
             padding: 0;
             background-color: var(--bg);
             color: var(--text-main);
+            /* 2. 应用 Nunito 字体 */
             font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
             height: 100dvh;
             overflow: hidden;
@@ -53,9 +53,11 @@
             position: relative;
         }
 
-        /* === 顶部按钮 === */
+        /* === 顶部切换按钮 === */
         .theme-toggle {
-            position: fixed; top: 30px; right: 30px;
+            position: fixed; 
+            top: 30px; 
+            right: 30px;
             width: 44px; height: 44px; border-radius: 50%;
             border: 1px solid var(--border);
             background: rgba(255,255,255,0.01);
@@ -65,17 +67,23 @@
             transition: all 0.2s; z-index: 999;
         }
         .theme-toggle:active { transform: scale(0.92); background: var(--card-bg); }
-        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 2; }
+        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
-        /* === 巨型时钟 === */
+        /* === 背景：巨型时钟 === */
         .giant-clock-wrapper {
-            position: fixed; bottom: 0; right: 0; z-index: 0; pointer-events: none;
+            position: fixed;
+            bottom: 0; right: 0; z-index: 0;
+            pointer-events: none;
             transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
-            width: 90vh; height: 90vh; transform: translate(40%, 40%); opacity: 0.2;
+            width: 90vh; height: 90vh;
+            transform: translate(40%, 40%); 
+            opacity: 0.2;
         }
         @media (min-width: 1024px) {
             .giant-clock-wrapper {
-                width: 150vh; height: 150vh; transform: translate(45%, 45%); opacity: 0.6; 
+                width: 150vh; height: 150vh;
+                transform: translate(45%, 45%); 
+                opacity: 0.6; 
             }
         }
         .clock-svg { width: 100%; height: 100%; overflow: visible; }
@@ -84,13 +92,17 @@
 
         /* 激光指针 */
         .laser-pointer-line {
-            position: absolute; top: 50%; left: 50%; width: 53%; height: 2px;
+            position: absolute;
+            top: 50%; left: 50%; width: 53%; height: 2px; 
             background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
-            opacity: 0.8; z-index: 1; transform-origin: left center;
-            transform: rotate(-135deg); box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            opacity: 0.8; z-index: 1;
+            transform-origin: left center;
+            transform: rotate(-135deg);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .laser-pointer-line::after {
-            content: 'UTC+8'; position: absolute; right: 0; bottom: 8px;
+            content: 'UTC+8';
+            position: absolute; right: 0; bottom: 8px;
             font-size: 11px; font-weight: 700; color: var(--pointer);
             font-family: 'JetBrains Mono', monospace;
             opacity: 1; transform: rotate(180deg);
@@ -129,7 +141,7 @@
         .identity p { font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; }
         @media (min-width: 1024px) { .identity h1 { font-size: 48px; letter-spacing: -1px; } .identity p { font-size: 18px; } }
 
-        /* 卡片 */
+        /* 卡片网格 */
         .grid { display: flex; flex-direction: column; gap: 14px; width: 100%; }
         @media (min-width: 1024px) { .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
         .card {
@@ -144,42 +156,24 @@
         .card:active { transform: scale(0.98); }
         .card.featured { padding: 24px 24px; }
         @media (min-width: 1024px) { .card.featured { grid-column: span 2; padding: 32px; } .card.featured .value { font-size: 24px; } }
-        
         .card-content { display: flex; flex-direction: column; gap: 4px; }
         .label { font-size: 11px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .value { font-size: 17px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
 
-        /* Icon */
+        /* 图标样式 */
         .icon-box { color: var(--icon-normal); transition: color 0.2s; }
         .card:hover .icon-box { color: var(--icon-active); }
         .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
-        .icon-box svg { stroke-width: 2.5; }
+        /* 3. 统一设置所有 SVG 图标的线条粗细为 2px (除了复制图标) */
+        .icon-box svg { stroke-width: 2; }
 
-        /* Footer */
-        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; }
+        /* 底部 */
+        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
         @media (min-width: 1024px) { footer { align-items: flex-start; text-align: left; margin-top: 40px; } }
-        
         .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
-        
-        /* 修正后的免责声明样式 */
-        .disclaimer { 
-            font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; 
-            max-width: 320px; /* 稍微放宽一点，让长句子能排开 */
-        }
+        .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; max-width: 300px; }
 
-        /* 计数器样式 */
-        .visitor-counter {
-            font-size: 10px; color: var(--text-legal); opacity: 0.6; margin-top: 2px;
-            font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 6px;
-        }
-        .loading-spinner {
-            width: 8px; height: 8px; border: 1.5px solid var(--text-legal);
-            border-top-color: transparent; border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Toast */
+        /* 提示条 */
         .toast {
             position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
             background: var(--toast-bg); backdrop-filter: blur(10px); color: var(--toast-text);
@@ -229,7 +223,7 @@
                     <span class="value">ME@QQ.SG</span>
                 </div>
                 <div class="icon-box" id="copyIconBox">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </div>
             </div>
 
@@ -243,7 +237,7 @@
                 </div>
             </a>
 
-            <a href="https://聶.net" target="_blank" class="card">
+            <a href="https://聶.NET" target="_blank" class="card">
                 <div class="card-content">
                     <span class="label">Blog</span>
                     <span class="value">聶.NET</span>
@@ -256,14 +250,7 @@
 
         <footer>
             <div class="copyright-row">© 2026 NKX · QQ.SG</div>
-            
-            <div class="visitor-counter" id="visitorDisplay">
-                <div class="loading-spinner"></div> Visits: <span id="countVal" style="font-weight:700">...</span>
-            </div>
-
-            <div class="disclaimer">
-                QQ.SG has no connection with Tencent Group, QQ.COM, or Tencent Holdings.
-            </div>
+            <div class="disclaimer">QQ.SG has no connection with Tencent Group, QQ.COM, or Tencent Holdings.</div>
         </footer>
     </div>
 
@@ -289,10 +276,12 @@
 
         const hourGroup = document.getElementById('hourRing');
         for(let i=1; i<=12; i++) {
-            const angle = (i * 30 - 90) * (Math.PI / 180); const r = 120;
+            const angle = (i * 30 - 90) * (Math.PI / 180);
+            const r = 120;
             const x = 250 + r * Math.cos(angle); const y = 250 + r * Math.sin(angle);
             const text = createText(x, y, i, 18, "var(--text-main)", "800");
-            text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`); hourGroup.appendChild(text);
+            text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
+            hourGroup.appendChild(text);
         }
 
         const minGroup = document.getElementById('minuteRing');
@@ -307,7 +296,8 @@
                 const rText = 145;
                 const tx = 250 + rText * Math.cos(angle); const ty = 250 + rText * Math.sin(angle);
                 const text = createText(tx, ty, i === 0 ? "60" : i, 12, "var(--clock-text)");
-                text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`); minGroup.appendChild(text);
+                text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`);
+                minGroup.appendChild(text);
             }
         }
 
@@ -326,11 +316,14 @@
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const sgTime = new Date(utc + (3600000 * 8));
             const h = sgTime.getHours(); const m = sgTime.getMinutes(); const s = sgTime.getSeconds(); const ms = sgTime.getMilliseconds();
+            
             const OFFSET = -45;
+
             const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
             const minDeg = -1 * ((m + s/60) * 6) + OFFSET;
             const h12 = h % 12 || 12;
             const hourDeg = -1 * ((h12 + m/60) * 30) + OFFSET;
+            
             document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
             document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
             document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
@@ -343,6 +336,7 @@
                 const toast = document.getElementById('toast');
                 const iconBox = document.getElementById('copyIconBox');
                 const originalIcon = iconBox.innerHTML;
+                // 复制成功后的图标也加粗
                 iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                 iconBox.classList.add('success'); toast.classList.add('show');
                 setTimeout(() => { toast.classList.remove('show'); iconBox.classList.remove('success'); iconBox.innerHTML = originalIcon; }, 2000);
@@ -367,28 +361,6 @@
         themeBtn.addEventListener('click', () => {
             currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length]; setTheme(currentMode);
         });
-
-        // === 极速计数器 (CounterAPI) ===
-        // 模式: /up (每次调用都会+1)
-        const NAMESPACE = 'nkx_profile_v1';
-        const KEY = 'visits_pv'; // 改个 Key，重新开始计数，或者沿用 visits
-        
-        const countValEl = document.getElementById('countVal');
-        const spinnerEl = document.querySelector('.loading-spinner');
-
-        // 直接调用 UP 接口 (Hit Counter)
-        fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${KEY}/up`)
-            .then(res => res.json())
-            .then(data => {
-                // 隐藏 Loading，显示数字
-                spinnerEl.style.display = 'none';
-                countValEl.innerText = data.count;
-            })
-            .catch(err => {
-                console.error(err);
-                spinnerEl.style.display = 'none';
-                countValEl.innerText = "Error";
-            });
     </script>
 </body>
 </html>
