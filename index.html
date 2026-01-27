@@ -6,8 +6,6 @@
     <title>NKX</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
     <style>
         :root {
             /* === 浅色模式 === */
@@ -55,7 +53,7 @@
             position: relative;
         }
 
-        /* === 顶部按钮 (固定右上角) === */
+        /* === 顶部按钮 === */
         .theme-toggle {
             position: fixed; top: 30px; right: 30px;
             width: 44px; height: 44px; border-radius: 50%;
@@ -69,16 +67,14 @@
         .theme-toggle:active { transform: scale(0.92); background: var(--card-bg); }
         .theme-toggle svg { width: 20px; height: 20px; stroke-width: 2; }
 
-        /* === 巨型时钟 (完美定位) === */
+        /* === 巨型时钟 === */
         .giant-clock-wrapper {
             position: fixed; bottom: 0; right: 0; z-index: 0; pointer-events: none;
             transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
-            /* 手机端: 淡化, 位于右下角 */
             width: 90vh; height: 90vh; transform: translate(40%, 40%); opacity: 0.2;
         }
         @media (min-width: 1024px) {
             .giant-clock-wrapper {
-                /* 电脑端: 放大, 加亮, 位于右下角 */
                 width: 150vh; height: 150vh; transform: translate(45%, 45%); opacity: 0.6; 
             }
         }
@@ -91,8 +87,7 @@
             position: absolute; top: 50%; left: 50%; width: 53%; height: 2px;
             background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
             opacity: 0.8; z-index: 1; transform-origin: left center;
-            transform: rotate(-135deg); /* 指向左上角 */
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transform: rotate(-135deg); box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .laser-pointer-line::after {
             content: 'UTC+8'; position: absolute; right: 0; bottom: 8px;
@@ -154,32 +149,33 @@
         .label { font-size: 11px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .value { font-size: 17px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
 
-        /* 图标 (加粗修正) */
+        /* Icon */
         .icon-box { color: var(--icon-normal); transition: color 0.2s; }
         .card:hover .icon-box { color: var(--icon-active); }
         .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
         .icon-box svg { stroke-width: 2.5; }
 
-        /* 底部 */
-        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
+        /* Footer */
+        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; }
         @media (min-width: 1024px) { footer { align-items: flex-start; text-align: left; margin-top: 40px; } }
         
         .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
-        .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; max-width: 300px; }
+        
+        /* 修正后的免责声明样式 */
+        .disclaimer { 
+            font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; 
+            max-width: 320px; /* 稍微放宽一点，让长句子能排开 */
+        }
 
-        /* === 访客计数器 ( UV 去重版) === */
+        /* 计数器样式 */
         .visitor-counter {
             font-size: 10px; color: var(--text-legal); opacity: 0.6; margin-top: 2px;
             font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 6px;
         }
-        
-        /* 原始 Busuanzi 容器必须存在但隐藏，脚本会自动往里面填数 */
-        #busuanzi_container_site_uv { display: none !important; }
-        
         .loading-spinner {
-            width: 10px; height: 10px; border: 1.5px solid var(--text-legal);
+            width: 8px; height: 8px; border: 1.5px solid var(--text-legal);
             border-top-color: transparent; border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -217,11 +213,12 @@
     </div>
 
     <div class="container">
+        
         <div class="header">
             <div class="avatar"></div>
             <div class="identity">
                 <h1>NKX</h1>
-                <p>Digital Playground based in Singapore.</p>
+                <p>This is the channel of MarkNKX.</p>
             </div>
         </div>
 
@@ -232,7 +229,7 @@
                     <span class="value">ME@QQ.SG</span>
                 </div>
                 <div class="icon-box" id="copyIconBox">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </div>
             </div>
 
@@ -249,7 +246,7 @@
             <a href="https://聶.net" target="_blank" class="card">
                 <div class="card-content">
                     <span class="label">Blog</span>
-                    <span class="value">聶.net</span>
+                    <span class="value">聶.NET</span>
                 </div>
                 <div class="icon-box">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
@@ -259,22 +256,20 @@
 
         <footer>
             <div class="copyright-row">© 2026 NKX · QQ.SG</div>
-            <div class="disclaimer">Disclaimer: QQ.SG has nothing to do with Tencent Group.</div>
             
             <div class="visitor-counter" id="visitorDisplay">
-                <div class="loading-spinner"></div> Visitor No. <span id="countVal">...</span>
+                <div class="loading-spinner"></div> Visits: <span id="countVal" style="font-weight:700">...</span>
             </div>
-            
-            <span id="busuanzi_container_site_uv" style="display:none !important;">
-                <span id="busuanzi_value_site_uv"></span>
-            </span>
+
+            <div class="disclaimer">
+                QQ.SG has no connection with Tencent Group, QQ.COM, or Tencent Holdings.
+            </div>
         </footer>
     </div>
 
     <div class="toast" id="toast">Copied to clipboard</div>
 
     <script>
-        // 时钟逻辑
         const svgNS = "http://www.w3.org/2000/svg";
         function createText(x, y, content, size, color, weight="500") {
             const text = document.createElementNS(svgNS, "text");
@@ -373,18 +368,27 @@
             currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length]; setTheme(currentMode);
         });
 
-        // === 监控不蒜子加载并更新 UI ===
-        // 注意：本地 file:// 或 localhost 测试时，不蒜子可能失效或每次都增加，这是正常的。
-        // 请上传到 Vercel/Github 后测试。
-        const checkBusuanzi = setInterval(() => {
-            const uvSpan = document.getElementById('busuanzi_value_site_uv');
-            if (uvSpan && uvSpan.textContent.length > 0) {
-                clearInterval(checkBusuanzi);
-                // 抓取数字并显示
-                const num = uvSpan.textContent;
-                document.getElementById('visitorDisplay').innerHTML = `Visitor No. <span style="font-weight:700">${num}</span>`;
-            }
-        }, 500);
+        // === 极速计数器 (CounterAPI) ===
+        // 模式: /up (每次调用都会+1)
+        const NAMESPACE = 'nkx_profile_v1';
+        const KEY = 'visits_pv'; // 改个 Key，重新开始计数，或者沿用 visits
+        
+        const countValEl = document.getElementById('countVal');
+        const spinnerEl = document.querySelector('.loading-spinner');
+
+        // 直接调用 UP 接口 (Hit Counter)
+        fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${KEY}/up`)
+            .then(res => res.json())
+            .then(data => {
+                // 隐藏 Loading，显示数字
+                spinnerEl.style.display = 'none';
+                countValEl.innerText = data.count;
+            })
+            .catch(err => {
+                console.error(err);
+                spinnerEl.style.display = 'none';
+                countValEl.innerText = "Error";
+            });
     </script>
 </body>
 </html>
