@@ -4,10 +4,7 @@
       "source": "/(sitemap\\.xml|rss\\.xml|feed\\.xml|robots\\.txt|manifest\\.json)$",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0" },
-        {
-          "key": "CDN-Cache-Control",
-          "value": "public, s-maxage=600, stale-while-revalidate=3600"
-        }
+        { "key": "CDN-Cache-Control", "value": "public, s-maxage=600, stale-while-revalidate=3600" }
       ]
     },
     {
@@ -20,10 +17,7 @@
       "source": "/(.*)$",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0" },
-        {
-          "key": "CDN-Cache-Control",
-          "value": "public, s-maxage=3600, stale-while-revalidate=86400"
-        }
+        { "key": "CDN-Cache-Control", "value": "public, s-maxage=3600, stale-while-revalidate=86400" }
       ]
     }
   ]
