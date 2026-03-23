@@ -1,367 +1,1088 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NKX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QQ.SG — Orbit Console Concept</title>
+  <style>
+    :root {
+      --bg: #f3f3f1;
+      --panel: rgba(255,255,255,.42);
+      --line: rgba(20,20,20,.08);
+      --line-strong: rgba(20,20,20,.18);
+      --text: #171717;
+      --muted: #6f6f6b;
+      --soft: #a2a29d;
+      --accent: #181818;
+      --ring-size: min(84vw, 1120px);
+      --rotation: -18deg;
+      --active-angle: 0deg;
+      --shadow: 0 14px 40px rgba(0, 0, 0, .035);
+      --radius: 26px;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+    }
 
-    <style>
-        :root {
-            /* === 浅色模式 === */
-            --bg: #FAFAFA;
-            --card-bg: #FFFFFF;
-            --text-main: #111111;
-            --text-sub: #666666;
-            --text-legal: #999999;
-            --border: #E5E5E5;
-            --clock-line: #E0E0E0;
-            --clock-text: #B0B0B0;
-            --pointer: #555555; 
-            --toast-bg: rgba(0,0,0,0.9);
-            --toast-text: #FFFFFF;
-        }
+    * { box-sizing: border-box; }
 
-        /* === 深色模式 === */
-        [data-theme="dark"] {
-            --bg: #000000;
-            --card-bg: #111111;
-            --text-main: #FFFFFF;
-            --text-sub: #888888;
-            --text-legal: #555555;
-            --border: #222222;
-            --clock-line: #444444; 
-            --clock-text: #DDDDDD; 
-            --pointer: #FFFFFF;
-            --toast-bg: rgba(255,255,255,0.9);
-            --toast-text: #000000;
-        }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.7), transparent 32%),
+        radial-gradient(circle at 80% 90%, rgba(255,255,255,.55), transparent 28%),
+        linear-gradient(180deg, #f5f5f3 0%, #f1f1ef 100%);
+      overflow: hidden;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg);
-            color: var(--text-main);
-            /* 2. 应用 Nunito 字体 */
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100dvh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overscroll-behavior: none;
-            transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
-        }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,0,0,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.018) 1px, transparent 1px);
+      background-size: 96px 96px;
+      mask-image: radial-gradient(circle at center, black, transparent 82%);
+      opacity: .28;
+    }
 
-        /* === 顶部切换按钮 === */
-        .theme-toggle {
-            position: fixed; 
-            top: 30px; 
-            right: 30px;
-            width: 44px; height: 44px; border-radius: 50%;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.01);
-            backdrop-filter: blur(5px);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-main);
-            transition: all 0.2s; z-index: 999;
-        }
-        .theme-toggle:active { transform: scale(0.92); background: var(--card-bg); }
-        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
+    .app {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(340px, 470px) 1fr;
+      gap: clamp(28px, 3vw, 56px);
+      padding: clamp(24px, 3vw, 44px);
+      isolation: isolate;
+    }
 
-        /* === 背景：巨型时钟 === */
-        .giant-clock-wrapper {
-            position: fixed;
-            bottom: 0; right: 0; z-index: 0;
-            pointer-events: none;
-            transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
-            width: 90vh; height: 90vh;
-            transform: translate(40%, 40%); 
-            opacity: 0.2;
-        }
-        @media (min-width: 1024px) {
-            .giant-clock-wrapper {
-                width: 150vh; height: 150vh;
-                transform: translate(45%, 45%); 
-                opacity: 0.6; 
-            }
-        }
-        .clock-svg { width: 100%; height: 100%; overflow: visible; }
-        .dial-ring { transform-origin: 50% 50%; transition: transform 1s cubic-bezier(0.2, 0, 0, 1); }
-        .seconds-ring { transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); }
+    .left {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      max-width: 470px;
+    }
 
-        /* 激光指针 */
-        .laser-pointer-line {
-            position: absolute;
-            top: 50%; left: 50%; width: 53%; height: 2px; 
-            background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
-            opacity: 0.8; z-index: 1;
-            transform-origin: left center;
-            transform: rotate(-135deg);
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .laser-pointer-line::after {
-            content: 'UTC+8';
-            position: absolute; right: 0; bottom: 8px;
-            font-size: 11px; font-weight: 700; color: var(--pointer);
-            font-family: 'JetBrains Mono', monospace;
-            opacity: 1; transform: rotate(180deg);
-        }
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 8px;
+    }
 
-        /* === 内容容器 === */
-        .container {
-            width: 100%; max-width: 400px; padding: 24px;
-            box-sizing: border-box; display: flex; flex-direction: column;
-            justify-content: center; min-height: 100%; position: relative; z-index: 10;
-        }
-        @media (min-width: 1024px) {
-            .container {
-                position: absolute; left: 10vw; top: 50%;
-                transform: translateY(-50%); max-width: 600px; padding: 0;
-            }
-        }
+    .avatar {
+      width: 84px;
+      height: 84px;
+      border-radius: 24px;
+      border: 1px solid rgba(20,20,20,.07);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), rgba(255,255,255,.35) 40%, rgba(255,255,255,0) 70%),
+        linear-gradient(160deg, rgba(0,0,0,.10), rgba(0,0,0,.02)),
+        linear-gradient(180deg, #efefec, #e7e7e3);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
 
-        /* 头部 */
-        .header {
-            margin-bottom: 40px; display: flex; flex-direction: column; gap: 20px;
-            text-align: center; width: 100%;
-        }
-        @media (min-width: 1024px) {
-            .header { flex-direction: row; align-items: center; text-align: left; gap: 24px; margin-bottom: 50px; }
-        }
-        .avatar {
-            width: 80px; height: 80px; border-radius: 20px;
-            background-image: url('https://img.i8-mc.cn/file/J0NJk8wH.jpeg');
-            background-size: cover; background-position: center;
-            background-color: var(--card-bg); border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin: 0 auto;
-        }
-        @media (min-width: 1024px) { .avatar { margin: 0; width: 100px; height: 100px; border-radius: 24px; } }
-        .identity h1 { font-size: 32px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px; }
-        .identity p { font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; }
-        @media (min-width: 1024px) { .identity h1 { font-size: 48px; letter-spacing: -1px; } .identity p { font-size: 18px; } }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-        /* 卡片网格 */
-        .grid { display: flex; flex-direction: column; gap: 14px; width: 100%; }
-        @media (min-width: 1024px) { .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
-        .card {
-            background: rgba(255, 255, 255, 0.65); border: 1px solid var(--border);
-            border-radius: 18px; padding: 20px 24px; text-decoration: none;
-            color: var(--text-main); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; backdrop-filter: blur(20px);
-        }
-        [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.65); }
-        .card:hover { border-color: var(--text-main); background: var(--card-bg); transform: translateY(-2px); }
-        .card:active { transform: scale(0.98); }
-        .card.featured { padding: 24px 24px; }
-        @media (min-width: 1024px) { .card.featured { grid-column: span 2; padding: 32px; } .card.featured .value { font-size: 24px; } }
-        .card-content { display: flex; flex-direction: column; gap: 4px; }
-        .label { font-size: 11px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .value { font-size: 17px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .avatar span {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: rgba(0,0,0,.68);
+    }
 
-        /* 图标样式 */
-        .icon-box { color: var(--icon-normal); transition: color 0.2s; }
-        .card:hover .icon-box { color: var(--icon-active); }
-        .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
-        /* 3. 统一设置所有 SVG 图标的线条粗细为 2px (除了复制图标) */
-        .icon-box svg { stroke-width: 2; }
+    .identity h1 {
+      margin: 0 0 6px;
+      font-size: clamp(2.4rem, 4vw, 3.6rem);
+      line-height: .96;
+      letter-spacing: -.06em;
+      font-weight: 800;
+    }
 
-        /* 底部 */
-        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
-        @media (min-width: 1024px) { footer { align-items: flex-start; text-align: left; margin-top: 40px; } }
-        .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
-        .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; max-width: 300px; }
+    .identity p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
 
-        /* 提示条 */
-        .toast {
-            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--toast-bg); backdrop-filter: blur(10px); color: var(--toast-text);
-            padding: 10px 24px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
-            transition: all 0.4s; z-index: 200;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    </style>
+    .panel {
+      backdrop-filter: blur(8px);
+      background: var(--panel);
+      border: 1px solid rgba(20,20,20,.06);
+      border-radius: var(--radius);
+      padding: 22px 22px 20px;
+      box-shadow: var(--shadow);
+      transition: transform .45s var(--ease), border-color .35s ease, box-shadow .35s ease, background .35s ease;
+    }
+
+    .panel:hover {
+      transform: translateY(-2px);
+      border-color: rgba(20,20,20,.12);
+    }
+
+    .label {
+      margin: 0 0 10px;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--soft);
+    }
+
+    .primary-row,
+    .mini-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .primary-value,
+    .mini-value {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1.05;
+    }
+
+    .primary-value {
+      font-size: clamp(1.6rem, 3vw, 2rem);
+    }
+
+    .mini-value {
+      font-size: 1.18rem;
+    }
+
+    .icon-btn,
+    .mini-action,
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text);
+      padding: 0;
+      font: inherit;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(20,20,20,.08);
+      background: rgba(255,255,255,.35);
+      transition: transform .25s ease, background .25s ease, border-color .25s ease;
+    }
+
+    .icon-btn:hover,
+    .mini-card:hover .mini-action {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.65);
+      border-color: rgba(20,20,20,.16);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .mini-card {
+      min-height: 108px;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+    }
+
+    .mini-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 1px solid transparent;
+      transition: border-color .25s ease;
+      pointer-events: none;
+    }
+
+    .mini-card:hover::after,
+    .nav-btn.is-active::after {
+      border-color: rgba(20,20,20,.14);
+    }
+
+    .mini-card .mini-action {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid rgba(20,20,20,.08);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      background: rgba(255,255,255,.35);
+    }
+
+    .nav-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      position: relative;
+      border-radius: 22px;
+      padding: 16px 18px;
+      min-height: 84px;
+      text-align: left;
+      border: 1px solid rgba(20,20,20,.06);
+      background: rgba(255,255,255,.32);
+      box-shadow: var(--shadow);
+      transition: transform .35s var(--ease), border-color .25s ease, background .25s ease;
+      overflow: hidden;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.is-active {
+      transform: translateY(-2px);
+      border-color: rgba(20,20,20,.16);
+      background: rgba(255,255,255,.62);
+    }
+
+    .nav-btn.is-active {
+      box-shadow: 0 12px 34px rgba(0,0,0,.055);
+    }
+
+    .nav-btn small,
+    .footer small {
+      display: block;
+      color: var(--soft);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-weight: 700;
+      font-size: .68rem;
+      margin-bottom: 8px;
+    }
+
+    .nav-btn strong {
+      display: block;
+      font-size: 1.04rem;
+      letter-spacing: -.03em;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .meta span::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(20,20,20,.18);
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .footer {
+      margin-top: 6px;
+      color: var(--soft);
+      font-size: .86rem;
+      line-height: 1.65;
+    }
+
+    .footer code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      color: var(--muted);
+      background: rgba(255,255,255,.42);
+      border: 1px solid rgba(20,20,20,.06);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    .right {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      z-index: 1;
+    }
+
+    .console {
+      position: relative;
+      width: 100%;
+      height: min(100vh, 920px);
+    }
+
+    .orbit {
+      position: absolute;
+      right: calc(-1 * var(--ring-size) * .28);
+      top: 50%;
+      width: var(--ring-size);
+      height: var(--ring-size);
+      transform: translateY(-50%) rotate(var(--rotation));
+      transition: transform 900ms var(--ease);
+      border-radius: 50%;
+      filter: drop-shadow(0 16px 24px rgba(0,0,0,.03));
+    }
+
+    .orbit::before,
+    .orbit::after,
+    .ring,
+    .ring-2,
+    .ring-3 {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+    }
+
+    .orbit::after {
+      inset: 13%;
+    }
+
+    .ring { inset: 26%; }
+    .ring-2 { inset: 38%; }
+    .ring-3 { inset: 49%; }
+
+    .baseline {
+      position: absolute;
+      left: 3%;
+      top: 50%;
+      width: 128%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(20,20,20,0), rgba(20,20,20,.18) 10%, rgba(20,20,20,.18) 82%, rgba(20,20,20,0));
+      transform: translateY(-50%) rotate(50deg);
+      transform-origin: 50% 50%;
+    }
+
+    .baseline::before {
+      content: attr(data-timezone);
+      position: absolute;
+      left: 12%;
+      top: -16px;
+      color: var(--soft);
+      font-size: .68rem;
+      letter-spacing: .18em;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(243,243,241,.75);
+      padding: 2px 6px;
+      border-radius: 99px;
+    }
+
+    .ticks,
+    .micro-ticks,
+    .labels,
+    .readouts,
+    .nodes {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+
+    .tick,
+    .micro-tick,
+    .readout,
+    .node,
+    .dial-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-origin: 0 0;
+    }
+
+    .tick {
+      width: 42px;
+      height: 2px;
+      background: rgba(20,20,20,.08);
+      border-radius: 99px;
+      transition: background .35s ease, transform .9s var(--ease), opacity .35s ease;
+      opacity: .9;
+    }
+
+    .tick.major {
+      width: 58px;
+      height: 3px;
+      background: rgba(20,20,20,.12);
+    }
+
+    .micro-tick {
+      width: 16px;
+      height: 2px;
+      background: rgba(20,20,20,.05);
+      border-radius: 99px;
+      opacity: .9;
+    }
+
+    .tick.active,
+    .micro-tick.active {
+      background: rgba(20,20,20,.26);
+    }
+
+    .dial-label {
+      border: 0;
+      background: transparent;
+      color: var(--soft);
+      font: inherit;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-size: .72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color .25s ease, transform .9s var(--ease);
+      padding: 0;
+      white-space: nowrap;
+    }
+
+    .dial-label.is-active,
+    .dial-label:hover {
+      color: var(--text);
+    }
+
+    .readout {
+      font-weight: 800;
+      color: rgba(20,20,20,.46);
+      letter-spacing: -.06em;
+      user-select: none;
+      transition: color .35s ease, transform .9s var(--ease);
+    }
+
+    .readout.big { font-size: clamp(2.6rem, 6vw, 4.8rem); }
+    .readout.mid { font-size: clamp(1.4rem, 3vw, 2.3rem); }
+    .readout.small { font-size: 1rem; color: rgba(20,20,20,.22); }
+
+    .node {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(20,20,20,.12);
+      border: 3px solid rgba(243,243,241,.95);
+      box-shadow: 0 0 0 6px rgba(20,20,20,.03);
+      transition: transform .9s var(--ease), background .35s ease, box-shadow .35s ease;
+    }
+
+    .node.is-live {
+      background: rgba(20,20,20,.28);
+      box-shadow: 0 0 0 10px rgba(20,20,20,.05);
+    }
+
+    .node.pulse::after {
+      content: "";
+      position: absolute;
+      inset: -11px;
+      border-radius: 50%;
+      border: 1px solid rgba(20,20,20,.18);
+      animation: pulse .8s ease-out forwards;
+    }
+
+    @keyframes pulse {
+      0% { opacity: .55; transform: scale(.72); }
+      100% { opacity: 0; transform: scale(1.9); }
+    }
+
+    .time-chip {
+      position: absolute;
+      right: 22px;
+      top: 22px;
+      z-index: 5;
+      padding: 11px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(20,20,20,.07);
+      background: rgba(255,255,255,.46);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1;
+    }
+
+    .time-chip strong {
+      color: var(--text);
+      letter-spacing: -.04em;
+      font-size: 1rem;
+    }
+
+    .hint {
+      position: absolute;
+      right: 28px;
+      bottom: 22px;
+      z-index: 5;
+      font-size: .82rem;
+      color: var(--soft);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hint::before {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: rgba(20,20,20,.12);
+    }
+
+    .ghost-mark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-16%, -56%);
+      font-size: clamp(6rem, 18vw, 14rem);
+      font-weight: 800;
+      letter-spacing: -.09em;
+      color: rgba(20,20,20,.025);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(16px);
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(20,20,20,.92);
+      color: white;
+      font-size: .92rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 50;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      html, body { overflow: auto; }
+      .app {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .left {
+        max-width: none;
+        justify-content: flex-start;
+        padding-top: 24px;
+      }
+      .right {
+        min-height: 62vh;
+      }
+      .console {
+        height: min(76vh, 720px);
+      }
+      .orbit {
+        left: 50%;
+        right: auto;
+        top: 56%;
+        transform: translate(-8%, -50%) rotate(var(--rotation));
+      }
+      .ghost-mark {
+        transform: translate(-38%, -54%);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 18px; }
+      .profile { align-items: flex-start; }
+      .avatar { width: 72px; height: 72px; border-radius: 22px; }
+      .grid,
+      .nav-group { grid-template-columns: 1fr; }
+      .time-chip,
+      .hint { right: 14px; }
+      .hint { bottom: 12px; }
+      .orbit {
+        width: 116vw;
+        height: 116vw;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
-
-    <div class="giant-clock-wrapper">
-        <div class="laser-pointer-line"></div>
-        <svg class="clock-svg" viewBox="0 0 500 500">
-            <g class="dial-ring hour-ring" id="hourRing">
-                <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1.5" />
-            </g>
-            <g class="dial-ring minute-ring" id="minuteRing">
-                <circle cx="250" cy="250" r="190" fill="none" stroke="var(--border)" stroke-width="1" />
-            </g>
-            <g class="dial-ring seconds-ring" id="secondRing">
-                <circle cx="250" cy="250" r="240" fill="none" stroke="var(--clock-line)" stroke-width="0.5" />
-                <path d="M250 5 L250 30" stroke="var(--border)" stroke-width="3" />
-                <path d="M250 470 L250 495" stroke="var(--border)" stroke-width="2" />
-                <path d="M5 250 L30 250" stroke="var(--border)" stroke-width="2" />
-                <path d="M470 250 L495 250" stroke="var(--border)" stroke-width="2" />
-            </g>
-        </svg>
-    </div>
-
-    <div class="container">
-        
-        <div class="header">
-            <div class="avatar"></div>
-            <div class="identity">
-                <h1>NKX</h1>
-                <p>This is the channel of MarkNKX.</p>
-            </div>
+  <main class="app">
+    <section class="left">
+      <div class="profile">
+        <div class="avatar" id="avatar"></div>
+        <div class="identity">
+          <h1 id="name">NKX</h1>
+          <p id="tagline">Independent channel for code, notes and systems.</p>
         </div>
+      </div>
 
-        <div class="grid">
-            <div class="card featured" id="emailCard" onclick="copyEmail()">
-                <div class="card-content">
-                    <span class="label">Primary Email</span>
-                    <span class="value">ME@QQ.SG</span>
-                </div>
-                <div class="icon-box" id="copyIconBox">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </div>
-            </div>
-
-            <a href="https://github.com/3257085208" target="_blank" class="card">
-                <div class="card-content">
-                    <span class="label">Code</span>
-                    <span class="value">GitHub</span>
-                </div>
-                <div class="icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </div>
-            </a>
-
-            <a href="https://聶.NET" target="_blank" class="card">
-                <div class="card-content">
-                    <span class="label">Blog</span>
-                    <span class="value">聶.NET</span>
-                </div>
-                <div class="icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                </div>
-            </a>
+      <article class="panel">
+        <p class="label" id="primaryLabel">Primary Channel</p>
+        <div class="primary-row">
+          <div>
+            <p class="primary-value" id="primaryValue">ME@qq.sg</p>
+            <div class="meta" id="meta"></div>
+          </div>
+          <button class="icon-btn" id="primaryAction" aria-label="复制邮箱">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <path d="M5 15V6a2 2 0 0 1 2-2h9"></path>
+            </svg>
+          </button>
         </div>
+      </article>
 
-        <footer>
-            <div class="copyright-row">© 2026 NKX · QQ.SG</div>
-            <div class="disclaimer">QQ.SG has no connection with Tencent Group, QQ.COM, or Tencent Holdings.</div>
-        </footer>
-    </div>
+      <div class="grid">
+        <a class="panel mini-card" id="secondaryCard" href="#" target="_blank" rel="noreferrer">
+          <div>
+            <p class="label" id="secondaryLabel">Code</p>
+            <p class="mini-value" id="secondaryValue">GitHub</p>
+          </div>
+          <span class="mini-action" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"></path>
+              <path d="M12 5l7 7-7 7"></path>
+            </svg>
+          </span>
+        </a>
 
-    <div class="toast" id="toast">Copied to clipboard</div>
+        <a class="panel mini-card" id="tertiaryCard" href="#" target="_blank" rel="noreferrer">
+          <div>
+            <p class="label" id="tertiaryLabel">Writing</p>
+            <p class="mini-value" id="tertiaryValue">Archive</p>
+          </div>
+          <span class="mini-action" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16"></path>
+              <path d="M4 12h16"></path>
+              <path d="M4 18h10"></path>
+            </svg>
+          </span>
+        </a>
+      </div>
 
-    <script>
-        const svgNS = "http://www.w3.org/2000/svg";
-        function createText(x, y, content, size, color, weight="500") {
-            const text = document.createElementNS(svgNS, "text");
-            text.setAttribute("x", x); text.setAttribute("y", y);
-            text.setAttribute("font-size", size); text.setAttribute("fill", color);
-            text.setAttribute("text-anchor", "middle"); text.setAttribute("dominant-baseline", "middle");
-            text.setAttribute("font-family", "JetBrains Mono"); text.setAttribute("font-weight", weight);
-            text.textContent = content; return text;
+      <div class="nav-group" id="nav"></div>
+
+      <div class="footer">
+        <small>System</small>
+        <div id="footerLine1">QQ.SG is a personal station and has no connection with Tencent / QQ.</div>
+        <div id="footerLine2">Scroll, click, or use arrow keys to rotate the console.</div>
+      </div>
+    </section>
+
+    <section class="right">
+      <div class="console">
+        <div class="time-chip"><span id="timezoneLabel">UTC+8</span><strong id="clock">--:--:--</strong></div>
+        <div class="ghost-mark">QQ</div>
+        <div class="orbit" id="orbit">
+          <div class="baseline" id="baseline" data-timezone="UTC+8"></div>
+          <div class="ticks" id="ticks"></div>
+          <div class="micro-ticks" id="microTicks"></div>
+          <div class="labels" id="labels"></div>
+          <div class="readouts" id="readouts"></div>
+          <div class="nodes" id="nodes"></div>
+          <div class="ring"></div>
+          <div class="ring-2"></div>
+          <div class="ring-3"></div>
+        </div>
+        <div class="hint">Wheel / Click / ← →</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast">Copied</div>
+
+  <script>
+    const profile = {
+      name: "NKX",
+      initials: "NK",
+      tagline: "Independent channel for code, notes and systems.",
+      timezone: "+08:00",
+      timezoneLabel: "UTC+8",
+      email: "ME@qq.sg",
+      avatarUrl: "",
+      secondary: { label: "Source", value: "GitHub", href: "https://github.com/yourname" },
+      tertiary: { label: "Writing", value: "Blog", href: "https://yourblog.example.com" },
+      footer1: "QQ.SG is a personal station and has no connection with Tencent / QQ.",
+      footer2: "Scroll, click, or use arrow keys to rotate the console."
+    };
+
+    const sections = [
+      {
+        key: "direct",
+        navLabel: "CH-01",
+        navTitle: "Direct",
+        title: "Primary Channel",
+        value: profile.email,
+        action: "copy",
+        meta: ["Private line", profile.timezoneLabel, "Open for selected work"],
+        secondary: profile.secondary,
+        tertiary: profile.tertiary,
+        tagline: "A quiet terminal for contact, code and notes.",
+        readouts: ["08", "21", "03"],
+        liveNode: 0,
+        rotation: -18
+      },
+      {
+        key: "code",
+        navLabel: "CH-02",
+        navTitle: "Code",
+        title: "Latest Build",
+        value: "Orbit Console",
+        action: "link",
+        actionHref: profile.secondary.href,
+        meta: ["Interface system", "Frontend concept", "GitHub ready"],
+        secondary: { label: "Repo", value: "Open Source", href: profile.secondary.href },
+        tertiary: { label: "Stack", value: "HTML · CSS · JS", href: profile.secondary.href },
+        tagline: "Measured interfaces, small systems, and deliberate interactions.",
+        readouts: ["14", "06", "27"],
+        liveNode: 1,
+        rotation: -108
+      },
+      {
+        key: "notes",
+        navLabel: "CH-03",
+        navTitle: "Notes",
+        title: "Recent Writing",
+        value: "Signal Notes",
+        action: "link",
+        actionHref: profile.tertiary.href,
+        meta: ["Essays", "Design logs", "Archive channel"],
+        secondary: { label: "Blog", value: "Latest Entry", href: profile.tertiary.href },
+        tertiary: { label: "Archive", value: "All Notes", href: profile.tertiary.href },
+        tagline: "Essays, fragments and snapshots from the station log.",
+        readouts: ["19", "11", "42"],
+        liveNode: 2,
+        rotation: -198
+      },
+      {
+        key: "status",
+        navLabel: "CH-04",
+        navTitle: "Status",
+        title: "Station Status",
+        value: "Online / Stable",
+        action: "copy",
+        meta: [profile.timezoneLabel, "Response in 24h", "Last sync today"],
+        secondary: { label: "Availability", value: "Selected Projects", href: `mailto:${profile.email}` },
+        tertiary: { label: "Direct Line", value: profile.email, href: `mailto:${profile.email}` },
+        tagline: "Calibrated, updated, and currently receiving.",
+        readouts: ["24", "04", "58"],
+        liveNode: 3,
+        rotation: -288
+      }
+    ];
+
+    const state = { index: 0, wheelLock: false };
+
+    const els = {
+      avatar: document.getElementById("avatar"),
+      name: document.getElementById("name"),
+      tagline: document.getElementById("tagline"),
+      primaryLabel: document.getElementById("primaryLabel"),
+      primaryValue: document.getElementById("primaryValue"),
+      primaryAction: document.getElementById("primaryAction"),
+      secondaryCard: document.getElementById("secondaryCard"),
+      secondaryLabel: document.getElementById("secondaryLabel"),
+      secondaryValue: document.getElementById("secondaryValue"),
+      tertiaryCard: document.getElementById("tertiaryCard"),
+      tertiaryLabel: document.getElementById("tertiaryLabel"),
+      tertiaryValue: document.getElementById("tertiaryValue"),
+      meta: document.getElementById("meta"),
+      footerLine1: document.getElementById("footerLine1"),
+      footerLine2: document.getElementById("footerLine2"),
+      nav: document.getElementById("nav"),
+      orbit: document.getElementById("orbit"),
+      ticks: document.getElementById("ticks"),
+      microTicks: document.getElementById("microTicks"),
+      labels: document.getElementById("labels"),
+      readouts: document.getElementById("readouts"),
+      nodes: document.getElementById("nodes"),
+      baseline: document.getElementById("baseline"),
+      clock: document.getElementById("clock"),
+      timezoneLabel: document.getElementById("timezoneLabel"),
+      toast: document.getElementById("toast")
+    };
+
+    function buildAvatar() {
+      els.avatar.innerHTML = "";
+      if (profile.avatarUrl) {
+        const img = document.createElement("img");
+        img.src = profile.avatarUrl;
+        img.alt = profile.name;
+        els.avatar.appendChild(img);
+      } else {
+        const span = document.createElement("span");
+        span.textContent = profile.initials;
+        els.avatar.appendChild(span);
+      }
+    }
+
+    function buildNav() {
+      els.nav.innerHTML = "";
+      sections.forEach((section, index) => {
+        const btn = document.createElement("button");
+        btn.className = "nav-btn";
+        btn.dataset.index = index;
+        btn.innerHTML = `<small>${section.navLabel}</small><strong>${section.navTitle}</strong>`;
+        btn.addEventListener("click", () => setSection(index));
+        els.nav.appendChild(btn);
+      });
+    }
+
+    function polar(angle, radius, size = 0) {
+      return `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) translate(${-size/2}px, ${-size/2}px)`;
+    }
+
+    function buildTicks() {
+      els.ticks.innerHTML = "";
+      els.microTicks.innerHTML = "";
+      for (let i = 0; i < 24; i++) {
+        const tick = document.createElement("div");
+        tick.className = `tick ${i % 3 === 0 ? "major" : ""}`.trim();
+        tick.dataset.slot = i;
+        tick.style.transform = polar(i * 15 - 90, 448, 0);
+        els.ticks.appendChild(tick);
+      }
+      for (let i = 0; i < 60; i++) {
+        const tick = document.createElement("div");
+        tick.className = "micro-tick";
+        tick.dataset.slot = i;
+        tick.style.transform = polar(i * 6 - 90, 342, 0);
+        els.microTicks.appendChild(tick);
+      }
+    }
+
+    function buildLabels() {
+      els.labels.innerHTML = "";
+      const labelRadius = 500;
+      sections.forEach((section, index) => {
+        const angle = index * 90 - 66;
+        const button = document.createElement("button");
+        button.className = "dial-label";
+        button.dataset.index = index;
+        button.textContent = `${section.navLabel} / ${section.navTitle}`;
+        button.style.transform = polar(angle, labelRadius, 0);
+        button.addEventListener("click", () => setSection(index));
+        els.labels.appendChild(button);
+      });
+    }
+
+    function buildReadouts() {
+      els.readouts.innerHTML = "";
+      const positions = [
+        { angle: -12, radius: 242, cls: "big" },
+        { angle: 58, radius: 196, cls: "mid" },
+        { angle: 145, radius: 312, cls: "small" }
+      ];
+      positions.forEach((pos, i) => {
+        const d = document.createElement("div");
+        d.className = `readout ${pos.cls}`;
+        d.dataset.index = i;
+        d.style.transform = polar(pos.angle, pos.radius, 0);
+        els.readouts.appendChild(d);
+      });
+    }
+
+    function buildNodes() {
+      els.nodes.innerHTML = "";
+      sections.forEach((section, index) => {
+        const node = document.createElement("div");
+        node.className = "node";
+        node.dataset.index = index;
+        node.style.transform = polar(index * 90 - 44, 386, 12);
+        els.nodes.appendChild(node);
+      });
+    }
+
+    function updateMeta(list) {
+      els.meta.innerHTML = "";
+      list.forEach(item => {
+        const span = document.createElement("span");
+        span.textContent = item;
+        els.meta.appendChild(span);
+      });
+    }
+
+    function setLinkCard(card, data, icon = "arrow") {
+      card.href = data.href || "#";
+      if (data.href && data.href.startsWith("mailto:")) {
+        card.target = "_self";
+        card.rel = "";
+      } else {
+        card.target = "_blank";
+        card.rel = "noreferrer";
+      }
+      card.querySelector(".label").textContent = data.label;
+      card.querySelector(".mini-value").textContent = data.value;
+
+      const action = card.querySelector(".mini-action");
+      action.innerHTML = icon === "list"
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h10"></path></svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>`;
+    }
+
+    function setSection(index) {
+      state.index = (index + sections.length) % sections.length;
+      const current = sections[state.index];
+
+      document.documentElement.style.setProperty("--rotation", `${current.rotation}deg`);
+      els.name.textContent = profile.name;
+      els.tagline.textContent = current.tagline || profile.tagline;
+      els.primaryLabel.textContent = current.title;
+      els.primaryValue.textContent = current.value;
+      els.footerLine1.textContent = profile.footer1;
+      els.footerLine2.textContent = profile.footer2;
+      updateMeta(current.meta);
+
+      setLinkCard(els.secondaryCard, current.secondary, "arrow");
+      setLinkCard(els.tertiaryCard, current.tertiary, "list");
+
+      els.primaryAction.onclick = () => {
+        if (current.action === "link" && current.actionHref) {
+          window.open(current.actionHref, "_blank", "noopener,noreferrer");
+          return;
         }
-        function createLine(x1, y1, x2, y2, width, color) {
-            const line = document.createElementNS(svgNS, "line");
-            line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-            line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-            line.setAttribute("stroke", color); line.setAttribute("stroke-width", width);
-            return line;
-        }
+        copyText(profile.email, "DIRECT LINE COPIED");
+      };
 
-        const hourGroup = document.getElementById('hourRing');
-        for(let i=1; i<=12; i++) {
-            const angle = (i * 30 - 90) * (Math.PI / 180);
-            const r = 120;
-            const x = 250 + r * Math.cos(angle); const y = 250 + r * Math.sin(angle);
-            const text = createText(x, y, i, 18, "var(--text-main)", "800");
-            text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
-            hourGroup.appendChild(text);
-        }
+      els.primaryAction.innerHTML = current.action === "link"
+        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"></path><path d="M8 7h9v9"></path></svg>`
+        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>`;
 
-        const minGroup = document.getElementById('minuteRing');
-        for(let i=0; i<60; i++) {
-            const angle = (i * 6 - 90) * (Math.PI / 180);
-            const r1 = 180; const r2 = i % 5 === 0 ? 160 : 175;
-            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
-            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
-            const line = createLine(x1, y1, x2, y2, i % 5 === 0 ? 2 : 1, "var(--clock-line)");
-            minGroup.appendChild(line);
-            if(i % 5 === 0) {
-                const rText = 145;
-                const tx = 250 + rText * Math.cos(angle); const ty = 250 + rText * Math.sin(angle);
-                const text = createText(tx, ty, i === 0 ? "60" : i, 12, "var(--clock-text)");
-                text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`);
-                minGroup.appendChild(text);
-            }
-        }
+      [...els.nav.children].forEach((btn, i) => btn.classList.toggle("is-active", i === state.index));
+      [...els.labels.children].forEach((btn, i) => btn.classList.toggle("is-active", i === state.index));
 
-        const secGroup = document.getElementById('secondRing');
-        for(let i=0; i<60; i++) {
-            const angle = (i * 6 - 90) * (Math.PI / 180);
-            const r1 = 240; const r2 = 230;
-            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
-            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
-            const line = createLine(x1, y1, x2, y2, 1, "var(--border)");
-            secGroup.appendChild(line);
-        }
+      [...els.ticks.children].forEach((tick, i) => tick.classList.toggle("active", i === state.index * 6));
+      [...els.microTicks.children].forEach((tick, i) => tick.classList.toggle("active", i === state.index * 15));
+      [...els.nodes.children].forEach((node, i) => node.classList.toggle("is-live", i === current.liveNode));
 
-        function updateClock() {
-            const now = new Date();
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const sgTime = new Date(utc + (3600000 * 8));
-            const h = sgTime.getHours(); const m = sgTime.getMinutes(); const s = sgTime.getSeconds(); const ms = sgTime.getMilliseconds();
-            
-            const OFFSET = -45;
+      [...els.readouts.children].forEach((item, i) => {
+        item.textContent = current.readouts[i] || "00";
+      });
+    }
 
-            const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
-            const minDeg = -1 * ((m + s/60) * 6) + OFFSET;
-            const h12 = h % 12 || 12;
-            const hourDeg = -1 * ((h12 + m/60) * 30) + OFFSET;
-            
-            document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
-            document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
-            document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
-            requestAnimationFrame(updateClock);
-        }
-        requestAnimationFrame(updateClock);
+    async function copyText(text, message) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+      pulseNode();
+      showToast(message);
+    }
 
-        function copyEmail() {
-            navigator.clipboard.writeText("ME@QQ.SG").then(() => {
-                const toast = document.getElementById('toast');
-                const iconBox = document.getElementById('copyIconBox');
-                const originalIcon = iconBox.innerHTML;
-                // 复制成功后的图标也加粗
-                iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                iconBox.classList.add('success'); toast.classList.add('show');
-                setTimeout(() => { toast.classList.remove('show'); iconBox.classList.remove('success'); iconBox.innerHTML = originalIcon; }, 2000);
-            });
-        }
+    function pulseNode() {
+      const node = els.nodes.children[sections[state.index].liveNode];
+      if (!node) return;
+      node.classList.remove("pulse");
+      void node.offsetWidth;
+      node.classList.add("pulse");
+    }
 
-        const themeBtn = document.getElementById('themeBtn');
-        const html = document.documentElement;
-        const icons = {
-            light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
-            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
-            system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`
-        };
-        const modes = ['system', 'light', 'dark'];
-        function getStoredTheme() { return localStorage.getItem('theme') || 'system'; }
-        function setTheme(mode) {
-            themeBtn.innerHTML = icons[mode];
-            if (mode === 'system') { localStorage.removeItem('theme'); html.removeAttribute('data-theme'); } 
-            else { localStorage.setItem('theme', mode); html.setAttribute('data-theme', mode); }
-        }
-        let currentMode = getStoredTheme(); setTheme(currentMode);
-        themeBtn.addEventListener('click', () => {
-            currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length]; setTheme(currentMode);
-        });
-    </script>
+    function showToast(text) {
+      els.toast.textContent = text;
+      els.toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 1400);
+    }
+
+    function step(delta) {
+      setSection(state.index + delta);
+    }
+
+    function onWheel(e) {
+      if (state.wheelLock) return;
+      state.wheelLock = true;
+      step(e.deltaY > 0 ? 1 : -1);
+      setTimeout(() => { state.wheelLock = false; }, 520);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const format = new Intl.DateTimeFormat("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: timezoneToIANA(profile.timezone)
+      });
+      els.clock.textContent = format.format(now);
+    }
+
+    function timezoneToIANA(offset) {
+      if (offset === "+08:00") return "Asia/Singapore";
+      if (offset === "+09:00") return "Asia/Tokyo";
+      if (offset === "+00:00") return "UTC";
+      return "UTC";
+    }
+
+    function bindEvents() {
+      window.addEventListener("wheel", onWheel, { passive: true });
+      window.addEventListener("keydown", (e) => {
+        if (["ArrowRight", "ArrowDown"].includes(e.key)) step(1);
+        if (["ArrowLeft", "ArrowUp"].includes(e.key)) step(-1);
+      });
+    }
+
+    function init() {
+      buildAvatar();
+      buildNav();
+      buildTicks();
+      buildLabels();
+      buildReadouts();
+      buildNodes();
+      bindEvents();
+
+      els.name.textContent = profile.name;
+      document.title = `${profile.name} — Orbit Console`;
+      els.tagline.textContent = profile.tagline;
+      els.timezoneLabel.textContent = profile.timezoneLabel;
+      els.baseline.dataset.timezone = profile.timezoneLabel;
+      els.footerLine1.textContent = profile.footer1;
+      els.footerLine2.textContent = profile.footer2;
+
+      setSection(0);
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    init();
+  </script>
 </body>
 </html>
