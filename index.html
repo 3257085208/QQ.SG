@@ -4,191 +4,625 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NKX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* === 浅色模式 === */
-            --bg: #FAFAFA;
-            --card-bg: #FFFFFF;
+            --bg: #fafafa;
+            --bg-elevated: rgba(255, 255, 255, 0.6);
+            --card-bg: #ffffff;
+            --card-glass: rgba(255, 255, 255, 0.64);
             --text-main: #111111;
             --text-sub: #666666;
             --text-legal: #999999;
-            --border: #E5E5E5;
-            --clock-line: #E0E0E0;
-            --clock-text: #B0B0B0;
-            --pointer: #555555; 
-            --toast-bg: rgba(0,0,0,0.9);
-            --toast-text: #FFFFFF;
+            --border: #e5e5e5;
+            --border-strong: rgba(17, 17, 17, 0.12);
+            --border-soft: rgba(255, 255, 255, 0.82);
+            --clock-line: #e0e0e0;
+            --clock-text: #b0b0b0;
+            --pointer: #555555;
+            --icon-normal: rgba(17, 17, 17, 0.55);
+            --icon-active: rgba(17, 17, 17, 0.96);
+            --success: #111111;
+            --toast-bg: rgba(0, 0, 0, 0.88);
+            --toast-text: #ffffff;
+            --hero-glow: radial-gradient(circle at 12% 18%, rgba(0, 0, 0, 0.045), transparent 34%);
+            --hero-glow-2: radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.03), transparent 28%);
+            --card-shadow: 0 20px 45px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.035);
+            --card-shadow-hover: 0 28px 60px rgba(0, 0, 0, 0.09), 0 8px 28px rgba(0, 0, 0, 0.045);
+            --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+            --panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+            --ring-shadow: 0 0 0 1px rgba(17, 17, 17, 0.08), 0 12px 30px rgba(0, 0, 0, 0.06);
+            --selection: rgba(17, 17, 17, 0.08);
         }
 
-        /* === 深色模式 === */
         [data-theme="dark"] {
             --bg: #000000;
+            --bg-elevated: rgba(255, 255, 255, 0.03);
             --card-bg: #111111;
-            --text-main: #FFFFFF;
+            --card-glass: rgba(20, 20, 20, 0.7);
+            --text-main: #ffffff;
             --text-sub: #888888;
             --text-legal: #555555;
             --border: #222222;
-            --clock-line: #444444; 
-            --clock-text: #DDDDDD; 
-            --pointer: #FFFFFF;
-            --toast-bg: rgba(255,255,255,0.9);
+            --border-strong: rgba(255, 255, 255, 0.14);
+            --border-soft: rgba(255, 255, 255, 0.04);
+            --clock-line: #444444;
+            --clock-text: #dddddd;
+            --pointer: #ffffff;
+            --icon-normal: rgba(255, 255, 255, 0.62);
+            --icon-active: rgba(255, 255, 255, 1);
+            --success: #ffffff;
+            --toast-bg: rgba(255, 255, 255, 0.92);
             --toast-text: #000000;
+            --hero-glow: radial-gradient(circle at 14% 16%, rgba(255, 255, 255, 0.05), transparent 30%);
+            --hero-glow-2: radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.035), transparent 26%);
+            --card-shadow: 0 20px 45px rgba(0, 0, 0, 0.32), 0 6px 20px rgba(0, 0, 0, 0.22);
+            --card-shadow-hover: 0 28px 60px rgba(0, 0, 0, 0.4), 0 8px 28px rgba(0, 0, 0, 0.24);
+            --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            --panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+            --ring-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 30px rgba(0, 0, 0, 0.3);
+            --selection: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        ::selection {
+            background: var(--selection);
+            color: var(--text-main);
+        }
+
+        html {
+            color-scheme: light dark;
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg);
-            color: var(--text-main);
-            /* 2. 应用 Nunito 字体 */
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100dvh;
+            min-height: 100dvh;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             overscroll-behavior: none;
-            transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
+            background-color: var(--bg);
+            background-image: var(--hero-glow), var(--hero-glow-2);
+            color: var(--text-main);
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.3s ease;
         }
 
-        /* === 顶部切换按钮 === */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 28%),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent 26%);
+            mix-blend-mode: soft-light;
+            opacity: 0.75;
+        }
+
+        [data-theme="dark"] body::before {
+            opacity: 0.35;
+        }
+
+        body::after {
+            background-image:
+                linear-gradient(rgba(127, 127, 127, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(127, 127, 127, 0.025) 1px, transparent 1px);
+            background-size: 30px 30px;
+            mask-image: radial-gradient(circle at center, black 30%, transparent 95%);
+            opacity: 0.7;
+        }
+
         .theme-toggle {
-            position: fixed; 
-            top: 30px; 
-            right: 30px;
-            width: 44px; height: 44px; border-radius: 50%;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.01);
-            backdrop-filter: blur(5px);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-main);
-            transition: all 0.2s; z-index: 999;
+            position: fixed;
+            top: 26px;
+            right: 26px;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-elevated);
+            box-shadow: var(--panel-shadow), inset 0 1px 0 var(--border-soft);
+            backdrop-filter: blur(12px) saturate(140%);
+            -webkit-backdrop-filter: blur(12px) saturate(140%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+            z-index: 999;
         }
-        .theme-toggle:active { transform: scale(0.92); background: var(--card-bg); }
-        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
-        /* === 背景：巨型时钟 === */
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            border-color: var(--text-main);
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08), inset 0 1px 0 var(--border-soft);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.94);
+        }
+
+        .theme-toggle:focus-visible,
+        .card:focus-visible,
+        #emailCard:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(127, 127, 127, 0.15), var(--card-shadow-hover);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 1.8;
+        }
+
         .giant-clock-wrapper {
             position: fixed;
-            bottom: 0; right: 0; z-index: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 0;
+            width: 90vh;
+            height: 90vh;
             pointer-events: none;
+            transform: translate(40%, 40%);
+            opacity: 0.24;
             transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
-            width: 90vh; height: 90vh;
-            transform: translate(40%, 40%); 
-            opacity: 0.2;
+            filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.04));
+            animation: floatClock 14s ease-in-out infinite;
         }
+
+        @keyframes floatClock {
+            0%, 100% { transform: translate(40%, 40%) scale(1); }
+            50% { transform: translate(41.25%, 38.75%) scale(1.012); }
+        }
+
         @media (min-width: 1024px) {
             .giant-clock-wrapper {
-                width: 150vh; height: 150vh;
-                transform: translate(45%, 45%); 
-                opacity: 0.6; 
+                width: 150vh;
+                height: 150vh;
+                transform: translate(45%, 45%);
+                opacity: 0.58;
+            }
+
+            @keyframes floatClock {
+                0%, 100% { transform: translate(45%, 45%) scale(1); }
+                50% { transform: translate(46.2%, 43.8%) scale(1.01); }
             }
         }
-        .clock-svg { width: 100%; height: 100%; overflow: visible; }
-        .dial-ring { transform-origin: 50% 50%; transition: transform 1s cubic-bezier(0.2, 0, 0, 1); }
-        .seconds-ring { transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); }
 
-        /* 激光指针 */
+        .clock-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .dial-ring {
+            transform-origin: 50% 50%;
+            transition: transform 1s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .seconds-ring {
+            transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5);
+        }
+
         .laser-pointer-line {
             position: absolute;
-            top: 50%; left: 50%; width: 53%; height: 2px; 
-            background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
-            opacity: 0.8; z-index: 1;
+            top: 50%;
+            left: 50%;
+            width: 53%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--pointer) 42%, transparent) 16%, var(--pointer) 100%);
+            opacity: 0.9;
+            z-index: 1;
             transform-origin: left center;
             transform: rotate(-135deg);
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .laser-pointer-line::after {
-            content: 'UTC+8';
-            position: absolute; right: 0; bottom: 8px;
-            font-size: 11px; font-weight: 700; color: var(--pointer);
-            font-family: 'JetBrains Mono', monospace;
-            opacity: 1; transform: rotate(180deg);
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.08), 0 0 20px rgba(255, 255, 255, 0.08);
         }
 
-        /* === 内容容器 === */
-        .container {
-            width: 100%; max-width: 400px; padding: 24px;
-            box-sizing: border-box; display: flex; flex-direction: column;
-            justify-content: center; min-height: 100%; position: relative; z-index: 10;
+        .laser-pointer-line::before {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: 50%;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--pointer);
+            transform: translateY(-50%);
+            box-shadow: 0 0 0 4px rgba(127, 127, 127, 0.08);
         }
+
+        .laser-pointer-line::after {
+            content: 'UTC+8';
+            position: absolute;
+            right: 0;
+            bottom: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--pointer);
+            font-family: 'JetBrains Mono', monospace;
+            transform: rotate(180deg);
+            letter-spacing: 0.08em;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            min-height: 100%;
+            padding: 28px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
         @media (min-width: 1024px) {
             .container {
-                position: absolute; left: 10vw; top: 50%;
-                transform: translateY(-50%); max-width: 600px; padding: 0;
+                position: absolute;
+                left: 10vw;
+                top: 50%;
+                max-width: 620px;
+                padding: 0;
+                transform: translateY(-50%);
             }
         }
 
-        /* 头部 */
         .header {
-            margin-bottom: 40px; display: flex; flex-direction: column; gap: 20px;
-            text-align: center; width: 100%;
+            width: 100%;
+            margin-bottom: 42px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
         }
+
         @media (min-width: 1024px) {
-            .header { flex-direction: row; align-items: center; text-align: left; gap: 24px; margin-bottom: 50px; }
+            .header {
+                margin-bottom: 54px;
+                flex-direction: row;
+                align-items: center;
+                gap: 24px;
+                text-align: left;
+            }
         }
+
         .avatar {
-            width: 80px; height: 80px; border-radius: 20px;
+            position: relative;
+            width: 82px;
+            height: 82px;
+            margin: 0 auto;
+            border-radius: 22px;
             background-image: url('https://img.i8-mc.cn/file/J0NJk8wH.jpeg');
-            background-size: cover; background-position: center;
-            background-color: var(--card-bg); border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin: 0 auto;
+            background-size: cover;
+            background-position: center;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-strong);
+            box-shadow: var(--ring-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+            isolation: isolate;
         }
-        @media (min-width: 1024px) { .avatar { margin: 0; width: 100px; height: 100px; border-radius: 24px; } }
-        .identity h1 { font-size: 32px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px; }
-        .identity p { font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; }
-        @media (min-width: 1024px) { .identity h1 { font-size: 48px; letter-spacing: -1px; } .identity p { font-size: 18px; } }
 
-        /* 卡片网格 */
-        .grid { display: flex; flex-direction: column; gap: 14px; width: 100%; }
-        @media (min-width: 1024px) { .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
+        .avatar::before {
+            content: '';
+            position: absolute;
+            inset: -7px;
+            border-radius: 28px;
+            border: 1px solid rgba(127, 127, 127, 0.1);
+            opacity: 0.9;
+        }
+
+        .avatar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 38%, rgba(0, 0, 0, 0.03));
+            pointer-events: none;
+        }
+
+        @media (min-width: 1024px) {
+            .avatar {
+                margin: 0;
+                width: 100px;
+                height: 100px;
+                border-radius: 24px;
+            }
+        }
+
+        .identity h1 {
+            margin: 0 0 8px 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+
+        .identity p {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.55;
+            color: var(--text-sub);
+            max-width: 28ch;
+        }
+
+        @media (min-width: 1024px) {
+            .identity h1 {
+                font-size: 48px;
+                letter-spacing: -0.06em;
+            }
+
+            .identity p {
+                font-size: 18px;
+            }
+        }
+
+        .grid {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+        }
+
         .card {
-            background: rgba(255, 255, 255, 0.65); border: 1px solid var(--border);
-            border-radius: 18px; padding: 20px 24px; text-decoration: none;
-            color: var(--text-main); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 20px 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border-strong);
+            background: var(--card-glass);
+            color: var(--text-main);
+            text-decoration: none;
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            box-shadow: var(--card-shadow), var(--card-inset);
+            transform: translateY(0);
+            transition:
+                transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.25s ease,
+                background-color 0.25s ease,
+                box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
         }
-        [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.65); }
-        .card:hover { border-color: var(--text-main); background: var(--card-bg); transform: translateY(-2px); }
-        .card:active { transform: scale(0.98); }
-        .card.featured { padding: 24px 24px; }
-        @media (min-width: 1024px) { .card.featured { grid-column: span 2; padding: 32px; } .card.featured .value { font-size: 24px; } }
-        .card-content { display: flex; flex-direction: column; gap: 4px; }
-        .label { font-size: 11px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .value { font-size: 17px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
 
-        /* 图标样式 */
-        .icon-box { color: var(--icon-normal); transition: color 0.2s; }
-        .card:hover .icon-box { color: var(--icon-active); }
-        .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
-        /* 3. 统一设置所有 SVG 图标的线条粗细为 2px (除了复制图标) */
-        .icon-box svg { stroke-width: 2; }
+        .card::before,
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
 
-        /* 底部 */
-        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
-        @media (min-width: 1024px) { footer { align-items: flex-start; text-align: left; margin-top: 40px; } }
-        .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
-        .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; max-width: 300px; }
+        .card::before {
+            inset: 1px;
+            border-radius: 19px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            opacity: 0.8;
+        }
 
-        /* 提示条 */
+        .card::after {
+            inset: -40% auto auto -30%;
+            width: 58%;
+            height: 180%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+            transform: rotate(20deg) translateX(-140%);
+            transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            opacity: 0.8;
+        }
+
+        [data-theme="dark"] .card::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: color-mix(in srgb, var(--text-main) 18%, var(--border-strong));
+            background: color-mix(in srgb, var(--card-bg) 74%, transparent);
+            box-shadow: var(--card-shadow-hover), var(--card-inset);
+        }
+
+        .card:hover::after {
+            transform: rotate(20deg) translateX(260%);
+        }
+
+        .card:active {
+            transform: scale(0.985);
+        }
+
+        .card.featured {
+            padding: 24px;
+        }
+
+        @media (min-width: 1024px) {
+            .card.featured {
+                grid-column: span 2;
+                padding: 30px 32px;
+            }
+
+            .card.featured .value {
+                font-size: 24px;
+            }
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0;
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-sub);
+        }
+
+        .value {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .icon-box {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            color: var(--icon-normal);
+            background: rgba(127, 127, 127, 0.06);
+            border: 1px solid rgba(127, 127, 127, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+            transition: color 0.25s ease, transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+        }
+
+        .card:hover .icon-box {
+            color: var(--icon-active);
+            transform: translateX(2px);
+            border-color: color-mix(in srgb, var(--text-main) 12%, transparent);
+            background: rgba(127, 127, 127, 0.09);
+        }
+
+        .icon-box.success {
+            color: var(--success) !important;
+            transform: scale(1.06);
+        }
+
+        .icon-box svg {
+            stroke-width: 2;
+        }
+
+        footer {
+            position: relative;
+            margin-top: 56px;
+            padding-top: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+        }
+
+        footer::before {
+            content: '';
+            width: 100%;
+            max-width: 140px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+            opacity: 0.9;
+        }
+
+        @media (min-width: 1024px) {
+            footer {
+                align-items: flex-start;
+                text-align: left;
+                margin-top: 40px;
+            }
+
+            footer::before {
+                max-width: 180px;
+            }
+        }
+
+        .copyright-row {
+            font-size: 12px;
+            color: var(--text-sub);
+            opacity: 0.86;
+            letter-spacing: 0.03em;
+        }
+
+        .disclaimer {
+            max-width: 320px;
+            font-size: 10px;
+            line-height: 1.45;
+            color: var(--text-legal);
+            opacity: 0.68;
+        }
+
         .toast {
-            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--toast-bg); backdrop-filter: blur(10px); color: var(--toast-text);
-            padding: 10px 24px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
-            transition: all 0.4s; z-index: 200;
+            position: fixed;
+            left: 50%;
+            bottom: 40px;
+            transform: translateX(-50%) translateY(18px) scale(0.98);
+            padding: 10px 24px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: var(--toast-text);
+            background: var(--toast-bg);
+            backdrop-filter: blur(14px) saturate(140%);
+            -webkit-backdrop-filter: blur(14px) saturate(140%);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+            z-index: 200;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        @media (max-width: 600px) {
+            .theme-toggle {
+                top: 18px;
+                right: 18px;
+            }
+
+            .container {
+                padding-top: 74px;
+                padding-bottom: 28px;
+            }
+
+            .giant-clock-wrapper {
+                opacity: 0.18;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition-duration: 0.01ms !important;
+                transition-delay: 0ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
 
     <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
 
-    <div class="giant-clock-wrapper">
+    <div class="giant-clock-wrapper" aria-hidden="true">
         <div class="laser-pointer-line"></div>
         <svg class="clock-svg" viewBox="0 0 500 500">
             <g class="dial-ring hour-ring" id="hourRing">
@@ -208,7 +642,6 @@
     </div>
 
     <div class="container">
-        
         <div class="header">
             <div class="avatar"></div>
             <div class="identity">
@@ -218,32 +651,32 @@
         </div>
 
         <div class="grid">
-            <div class="card featured" id="emailCard" onclick="copyEmail()">
+            <div class="card featured" id="emailCard" role="button" tabindex="0" onclick="copyEmail()">
                 <div class="card-content">
                     <span class="label">Primary Email</span>
                     <span class="value">ME@QQ.SG</span>
                 </div>
-                <div class="icon-box" id="copyIconBox">
+                <div class="icon-box" id="copyIconBox" aria-hidden="true">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 </div>
             </div>
 
-            <a href="https://github.com/3257085208" target="_blank" class="card">
+            <a href="https://github.com/3257085208" target="_blank" rel="noopener noreferrer" class="card">
                 <div class="card-content">
                     <span class="label">Code</span>
                     <span class="value">GitHub</span>
                 </div>
-                <div class="icon-box">
+                <div class="icon-box" aria-hidden="true">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </div>
             </a>
 
-            <a href="https://聶.NET" target="_blank" class="card">
+            <a href="https://聶.NET" target="_blank" rel="noopener noreferrer" class="card">
                 <div class="card-content">
                     <span class="label">Blog</span>
                     <span class="value">聶.NET</span>
                 </div>
-                <div class="icon-box">
+                <div class="icon-box" aria-hidden="true">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                 </div>
             </a>
@@ -259,55 +692,73 @@
 
     <script>
         const svgNS = "http://www.w3.org/2000/svg";
-        function createText(x, y, content, size, color, weight="500") {
+
+        function createText(x, y, content, size, color, weight = "500") {
             const text = document.createElementNS(svgNS, "text");
-            text.setAttribute("x", x); text.setAttribute("y", y);
-            text.setAttribute("font-size", size); text.setAttribute("fill", color);
-            text.setAttribute("text-anchor", "middle"); text.setAttribute("dominant-baseline", "middle");
-            text.setAttribute("font-family", "JetBrains Mono"); text.setAttribute("font-weight", weight);
-            text.textContent = content; return text;
+            text.setAttribute("x", x);
+            text.setAttribute("y", y);
+            text.setAttribute("font-size", size);
+            text.setAttribute("fill", color);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "middle");
+            text.setAttribute("font-family", "JetBrains Mono");
+            text.setAttribute("font-weight", weight);
+            text.textContent = content;
+            return text;
         }
+
         function createLine(x1, y1, x2, y2, width, color) {
             const line = document.createElementNS(svgNS, "line");
-            line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-            line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-            line.setAttribute("stroke", color); line.setAttribute("stroke-width", width);
+            line.setAttribute("x1", x1);
+            line.setAttribute("y1", y1);
+            line.setAttribute("x2", x2);
+            line.setAttribute("y2", y2);
+            line.setAttribute("stroke", color);
+            line.setAttribute("stroke-width", width);
             return line;
         }
 
         const hourGroup = document.getElementById('hourRing');
-        for(let i=1; i<=12; i++) {
+        for (let i = 1; i <= 12; i++) {
             const angle = (i * 30 - 90) * (Math.PI / 180);
             const r = 120;
-            const x = 250 + r * Math.cos(angle); const y = 250 + r * Math.sin(angle);
+            const x = 250 + r * Math.cos(angle);
+            const y = 250 + r * Math.sin(angle);
             const text = createText(x, y, i, 18, "var(--text-main)", "800");
-            text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
+            text.setAttribute("transform", `rotate(${i * 30}, ${x}, ${y})`);
             hourGroup.appendChild(text);
         }
 
         const minGroup = document.getElementById('minuteRing');
-        for(let i=0; i<60; i++) {
+        for (let i = 0; i < 60; i++) {
             const angle = (i * 6 - 90) * (Math.PI / 180);
-            const r1 = 180; const r2 = i % 5 === 0 ? 160 : 175;
-            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
-            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
+            const r1 = 180;
+            const r2 = i % 5 === 0 ? 160 : 175;
+            const x1 = 250 + r1 * Math.cos(angle);
+            const y1 = 250 + r1 * Math.sin(angle);
+            const x2 = 250 + r2 * Math.cos(angle);
+            const y2 = 250 + r2 * Math.sin(angle);
             const line = createLine(x1, y1, x2, y2, i % 5 === 0 ? 2 : 1, "var(--clock-line)");
             minGroup.appendChild(line);
-            if(i % 5 === 0) {
+            if (i % 5 === 0) {
                 const rText = 145;
-                const tx = 250 + rText * Math.cos(angle); const ty = 250 + rText * Math.sin(angle);
+                const tx = 250 + rText * Math.cos(angle);
+                const ty = 250 + rText * Math.sin(angle);
                 const text = createText(tx, ty, i === 0 ? "60" : i, 12, "var(--clock-text)");
-                text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`);
+                text.setAttribute("transform", `rotate(${i * 6}, ${tx}, ${ty})`);
                 minGroup.appendChild(text);
             }
         }
 
         const secGroup = document.getElementById('secondRing');
-        for(let i=0; i<60; i++) {
+        for (let i = 0; i < 60; i++) {
             const angle = (i * 6 - 90) * (Math.PI / 180);
-            const r1 = 240; const r2 = 230;
-            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
-            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
+            const r1 = 240;
+            const r2 = 230;
+            const x1 = 250 + r1 * Math.cos(angle);
+            const y1 = 250 + r1 * Math.sin(angle);
+            const x2 = 250 + r2 * Math.cos(angle);
+            const y2 = 250 + r2 * Math.sin(angle);
             const line = createLine(x1, y1, x2, y2, 1, "var(--border)");
             secGroup.appendChild(line);
         }
@@ -316,15 +767,18 @@
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const sgTime = new Date(utc + (3600000 * 8));
-            const h = sgTime.getHours(); const m = sgTime.getMinutes(); const s = sgTime.getSeconds(); const ms = sgTime.getMilliseconds();
-            
+            const h = sgTime.getHours();
+            const m = sgTime.getMinutes();
+            const s = sgTime.getSeconds();
+            const ms = sgTime.getMilliseconds();
+
             const OFFSET = -45;
 
-            const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
-            const minDeg = -1 * ((m + s/60) * 6) + OFFSET;
+            const secDeg = -1 * ((s + ms / 1000) * 6) + OFFSET;
+            const minDeg = -1 * ((m + s / 60) * 6) + OFFSET;
             const h12 = h % 12 || 12;
-            const hourDeg = -1 * ((h12 + m/60) * 30) + OFFSET;
-            
+            const hourDeg = -1 * ((h12 + m / 60) * 30) + OFFSET;
+
             document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
             document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
             document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
@@ -332,35 +786,70 @@
         }
         requestAnimationFrame(updateClock);
 
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
         function copyEmail() {
-            navigator.clipboard.writeText("ME@QQ.SG").then(() => {
-                const toast = document.getElementById('toast');
-                const iconBox = document.getElementById('copyIconBox');
-                const originalIcon = iconBox.innerHTML;
-                // 复制成功后的图标也加粗
+            const email = "ME@QQ.SG";
+            const iconBox = document.getElementById('copyIconBox');
+            const originalIcon = iconBox.innerHTML;
+
+            navigator.clipboard.writeText(email).then(() => {
                 iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                iconBox.classList.add('success'); toast.classList.add('show');
-                setTimeout(() => { toast.classList.remove('show'); iconBox.classList.remove('success'); iconBox.innerHTML = originalIcon; }, 2000);
+                iconBox.classList.add('success');
+                showToast('Copied to clipboard');
+                setTimeout(() => {
+                    iconBox.classList.remove('success');
+                    iconBox.innerHTML = originalIcon;
+                }, 1600);
+            }).catch(() => {
+                showToast('Copy failed');
             });
         }
+
+        const emailCard = document.getElementById('emailCard');
+        emailCard.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                copyEmail();
+            }
+        });
 
         const themeBtn = document.getElementById('themeBtn');
         const html = document.documentElement;
         const icons = {
             light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
-            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
+            dark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
             system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`
         };
         const modes = ['system', 'light', 'dark'];
-        function getStoredTheme() { return localStorage.getItem('theme') || 'system'; }
+
+        function getStoredTheme() {
+            return localStorage.getItem('theme') || 'system';
+        }
+
         function setTheme(mode) {
             themeBtn.innerHTML = icons[mode];
-            if (mode === 'system') { localStorage.removeItem('theme'); html.removeAttribute('data-theme'); } 
-            else { localStorage.setItem('theme', mode); html.setAttribute('data-theme', mode); }
+            if (mode === 'system') {
+                localStorage.removeItem('theme');
+                html.removeAttribute('data-theme');
+            } else {
+                localStorage.setItem('theme', mode);
+                html.setAttribute('data-theme', mode);
+            }
         }
-        let currentMode = getStoredTheme(); setTheme(currentMode);
+
+        let currentMode = getStoredTheme();
+        setTheme(currentMode);
+
         themeBtn.addEventListener('click', () => {
-            currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length]; setTheme(currentMode);
+            currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length];
+            setTheme(currentMode);
         });
     </script>
 </body>
