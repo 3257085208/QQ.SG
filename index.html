@@ -3,29 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NKX — 朝花与远路</title>
-  <meta name="description" content="NKX interactive infrastructure portfolio with a real draggable 3D globe." />
+  <title>QQ.SG — NKX</title>
+  <meta name="description" content="QQ.SG personal portfolio interaction concept." />
 
   <style>
     :root {
-      --bg: #eef8f1;
-      --bg-soft: #f8fcf9;
-      --panel: rgba(255, 255, 255, 0.72);
-      --panel-strong: rgba(255, 255, 255, 0.9);
-      --ink: #203f33;
-      --muted: #647e70;
-      --line: rgba(32, 63, 51, 0.12);
-      --line-strong: rgba(32, 63, 51, 0.2);
-      --green: #6fa886;
-      --green-dark: #4f8d6e;
-      --green-light: #cce8d6;
-      --green-pale: #e5f4eb;
-      --orange: #d9a66d;
-      --red: #cf8172;
-      --shadow: 0 22px 70px rgba(72, 124, 96, 0.13);
-      --shadow-soft: 0 14px 36px rgba(72, 124, 96, 0.09);
-      --radius: 26px;
-      --ease: cubic-bezier(.19, 1, .22, 1);
+      --bg: #eef6ec;
+      --bg-soft: #f8fbf6;
+      --ink: #111711;
+      --muted: rgba(17, 23, 17, 0.58);
+      --line: rgba(17, 23, 17, 0.12);
+      --line-strong: rgba(17, 23, 17, 0.22);
+      --lime: #c8ff00;
+      --green: #86b98d;
+      --green-dark: #233420;
+      --white: #fffdf5;
+      --card: rgba(255, 255, 255, 0.58);
+      --blur-card: rgba(255, 255, 255, 0.42);
+      --shadow: 0 26px 90px rgba(34, 58, 37, 0.13);
+      --ease: cubic-bezier(0.19, 1, 0.22, 1);
     }
 
     * {
@@ -39,14 +35,24 @@
 
     body {
       margin: 0;
-      color: var(--ink);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background:
-        radial-gradient(circle at 10% 8%, rgba(204, 232, 214, 0.8), transparent 30%),
-        radial-gradient(circle at 90% 18%, rgba(229, 244, 235, 0.95), transparent 30%),
-        radial-gradient(circle at 28% 84%, rgba(111, 168, 134, 0.18), transparent 32%),
-        linear-gradient(180deg, var(--bg-soft), var(--bg));
+      min-height: 100vh;
       overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(200, 255, 0, 0.18), transparent 25%),
+        radial-gradient(circle at 88% 22%, rgba(134, 185, 141, 0.28), transparent 28%),
+        linear-gradient(180deg, var(--bg-soft), var(--bg));
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "PingFang SC",
+        "Microsoft YaHei",
+        sans-serif;
+      text-rendering: geometricPrecision;
     }
 
     a {
@@ -54,22 +60,17 @@
       text-decoration: none;
     }
 
-    button {
-      font: inherit;
-      color: inherit;
-    }
-
     ::selection {
       color: var(--ink);
-      background: var(--green-light);
+      background: var(--lime);
     }
 
-    .grain {
+    .noise {
       position: fixed;
       inset: 0;
       z-index: 100;
       pointer-events: none;
-      opacity: .035;
+      opacity: 0.035;
       mix-blend-mode: multiply;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.88'/%3E%3C/svg%3E");
     }
@@ -79,991 +80,813 @@
       left: 0;
       right: 0;
       top: 0;
-      height: 70px;
+      z-index: 60;
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(18px, 4vw, 54px);
+      pointer-events: none;
+    }
+
+    .topbar span {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(17, 23, 17, 0.62);
+      font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .topbar i {
+      width: 8px;
+      height: 8px;
+      display: inline-block;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 18px rgba(200, 255, 0, 0.6);
+    }
+
+    .nav-dot {
+      position: fixed;
+      right: clamp(18px, 3.6vw, 50px);
+      top: 50%;
       z-index: 60;
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      padding: 0 clamp(18px, 5vw, 64px);
-      color: rgba(32, 63, 51, .62);
-      backdrop-filter: blur(16px);
-      background: linear-gradient(180deg, rgba(248, 252, 249, .82), rgba(248, 252, 249, .18));
-      border-bottom: 1px solid rgba(32, 63, 51, .06);
-    }
-
-    .brand,
-    .chapter,
-    .clock {
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .chapter {
-      justify-self: center;
-    }
-
-    .clock {
-      justify-self: end;
-    }
-
-    .rail {
-      position: fixed;
-      left: clamp(16px, 3vw, 42px);
-      top: 50%;
-      z-index: 55;
-      display: grid;
-      gap: 13px;
+      gap: 11px;
       transform: translateY(-50%);
     }
 
-    .rail a {
-      width: 36px;
-      height: 14px;
-      display: flex;
-      align-items: center;
-      color: rgba(32, 63, 51, .28);
-      transition: color .35s var(--ease), transform .35s var(--ease);
+    .nav-dot a {
+      width: 7px;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(17, 23, 17, 0.16);
+      transition:
+        height 0.45s var(--ease),
+        background 0.45s var(--ease);
     }
 
-    .rail a::before {
-      content: "";
-      width: 15px;
-      height: 1px;
-      background: currentColor;
-      transition: width .35s var(--ease);
+    .nav-dot a.active {
+      height: 54px;
+      background: var(--ink);
     }
 
-    .rail a.active {
-      color: var(--green-dark);
-      transform: translateX(5px);
+    .snap {
+      scroll-snap-align: start;
     }
 
-    .rail a.active::before {
-      width: 34px;
+    main {
+      scroll-snap-type: y proximity;
     }
 
-    .page {
+    .section {
       position: relative;
       min-height: 100svh;
-      display: grid;
-      align-items: center;
-      padding: 100px clamp(22px, 6vw, 92px) 58px;
-      overflow: hidden;
-    }
-
-    .page::before {
-      content: attr(data-no);
-      position: absolute;
-      right: clamp(18px, 6vw, 90px);
-      bottom: clamp(18px, 4vw, 56px);
-      z-index: -2;
-      color: transparent;
-      font-size: clamp(120px, 24vw, 360px);
-      line-height: .75;
-      font-weight: 800;
-      letter-spacing: -.12em;
-      -webkit-text-stroke: 1px rgba(79, 141, 110, .08);
-      opacity: calc(.18 + var(--seen, 0) * .45);
-      transform: translateY(calc((1 - var(--seen, 0)) * 38px));
-    }
-
-    .page::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -3;
-      background:
-        linear-gradient(rgba(79, 141, 110, .045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79, 141, 110, .045) 1px, transparent 1px);
-      background-size: 38px 38px;
-      mask-image: radial-gradient(circle at 50% 50%, #000 0 48%, transparent 80%);
+      overflow: clip;
     }
 
     .wrap {
-      width: min(1180px, 100%);
+      width: min(1180px, calc(100% - 48px));
       margin: 0 auto;
     }
 
     .kicker {
-      margin-bottom: 18px;
+      margin: 0 0 18px;
       color: var(--muted);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .16em;
+      font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-    }
-
-    .display {
-      margin: 0;
-      max-width: 960px;
-      font-size: clamp(64px, 11.6vw, 154px);
-      line-height: .8;
-      letter-spacing: -.105em;
-      font-weight: 790;
     }
 
     .title {
       margin: 0;
-      max-width: 900px;
-      font-size: clamp(36px, 5.9vw, 78px);
-      line-height: .95;
-      letter-spacing: -.07em;
-      font-weight: 730;
+      max-width: 980px;
+      font-size: clamp(44px, 8vw, 126px);
+      line-height: 0.88;
+      letter-spacing: -0.085em;
+      font-weight: 850;
     }
 
     .lead {
-      margin: 22px 0 0;
+      margin: 24px 0 0;
       max-width: 680px;
       color: var(--muted);
-      font-size: clamp(16px, 1.55vw, 21px);
+      font-size: clamp(16px, 1.45vw, 21px);
       line-height: 1.75;
-      letter-spacing: -.02em;
+      letter-spacing: -0.02em;
     }
 
-    .muted {
-      color: var(--muted);
-    }
+    /* =========================================================
+       01 Hero: canvas text + trail reveal
+       ========================================================= */
 
-    .fade {
-      opacity: 0;
-      filter: blur(10px);
-      transform: translateY(28px);
-      transition: opacity .8s var(--ease), filter .8s var(--ease), transform .8s var(--ease);
-    }
-
-    .page.active .fade {
-      opacity: 1;
-      filter: blur(0);
-      transform: translateY(0);
-    }
-
-    .d1 { transition-delay: .08s; }
-    .d2 { transition-delay: .16s; }
-    .d3 { transition-delay: .24s; }
-    .d4 { transition-delay: .32s; }
-
-    .soft-card {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius);
-    }
-
-    .hero-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(260px, 410px);
-      gap: clamp(28px, 6vw, 92px);
-      align-items: end;
-    }
-
-    .hero-note {
-      padding-left: 24px;
-      border-left: 1px solid var(--line-strong);
-    }
-
-    .hero-note p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.9;
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 26px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
-    }
-
-    .metric b {
-      display: block;
-      font-size: 23px;
-      letter-spacing: -.04em;
-    }
-
-    .metric span {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted);
-      font: 10px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .hero-orbit {
-      position: absolute;
-      right: -15vw;
-      top: 12vh;
-      width: min(68vw, 780px);
-      aspect-ratio: 1;
-      z-index: -1;
-      border: 1px solid rgba(79, 141, 110, .13);
-      border-radius: 50%;
-      animation: rotate 34s linear infinite;
-    }
-
-    .hero-orbit::before,
-    .hero-orbit::after {
-      content: "";
-      position: absolute;
-      inset: 18%;
-      border-radius: 50%;
-      border: 1px solid rgba(79, 141, 110, .11);
-    }
-
-    .hero-orbit::after {
-      inset: 36%;
-    }
-
-    .hero-orbit i {
-      position: absolute;
-      left: 14%;
-      top: 28%;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--green-dark);
-      box-shadow: 0 0 28px rgba(79, 141, 110, .45);
-    }
-
-    @keyframes rotate {
-      to { transform: rotate(360deg); }
-    }
-
-    .memory-grid {
-      display: grid;
-      grid-template-columns: minmax(280px, .9fr) minmax(0, 1.1fr);
-      gap: clamp(28px, 6vw, 86px);
-      align-items: center;
-    }
-
-    .memory-card {
-      min-height: 460px;
-      position: relative;
-      overflow: hidden;
-      padding: 26px;
-    }
-
-    .memory-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
+    .hero {
+      height: 188svh;
       background:
-        radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(115, 169, 139, .2), transparent 32%),
-        linear-gradient(rgba(79, 141, 110, .04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79, 141, 110, .04) 1px, transparent 1px);
-      background-size: auto, 34px 34px, 34px 34px;
+        radial-gradient(circle at 74% 20%, rgba(200, 255, 0, 0.16), transparent 24%),
+        linear-gradient(180deg, #f8fbf6 0%, #eef6ec 100%);
     }
 
-    .memory-stamp {
-      position: relative;
-      z-index: 1;
-      text-align: right;
-      color: var(--muted);
-      font: 11px/1.8 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .memory-mark {
-      position: absolute;
-      left: 24px;
-      bottom: 18px;
-      font-size: clamp(72px, 12vw, 170px);
-      line-height: .74;
-      letter-spacing: -.09em;
-      font-weight: 790;
-    }
-
-    .facts {
-      display: grid;
-      gap: 0;
-      margin-top: 30px;
-    }
-
-    .fact {
-      display: grid;
-      grid-template-columns: 92px 1fr;
-      gap: 24px;
-      padding: 15px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .fact span {
-      color: var(--muted);
-      font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    .fact p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.72;
-    }
-
-    .network-layout {
-      display: grid;
-      grid-template-columns: minmax(280px, .55fr) minmax(0, 1fr);
-      gap: clamp(30px, 5vw, 78px);
-      align-items: center;
-    }
-
-    .infra-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-top: 28px;
-    }
-
-    .infra {
-      min-height: 132px;
-      padding: 18px;
-      border-radius: 20px;
-      border: 1px solid rgba(79, 141, 110, .1);
-      background: rgba(255, 255, 255, .46);
-      transition: transform .45s var(--ease), background .45s var(--ease), box-shadow .45s var(--ease);
-    }
-
-    .infra:hover {
-      transform: translateY(-7px);
-      background: rgba(255, 255, 255, .78);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .infra b {
-      display: block;
-      margin-bottom: 12px;
-      font-size: 24px;
-      letter-spacing: -.04em;
-    }
-
-    .infra p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .network-stage {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 260px;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .globe-panel {
-      position: relative;
+    .hero-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
       display: grid;
       place-items: center;
-      min-height: 560px;
+      overflow: hidden;
     }
 
-    .globe-card {
-      position: relative;
-      width: min(540px, 100%);
-      aspect-ratio: 1;
-      border-radius: 50%;
-      isolation: isolate;
-      touch-action: none;
-    }
-
-    .globe-card::before {
-      content: "";
-      position: absolute;
-      inset: 8%;
-      z-index: -1;
-      border-radius: 50%;
-      background: radial-gradient(ellipse, rgba(72, 124, 96, .18), transparent 66%);
-      filter: blur(18px);
-      transform: translateY(45%) scaleX(1.15);
-    }
-
-    .globe-card::after {
-      content: "DRAG / TOUCH TO ROTATE";
-      position: absolute;
-      left: 50%;
-      bottom: 1%;
-      display: flex;
-      align-items: center;
-      height: 34px;
-      padding: 0 14px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .72);
-      color: var(--muted);
-      box-shadow: var(--shadow-soft);
-      transform: translateX(-50%);
-      white-space: nowrap;
-      font: 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .12em;
-    }
-
-    #globeCanvas {
+    .hero-canvas {
       position: absolute;
       inset: 0;
-      display: block;
       width: 100%;
       height: 100%;
-      outline: none;
-      cursor: grab;
-      touch-action: none;
-    }
-
-    #globeCanvas:active {
-      cursor: grabbing;
-    }
-
-    .globe-loading {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      pointer-events: none;
-      color: var(--muted);
-      text-align: center;
-      padding: 24px;
-      font: 11px/1.7 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    .globe-card.ready .globe-loading {
-      display: none;
-    }
-
-    .node-panel {
-      min-height: 360px;
-      padding: 22px;
-      display: grid;
-      align-content: space-between;
-    }
-
-    .node-panel small {
       display: block;
-      margin-bottom: 10px;
-      color: var(--muted);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .12em;
-      text-transform: uppercase;
+      touch-action: pan-y;
     }
 
-    .node-panel h3 {
-      margin: 0;
-      font-size: 30px;
-      line-height: 1;
-      letter-spacing: -.05em;
+    .hero-screen-reader {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
     }
 
-    .node-panel p {
-      margin: 14px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.8;
-    }
-
-    .node-stats {
-      display: grid;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .node-stat {
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(79, 141, 110, .08);
-      background: rgba(234, 246, 239, .9);
-      color: var(--muted);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .node-stat b {
-      color: var(--ink);
-      font-size: 14px;
-      letter-spacing: 0;
-    }
-
-    .node-buttons {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .node-button {
-      min-height: 34px;
-      padding: 0 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .58);
-      color: var(--muted);
-      cursor: pointer;
-      transition: background .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease), transform .35s var(--ease);
-      font: 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .node-button:hover,
-    .node-button.active {
-      background: var(--green-dark);
-      color: #fff;
-      border-color: transparent;
-      transform: translateY(-2px);
-    }
-
-    .works-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 26px;
-      margin-bottom: 34px;
-    }
-
-    .pill {
-      height: 32px;
+    .hero-corner {
+      position: absolute;
+      left: clamp(20px, 4vw, 54px);
+      top: 96px;
+      z-index: 3;
       display: inline-flex;
       align-items: center;
-      padding: 0 13px;
+      gap: 12px;
+      height: 54px;
+      padding: 0 18px;
+      border: 1px solid rgba(17, 23, 17, 0.12);
       border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .48);
-      color: var(--muted);
-      white-space: nowrap;
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .1em;
+      background: rgba(255, 255, 255, 0.48);
+      color: var(--ink);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      font: 800 12px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
-    .work-list {
-      overflow: hidden;
+    .hero-corner svg {
+      width: 18px;
+      height: 18px;
     }
 
-    .work-row {
-      position: relative;
-      min-height: 116px;
+    .hero-hint {
+      position: absolute;
+      right: clamp(20px, 4vw, 54px);
+      top: 96px;
+      z-index: 3;
+      width: 54px;
+      height: 54px;
       display: grid;
-      grid-template-columns: 92px 1fr 170px;
-      gap: 22px;
-      align-items: center;
-      padding: 22px 26px;
-      border-bottom: 1px solid var(--line);
-      overflow: hidden;
-      transition: min-height .45s var(--ease), background .45s var(--ease), padding .45s var(--ease);
+      place-items: center;
+      border-radius: 18px;
+      background: var(--ink);
+      color: var(--white);
+      box-shadow: var(--shadow);
     }
 
-    .work-row:last-child {
+    .hero-hint::before {
+      content: "";
+      width: 18px;
+      height: 2px;
+      background: currentColor;
+      box-shadow: 12px -8px 0 currentColor;
+      transform: rotate(0deg);
+    }
+
+    .hero-marquee {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 17vh;
+      z-index: 4;
+      display: grid;
+      gap: 6px;
+      opacity: var(--marquee-opacity, 0);
+      transform: translateY(calc((1 - var(--marquee-opacity, 0)) * 40px));
+      transition:
+        opacity 0.18s linear,
+        transform 0.18s linear;
+    }
+
+    .marquee-line {
+      overflow: hidden;
+      white-space: nowrap;
+      color: var(--ink);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.06em;
+      line-height: 0.86;
+    }
+
+    .marquee-line:first-child {
+      color: var(--green-dark);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(44px, 9vw, 132px);
+      font-style: italic;
+    }
+
+    .marquee-line:last-child {
+      color: rgba(17, 23, 17, 0.78);
+      font-size: clamp(38px, 7.5vw, 108px);
+    }
+
+    .marquee-line span {
+      display: inline-block;
+      padding-right: 0.3em;
+      will-change: transform;
+    }
+
+    .marquee-left span {
+      animation: marqueeLeft 22s linear infinite;
+    }
+
+    .marquee-right span {
+      animation: marqueeRight 24s linear infinite;
+    }
+
+    @keyframes marqueeLeft {
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes marqueeRight {
+      from {
+        transform: translateX(-50%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .hero-bottom-note {
+      position: absolute;
+      left: clamp(20px, 4vw, 54px);
+      bottom: 36px;
+      z-index: 4;
+      max-width: 440px;
+      color: rgba(17, 23, 17, 0.54);
+      font-size: 14px;
+      line-height: 1.7;
+      opacity: calc(0.28 + var(--marquee-opacity, 0) * 0.72);
+    }
+
+    /* =========================================================
+       Flow zone: page 2 + page 3, no magnetic snap
+       ========================================================= */
+
+    .flow-zone {
+      min-height: 210svh;
+      padding: 120px 0;
+      background:
+        linear-gradient(rgba(17, 23, 17, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17, 23, 17, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, #eef6ec, #f8fbf6);
+      background-size: 36px 36px, 36px 36px, auto;
+      scroll-snap-align: none;
+    }
+
+    .flow-block {
+      min-height: 92svh;
+      display: grid;
+      align-items: center;
+      padding: 42px 0;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr);
+      gap: clamp(28px, 6vw, 86px);
+      align-items: start;
+    }
+
+    .monitor-panel {
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .monitor-head {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .monitor-head b {
+      font-size: 17px;
+      letter-spacing: -0.03em;
+    }
+
+    .monitor-head span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .monitor-head span::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 18px rgba(200, 255, 0, 0.6);
+    }
+
+    .monitor-list {
+      display: grid;
+    }
+
+    .monitor-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 74px;
+      gap: 18px;
+      align-items: center;
+      min-height: 76px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--line);
+      transition:
+        background 0.35s var(--ease),
+        transform 0.35s var(--ease);
+    }
+
+    .monitor-row:last-child {
       border-bottom: 0;
     }
 
-    .work-row::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, rgba(191, 225, 202, .55), transparent 62%);
-      transform: translateX(-100%);
-      transition: transform .7s var(--ease);
+    .monitor-row:hover {
+      background: rgba(200, 255, 0, 0.12);
     }
 
-    .work-row:hover {
-      min-height: 150px;
-      padding-left: 34px;
-      background: rgba(255, 255, 255, .56);
-    }
-
-    .work-row:hover::before {
-      transform: translateX(0);
-    }
-
-    .work-row > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .work-no {
-      color: var(--muted);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .12em;
-    }
-
-    .work-main h3 {
-      margin: 0;
-      font-size: clamp(28px, 4.5vw, 54px);
-      line-height: .93;
-      letter-spacing: -.063em;
-    }
-
-    .work-main p {
-      margin: 10px 0 0;
-      max-width: 640px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.74;
-    }
-
-    .work-tags {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 6px;
-    }
-
-    .work-tags span {
-      padding: 6px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .48);
-      color: var(--muted);
-      font: 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    }
-
-    .status-grid {
+    .monitor-name {
       display: grid;
-      grid-template-columns: minmax(0, .95fr) minmax(300px, 1.05fr);
-      gap: clamp(24px, 5vw, 74px);
-      align-items: center;
+      gap: 7px;
     }
 
-    .status-board {
-      min-height: 430px;
-      display: grid;
-      align-content: center;
-      gap: 16px;
-      overflow: hidden;
-      padding: 22px;
+    .monitor-name b {
+      font-size: 15px;
+      letter-spacing: -0.02em;
     }
 
-    .status-row {
-      display: grid;
-      grid-template-columns: 105px 1fr 48px;
-      gap: 13px;
-      align-items: center;
+    .monitor-name span {
       color: var(--muted);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .04em;
+      font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
 
-    .bars {
-      height: 28px;
+    .uptime-grid {
+      height: 30px;
       display: grid;
-      grid-template-columns: repeat(30, 1fr);
+      grid-template-columns: repeat(30, minmax(3px, 1fr));
       gap: 3px;
+      align-items: end;
     }
 
-    .bars i {
+    .uptime-grid i {
       display: block;
+      height: 100%;
       border-radius: 5px;
-      background: #a8cfb6;
+      background: #9ccfa9;
       transform-origin: bottom;
-      transform: scaleY(.2);
-      opacity: .2;
+      animation: barWake 0.7s var(--ease) both;
+      animation-delay: calc(var(--i) * 0.018s + var(--row) * 0.08s);
     }
 
-    .page.active .bars i {
-      animation: barIn .8s var(--ease) both;
-      animation-delay: calc(var(--row) * .08s + var(--i) * .016s + .25s);
+    .uptime-grid i.mid {
+      background: #d7ca86;
     }
 
-    .bars i.mid {
-      background: #d8c287;
+    .uptime-grid i.bad {
+      background: #d58b78;
     }
 
-    .bars i.bad {
-      background: #d59384;
-    }
+    @keyframes barWake {
+      from {
+        opacity: 0;
+        transform: scaleY(0.12);
+      }
 
-    @keyframes barIn {
       to {
         opacity: 1;
         transform: scaleY(1);
       }
     }
 
-    .terminal {
-      min-height: 100px;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(79, 141, 110, .12);
+    .monitor-percent {
+      justify-self: end;
+      font: 800 12px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .tech-wall {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .tech-card {
+      min-height: 190px;
+      padding: 22px;
+      border-radius: 26px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.52);
+      box-shadow: var(--shadow-soft);
+      transition:
+        transform 0.45s var(--ease),
+        background 0.45s var(--ease),
+        box-shadow 0.45s var(--ease);
+    }
+
+    .tech-card:hover {
+      transform: translateY(-10px);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: var(--shadow);
+    }
+
+    .tech-card small {
       color: var(--muted);
-      font: 11px/1.8 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font: 800 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
-    .terminal span {
-      color: var(--green-dark);
+    .tech-card h3 {
+      margin: 36px 0 12px;
+      font-size: clamp(30px, 4vw, 54px);
+      line-height: 0.88;
+      letter-spacing: -0.075em;
     }
 
-    .timeline {
-      position: relative;
-      margin-top: 44px;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .timeline::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      height: 1px;
-      background: var(--line);
-      transform: scaleX(0);
-      transform-origin: left;
-    }
-
-    .page.active .timeline::before {
-      animation: timelineGrow 1.08s var(--ease) .22s forwards;
-    }
-
-    @keyframes timelineGrow {
-      to {
-        transform: scaleX(1);
-      }
-    }
-
-    .time-card {
-      position: relative;
-      min-height: 320px;
-      display: grid;
-      align-content: space-between;
-      padding: 24px 22px 0 0;
-      border-right: 1px solid var(--line);
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity .65s var(--ease), transform .65s var(--ease), background .45s var(--ease), padding-left .45s var(--ease);
-    }
-
-    .page.active .time-card {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .page.active .time-card:nth-child(1) { transition-delay: .36s; }
-    .page.active .time-card:nth-child(2) { transition-delay: .48s; }
-    .page.active .time-card:nth-child(3) { transition-delay: .60s; }
-    .page.active .time-card:nth-child(4) { transition-delay: .72s; }
-
-    .time-card:hover {
-      padding-left: 16px;
-      background: rgba(255, 255, 255, .42);
-    }
-
-    .time-card::before {
-      content: "";
-      position: absolute;
-      top: -5px;
-      left: 0;
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--green-dark);
-      transform: scale(0);
-    }
-
-    .page.active .time-card::before {
-      animation: dotPop .45s var(--ease) forwards;
-      animation-delay: inherit;
-    }
-
-    @keyframes dotPop {
-      to {
-        transform: scale(1);
-      }
-    }
-
-    .time-card:last-child {
-      border-right: 0;
-    }
-
-    .year {
-      color: transparent;
-      font-size: clamp(46px, 7vw, 92px);
-      line-height: .82;
-      letter-spacing: -.08em;
-      font-weight: 760;
-      -webkit-text-stroke: 1.15px rgba(79, 141, 110, .62);
-    }
-
-    .time-card p {
-      margin: 22px 0 0;
-      max-width: 260px;
+    .tech-card p {
+      margin: 0;
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.74;
+      line-height: 1.7;
     }
 
-    .time-card .tag {
-      margin-top: 28px;
+    /* =========================================================
+       Page 4: merge progress works
+       ========================================================= */
+
+    .works-merge {
+      height: 180svh;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(200, 255, 0, 0.14), transparent 24%),
+        linear-gradient(180deg, #f8fbf6, #edf6ec);
+    }
+
+    .merge-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .merge-bg-word {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(17, 23, 17, 0.08);
+      font-size: clamp(100px, 28vw, 460px);
+      line-height: 0.8;
+      font-weight: 900;
+      letter-spacing: -0.12em;
+      pointer-events: none;
+    }
+
+    .merge-panel {
+      position: absolute;
+      top: 50%;
+      width: min(520px, 42vw);
+      min-height: 62vh;
+      display: grid;
+      align-content: center;
+      padding: clamp(24px, 4vw, 54px);
+      border-radius: 32px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.62);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      transform:
+        translateY(-50%)
+        translateX(calc(var(--side) * (38vw - var(--merge, 0) * 32vw)))
+        rotate(calc(var(--side) * (6deg - var(--merge, 0) * 6deg)));
+      transition: transform 0.12s linear;
+    }
+
+    .merge-panel.left {
+      --side: -1;
+      left: 50%;
+    }
+
+    .merge-panel.right {
+      --side: 1;
+      right: 50%;
+    }
+
+    .merge-panel small {
       color: var(--muted);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .12em;
+      font: 800 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
+    }
+
+    .merge-panel h2 {
+      margin: 22px 0 0;
+      font-size: clamp(42px, 7vw, 110px);
+      line-height: 0.85;
+      letter-spacing: -0.08em;
+    }
+
+    .works-result {
+      position: relative;
+      z-index: 4;
+      width: min(1080px, calc(100% - 48px));
+      opacity: clamp(0, calc((var(--merge, 0) - 0.56) * 3.2), 1);
+      transform: scale(calc(0.94 + var(--merge, 0) * 0.06));
+      transition:
+        opacity 0.12s linear,
+        transform 0.12s linear;
+    }
+
+    .works-board {
+      border-radius: 34px;
+      border: 1px solid rgba(17, 23, 17, 0.14);
+      background: rgba(255, 255, 255, 0.76);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .works-board-head {
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 26px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .works-board-head b {
+      font-size: 20px;
+      letter-spacing: -0.04em;
+    }
+
+    .works-board-head span {
+      color: var(--muted);
+      font: 800 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .work-item {
+      min-height: 118px;
+      display: grid;
+      grid-template-columns: 82px 1fr 150px;
+      gap: 18px;
+      align-items: center;
+      padding: 22px 26px;
+      border-bottom: 1px solid var(--line);
+      transition:
+        min-height 0.45s var(--ease),
+        background 0.45s var(--ease),
+        padding 0.45s var(--ease);
+    }
+
+    .work-item:last-child {
+      border-bottom: 0;
+    }
+
+    .work-item:hover {
+      min-height: 148px;
+      padding-left: 36px;
+      background: rgba(200, 255, 0, 0.13);
+    }
+
+    .work-item .num {
+      color: var(--muted);
+      font: 800 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.12em;
+    }
+
+    .work-item h3 {
+      margin: 0;
+      font-size: clamp(30px, 4.4vw, 60px);
+      line-height: 0.88;
+      letter-spacing: -0.074em;
+    }
+
+    .work-item p {
+      margin: 10px 0 0;
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .work-item .tag {
+      justify-self: end;
+      color: var(--muted);
+      font: 800 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* =========================================================
+       Page 5: contact
+       ========================================================= */
+
+    .contact {
+      min-height: 100svh;
+      display: grid;
+      align-items: center;
+      background:
+        radial-gradient(circle at 76% 18%, rgba(200, 255, 0, 0.18), transparent 24%),
+        linear-gradient(180deg, #edf6ec, #f8fbf6);
     }
 
     .contact-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(270px, 390px);
-      gap: clamp(28px, 5vw, 76px);
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+      gap: clamp(28px, 6vw, 90px);
       align-items: end;
     }
 
     .contact-title {
       margin: 0;
-      font-size: clamp(58px, 10.5vw, 150px);
-      line-height: .78;
-      letter-spacing: -.095em;
-      font-weight: 790;
+      max-width: 850px;
+      font-size: clamp(58px, 12vw, 168px);
+      line-height: 0.78;
+      letter-spacing: -0.1em;
+      font-weight: 900;
     }
 
-    .contact-card {
-      min-height: 360px;
-      display: grid;
-      align-content: space-between;
+    .contact-panel {
       padding: 22px;
+      border-radius: 32px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.66);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
     }
 
-    .contact-links {
-      display: grid;
-      gap: 10px;
+    .contact-panel p {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
     }
 
     .contact-link {
-      min-height: 56px;
+      min-height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px 0 20px;
+      padding: 0 18px 0 20px;
       border-radius: 999px;
-      border: 1px solid rgba(79, 141, 110, .12);
-      background: rgba(234, 246, 239, .9);
-      color: var(--muted);
-      transition: background .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease), transform .35s var(--ease);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      letter-spacing: .1em;
+      border: 1px solid rgba(17, 23, 17, 0.12);
+      background: rgba(255, 255, 255, 0.54);
+      color: var(--ink);
+      font: 800 12px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
+      transition:
+        transform 0.42s var(--ease),
+        background 0.42s var(--ease);
+    }
+
+    .contact-link + .contact-link {
+      margin-top: 10px;
     }
 
     .contact-link:hover {
-      background: #fff;
-      color: var(--ink);
-      border-color: rgba(79, 141, 110, .2);
-      transform: translateX(6px);
+      transform: translateX(8px);
+      background: var(--lime);
     }
 
-    @media (max-width: 1080px) {
-      .network-stage {
-        grid-template-columns: 1fr;
-      }
-
-      .node-panel {
-        min-height: auto;
-      }
-
-      .globe-card {
-        width: min(480px, 100%);
-      }
-    }
-
-    @media (max-width: 940px) {
-      html {
-        scroll-snap-type: none;
-      }
-
+    @media (max-width: 900px) {
       .topbar {
-        grid-template-columns: 1fr auto;
-        height: 60px;
-        padding: 0 18px;
+        height: 64px;
       }
 
-      .chapter,
-      .rail {
+      .topbar span:nth-child(2) {
         display: none;
       }
 
-      .page {
-        min-height: auto;
-        padding: 86px 20px 52px;
+      .nav-dot {
+        display: none;
       }
 
-      .hero-layout,
-      .memory-grid,
+      main {
+        scroll-snap-type: y proximity;
+      }
+
+      .hero {
+        height: 176svh;
+      }
+
+      .hero-corner {
+        top: 82px;
+        height: 50px;
+      }
+
+      .hero-hint {
+        top: 82px;
+        width: 50px;
+        height: 50px;
+      }
+
+      .hero-marquee {
+        bottom: 18vh;
+      }
+
+      .hero-bottom-note {
+        right: 20px;
+        max-width: none;
+      }
+
+      .flow-zone {
+        padding: 80px 0;
+      }
+
+      .flow-grid,
       .network-layout,
-      .status-grid,
       .contact-layout {
         grid-template-columns: 1fr;
       }
 
-      .hero-note {
-        padding-left: 0;
-        border-left: 0;
+      .monitor-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 18px;
       }
 
-      .metrics {
+      .monitor-percent {
+        justify-self: start;
+      }
+
+      .tech-wall {
         grid-template-columns: 1fr;
       }
 
-      .infra-grid {
+      .works-merge {
+        height: 170svh;
+      }
+
+      .merge-panel {
+        width: min(78vw, 420px);
+        min-height: 44vh;
+      }
+
+      .merge-panel.left {
+        left: 44%;
+      }
+
+      .merge-panel.right {
+        right: 44%;
+      }
+
+      .works-result {
+        width: calc(100% - 28px);
+      }
+
+      .work-item {
         grid-template-columns: 1fr;
       }
 
-      .globe-panel {
-        min-height: 430px;
+      .work-item .tag {
+        justify-self: start;
       }
 
-      .globe-card {
-        width: min(380px, 100%);
-      }
-
-      .works-head {
-        display: grid;
-      }
-
-      .work-row {
-        grid-template-columns: 1fr;
-        gap: 14px;
-      }
-
-      .work-tags {
-        justify-content: flex-start;
-      }
-
-      .status-row {
-        grid-template-columns: 1fr;
-        gap: 9px;
-      }
-
-      .timeline {
-        grid-template-columns: 1fr;
-      }
-
-      .time-card {
-        min-height: auto;
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
-        padding: 28px 0;
-      }
-
-      .time-card:last-child {
-        border-bottom: 0;
-      }
-
-      .display {
-        font-size: clamp(64px, 22vw, 118px);
-      }
-
-      .title {
-        font-size: clamp(35px, 11vw, 62px);
+      .contact {
+        padding: 86px 0 48px;
       }
     }
 
@@ -1075,835 +898,526 @@
       *,
       *::before,
       *::after {
-        animation-duration: .001ms !important;
+        animation-duration: 0.001ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: .001ms !important;
+        transition-duration: 0.001ms !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="grain"></div>
+  <div class="noise"></div>
 
   <header class="topbar">
-    <div class="brand">NKX / QQ.SG</div>
-    <div class="chapter" id="chapter">01 — Signal</div>
-    <div class="clock" id="clock">TPE +08</div>
+    <span><i></i> QQ.SG</span>
+    <span>NKX / Infrastructure</span>
+    <span id="clock">TPE +08</span>
   </header>
 
-  <nav class="rail" aria-label="page navigation">
-    <a href="#signal" class="active"></a>
-    <a href="#memory"></a>
-    <a href="#network"></a>
-    <a href="#works"></a>
-    <a href="#status"></a>
-    <a href="#timeline"></a>
-    <a href="#contact"></a>
+  <nav class="nav-dot" aria-label="Page navigation">
+    <a href="#hero" class="active" aria-label="Hero"></a>
+    <a href="#flow" aria-label="Flow"></a>
+    <a href="#works" aria-label="Works"></a>
+    <a href="#contact" aria-label="Contact"></a>
   </nav>
 
   <main>
-    <section class="page active" id="signal" data-title="01 — Signal" data-no="01">
-      <div class="hero-orbit"><i></i></div>
+    <section class="section snap hero" id="hero">
+      <div class="hero-sticky" id="heroSticky">
+        <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+        <h1 class="hero-screen-reader">QQ.SG</h1>
 
-      <div class="wrap hero-layout">
-        <div>
-          <div class="kicker fade">Nie Kaixiang · Memoir of Nodes</div>
-          <h1 class="display fade d1">QQ.SG</h1>
+        <a class="hero-corner" href="#works">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <path d="M6 8h12l-1 12H7L6 8Z"></path>
+            <path d="M9 8a3 3 0 0 1 6 0"></path>
+          </svg>
+          Works
+        </a>
+
+        <div class="hero-hint" aria-hidden="true"></div>
+
+        <div class="hero-marquee" id="heroMarquee">
+          <div class="marquee-line marquee-left">
+            <span>WE DID IT AT HOME · ROUTES ACROSS THE SEA · OLD SERVERS STILL GLOW · </span>
+            <span>WE DID IT AT HOME · ROUTES ACROSS THE SEA · OLD SERVERS STILL GLOW · </span>
+          </div>
+          <div class="marquee-line marquee-right">
+            <span>NEVER A BRITISH GP WEEKEND · ALWAYS A SMALL LIGHT IN TERMINAL · </span>
+            <span>NEVER A BRITISH GP WEEKEND · ALWAYS A SMALL LIGHT IN TERMINAL · </span>
+          </div>
         </div>
 
-        <aside class="hero-note fade d2">
-          <p>
-            有些域名像旧日书签，夹在年少的页间。后来我把服务器、线路、终端里微亮的光，
-            一点一点写进自己的远方。
-          </p>
-
-          <div class="metrics">
-            <div class="metric">
-              <b>IDC</b>
-              <span>first trade</span>
-            </div>
-            <div class="metric">
-              <b>PVE</b>
-              <span>small machine room</span>
-            </div>
-            <div class="metric">
-              <b>CF</b>
-              <span>edge and wind</span>
-            </div>
-          </div>
-        </aside>
+        <p class="hero-bottom-note">
+          不需要点按。手指或鼠标划过 QQ.SG 的地方，会像被光擦亮一样短暂变成白色或彩色，然后慢慢回到黑色。
+        </p>
       </div>
     </section>
 
-    <section class="page" id="memory" data-title="02 — Memory" data-no="02">
-      <div class="wrap memory-grid">
-        <div class="memory-card soft-card fade">
-          <div class="memory-stamp">
-            Longyan / Fujian<br>
-            Asia Taipei +08<br>
-            Those bright terminals
-          </div>
-          <div class="memory-mark">N<br>KX</div>
-        </div>
-
-        <div>
-          <div class="kicker fade">Memory</div>
-          <h2 class="title fade d1">最早的那台机器，像一盏不肯睡去的灯。</h2>
-          <p class="lead fade d2">
-            那时还不懂什么叫架构，只觉得 SSH 连上的一瞬间，远方忽然有了回声。
-            命令敲下去，屏幕安静亮着，像深夜里给自己留的一条小路。
-          </p>
-
-          <div class="facts fade d3">
-            <div class="fact">
-              <span>Focus</span>
-              <p>网络工程、虚拟化、IDC 运维、轻量化 Web 工具。</p>
-            </div>
-            <div class="fact">
-              <span>Style</span>
-              <p>少一点模板式炫技，多一点真实经历留下的温度。</p>
-            </div>
-            <div class="fact">
-              <span>Now</span>
-              <p>把做过的站、跑过的节点、修过的线路，整理成能继续生长的作品集。</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" id="network" data-title="03 — Network" data-no="03">
-      <div class="wrap network-layout">
-        <div>
-          <div class="kicker fade">Network</div>
-          <h2 class="title fade d1">节点散在海的两边，像夜航船上的微光。</h2>
-          <p class="lead fade d2">
-            这颗球体是真正的 WebGL 3D Globe。它会自动自转，也可以用鼠标或手指拖动。
-            节点贴在球面上，弧线沿着空间伸展，像一条条曾经跑过的路。
-          </p>
-
-          <div class="infra-grid fade d3">
-            <div class="infra">
-              <b>WG</b>
-              <p>隧道像细线，把几台机器悄悄系在一起。</p>
-            </div>
-            <div class="infra">
-              <b>Probe</b>
-              <p>绿色小格子是平安，红色小格子是需要回头看的夜晚。</p>
-            </div>
-            <div class="infra">
-              <b>DNS</b>
-              <p>名字被解析到远方，像信终于找到了门牌。</p>
-            </div>
-            <div class="infra">
-              <b>VPS</b>
-              <p>每一台虚拟机，都是一次小小的试验场。</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="network-stage fade d2">
-          <div class="globe-panel">
-            <div class="globe-card" id="globeCard">
-              <canvas id="globeCanvas" aria-label="interactive 3D globe"></canvas>
-              <div class="globe-loading">
-                Loading true 3D globe...<br>
-                若长时间不显示，通常是 Three.js CDN 未加载。
-              </div>
-            </div>
-          </div>
-
-          <aside class="node-panel soft-card">
-            <div>
-              <small>selected node</small>
-              <h3 id="nodeTitle">Singapore Core</h3>
-              <p id="nodeCopy">像海风里最先亮起的那盏灯，常常是整个互联的起点。</p>
-            </div>
-
-            <div>
-              <div class="node-stats">
-                <div class="node-stat">
-                  <span>latency</span>
-                  <b id="nodeLatency">49 ms</b>
-                </div>
-                <div class="node-stat">
-                  <span>role</span>
-                  <b id="nodeRole">Transit / WG</b>
-                </div>
-                <div class="node-stat">
-                  <span>mode</span>
-                  <b>auto rotate + drag</b>
-                </div>
-              </div>
-
-              <div class="node-buttons" id="nodeButtons"></div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" id="works" data-title="04 — Works" data-no="04">
-      <div class="wrap">
-        <div class="works-head">
+    <section class="section flow-zone" id="flow">
+      <div class="flow-block">
+        <div class="wrap flow-grid">
           <div>
-            <div class="kicker fade">Works</div>
-            <h2 class="title fade d1">做过的东西，像一枚枚旧票根。</h2>
+            <p class="kicker">Availability</p>
+            <h2 class="title">先看站点是否还醒着。</h2>
+            <p class="lead">
+              第二页和第三页不做强磁吸，让内容可以连续往下看。这里放网站可用性、节点连通性，
+              像状态页一样清楚，但不要堆成模板后台。
+            </p>
           </div>
-          <span class="pill fade d2">Hover to unfold</span>
+
+          <div class="monitor-panel">
+            <div class="monitor-head">
+              <b>Service availability</b>
+              <span>last 30 days</span>
+            </div>
+            <div class="monitor-list" id="monitorList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-block">
+        <div class="wrap flow-grid">
+          <div>
+            <p class="kicker">Virtualization</p>
+            <h2 class="title">这些技术，是我摸过的机器留下的痕迹。</h2>
+            <p class="lead">
+              不写成夸张的“精通”，而是写成真实接触过、部署过、排查过的技术栈。
+              这样更像个人经历，不像模板简历。
+            </p>
+          </div>
+
+          <div class="tech-wall">
+            <article class="tech-card">
+              <small>Hypervisor</small>
+              <h3>PVE</h3>
+              <p>KVM、LXC、存储、内网、快照、备份，适合把一台服务器拆成很多个可实验的房间。</p>
+            </article>
+            <article class="tech-card">
+              <small>Enterprise</small>
+              <h3>ESXi</h3>
+              <p>更偏企业虚拟化的体验，适合理解宿主机、数据存储和虚拟交换机之间的关系。</p>
+            </article>
+            <article class="tech-card">
+              <small>Windows</small>
+              <h3>Hyper-V</h3>
+              <p>Windows Server 场景下的虚拟化环境，和域控、内网实验、服务部署一起使用。</p>
+            </article>
+            <article class="tech-card">
+              <small>Storage</small>
+              <h3>Ceph</h3>
+              <p>不是单机思路，而是把多台机器连成一个整体；稳定、网络和磁盘都会影响它的脾气。</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section snap works-merge" id="works">
+      <div class="merge-sticky" id="mergeSticky">
+        <div class="merge-bg-word">WORKS</div>
+
+        <div class="merge-panel left">
+          <small>left side</small>
+          <h2>Projects</h2>
         </div>
 
-        <div class="work-list soft-card fade d3">
-          <a class="work-row" href="https://status.nkx.moe" target="_blank" rel="noreferrer">
-            <div class="work-no">01</div>
-            <div class="work-main">
-              <h3>NIE NodeGet</h3>
-              <p>把节点的呼吸留在页面上：延迟、连通性、资源占用，以及那些忽然变红的小格子。</p>
-            </div>
-            <div class="work-tags">
-              <span>Status</span>
-              <span>Probe</span>
-              <span>UI</span>
-            </div>
-          </a>
+        <div class="merge-panel right">
+          <small>right side</small>
+          <h2>Memory</h2>
+        </div>
 
-          <a class="work-row" href="https://niekaixiang.com" target="_blank" rel="noreferrer">
-            <div class="work-no">02</div>
-            <div class="work-main">
-              <h3>NIE Blog</h3>
-              <p>写文章，也写一次次折腾后的注脚。静态页面很轻，却能放下很长的路。</p>
+        <div class="works-result">
+          <div class="works-board">
+            <div class="works-board-head">
+              <b>Selected works</b>
+              <span>merged by scroll</span>
             </div>
-            <div class="work-tags">
-              <span>SSG</span>
-              <span>Python</span>
-              <span>Blog</span>
-            </div>
-          </a>
 
-          <div class="work-row">
-            <div class="work-no">03</div>
-            <div class="work-main">
-              <h3>Cloudflare Lab</h3>
-              <p>把 Pages、Workers、DNS 和边缘函数当成积木，试着搭出不用服务器也能运行的小工具。</p>
-            </div>
-            <div class="work-tags">
-              <span>Edge</span>
-              <span>DNS</span>
-              <span>API</span>
-            </div>
-          </div>
+            <a class="work-item" href="https://status.nkx.moe" target="_blank" rel="noreferrer">
+              <span class="num">01</span>
+              <div>
+                <h3>探针前端主题</h3>
+                <p>状态页、延迟小格子、节点详情、可用性历史，把服务器的状态展示得更像一个作品。</p>
+              </div>
+              <span class="tag">Status UI</span>
+            </a>
 
-          <div class="work-row">
-            <div class="work-no">04</div>
-            <div class="work-main">
-              <h3>VPS Tools</h3>
-              <p>剩余价值、到期提醒、连通性检测——这些细小工具，都是日常运维里长出来的枝叶。</p>
+            <a class="work-item" href="https://niekaixiang.com" target="_blank" rel="noreferrer">
+              <span class="num">02</span>
+              <div>
+                <h3>个人博客</h3>
+                <p>记录折腾过的系统、网络、部署方式和一些旧日笔记。页面轻，但能放下很长的路。</p>
+              </div>
+              <span class="tag">Blog</span>
+            </a>
+
+            <div class="work-item">
+              <span class="num">03</span>
+              <div>
+                <h3>Cloudflare 小工具</h3>
+                <p>Pages、Workers、DNS、KV、D1，尝试把一些轻量服务放到边缘上运行。</p>
+              </div>
+              <span class="tag">Edge</span>
             </div>
-            <div class="work-tags">
-              <span>Tools</span>
-              <span>HTML</span>
-              <span>UX</span>
+
+            <div class="work-item">
+              <span class="num">04</span>
+              <div>
+                <h3>VPS 工具集</h3>
+                <p>剩余价值计算、到期提醒、HTTP/S 连通性检测、轻量状态展示，都是日常需求长出来的枝叶。</p>
+              </div>
+              <span class="tag">Tools</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="page" id="status" data-title="05 — Status" data-no="05">
-      <div class="wrap status-grid">
-        <div>
-          <div class="kicker fade">Status</div>
-          <h2 class="title fade d1">有些平安，是一格一格亮起来的。</h2>
-          <p class="lead fade d2">
-            监控页面看似冰冷，其实也有情绪。绿色是安静的日子，黄色是犹豫，
-            红色是提醒我：还有一段路没走稳。
-          </p>
-        </div>
-
-        <div class="status-board soft-card fade d3">
-          <div id="statusRows"></div>
-          <div class="terminal" id="terminalText">
-            <span>$</span> initializing monitor stream...
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" id="timeline" data-title="06 — Timeline" data-no="06">
-      <div class="wrap">
-        <div class="kicker fade">Timeline</div>
-        <h2 class="title fade d1">回头看，路并不长，却处处有光。</h2>
-        <p class="lead fade d2">很多事情当时只是随手一试，后来才发现，它们悄悄连成了今天的自己。</p>
-
-        <div class="timeline fade d3">
-          <div class="time-card">
-            <div>
-              <div class="year">2020</div>
-              <p>第一次认真看见服务器。那时远方只是一个 IP，却已经足够让人心动。</p>
-            </div>
-            <div class="tag">First Server</div>
-          </div>
-
-          <div class="time-card">
-            <div>
-              <div class="year">2023</div>
-              <p>接触 IDC 流程，开始明白服务不是机器本身，而是交付、稳定与信任。</p>
-            </div>
-            <div class="tag">IDC Workflow</div>
-          </div>
-
-          <div class="time-card">
-            <div>
-              <div class="year">2025</div>
-              <p>PVE、KVM、WireGuard、Cloudflare 和监控面板，慢慢变成日常的工具箱。</p>
-            </div>
-            <div class="tag">Infra Stack</div>
-          </div>
-
-          <div class="time-card">
-            <div>
-              <div class="year">2026</div>
-              <p>把走过的路整理出来。不是为了炫耀，只是不想让那些夜晚白白过去。</p>
-            </div>
-            <div class="tag">Next Chapter</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" id="contact" data-title="07 — Contact" data-no="07">
+    <section class="section snap contact" id="contact">
       <div class="wrap contact-layout">
         <div>
-          <div class="kicker fade">Contact</div>
-          <h2 class="contact-title fade d1">仍在<br>路上。</h2>
-          <p class="lead fade d2">
-            若有一天这些节点都迁往别处，至少这里还会记得：
-            我曾怎样从一盏小小的终端灯，望向更远的网络。
+          <p class="kicker">Contact</p>
+          <h2 class="contact-title">仍在<br />路上。</h2>
+          <p class="lead">
+            若这些节点以后迁往别处，至少这里还会记得：我曾怎样从一盏小小的终端灯，
+            望向更远的网络。
           </p>
         </div>
 
-        <aside class="contact-card soft-card fade d3">
-          <p class="muted">
-            这不是终点，只是一页夹在时间里的书签。以后新的项目、新的机器、新的线路，
-            都还可以继续写进来。
-          </p>
+        <div class="contact-panel">
+          <p>邮箱、状态页、博客和几个域名先放在这里。以后要加 Telegram、GitHub 或更多入口，也可以继续扩展。</p>
 
-          <div class="contact-links">
-            <a class="contact-link" href="mailto:me@qq.sg">
-              me@qq.sg <span>↗</span>
-            </a>
-            <a class="contact-link" href="https://status.nkx.moe" target="_blank" rel="noreferrer">
-              status.nkx.moe <span>↗</span>
-            </a>
-            <a class="contact-link" href="https://niekaixiang.com" target="_blank" rel="noreferrer">
-              niekaixiang.com <span>↗</span>
-            </a>
-          </div>
-        </aside>
+          <a class="contact-link" href="mailto:me@niekaixiang.com">
+            me@niekaixiang.com <span>↗</span>
+          </a>
+          <a class="contact-link" href="https://status.nkx.moe" target="_blank" rel="noreferrer">
+            status.nkx.moe <span>↗</span>
+          </a>
+          <a class="contact-link" href="https://niekaixiang.com" target="_blank" rel="noreferrer">
+            niekaixiang.com <span>↗</span>
+          </a>
+          <a class="contact-link" href="https://qq.sg" target="_blank" rel="noreferrer">
+            qq.sg <span>↗</span>
+          </a>
+        </div>
       </div>
     </section>
   </main>
 
   <script>
     (() => {
-      const pages = [...document.querySelectorAll('.page')];
-      const navItems = [...document.querySelectorAll('.rail a')];
-      const chapter = document.getElementById('chapter');
-      const clock = document.getElementById('clock');
+      const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
 
-      function setActive(page) {
-        pages.forEach((item) => item.classList.toggle('active', item === page));
-        navItems.forEach((item) => item.classList.toggle('active', item.getAttribute('href') === '#' + page.id));
-        if (chapter) chapter.textContent = page.dataset.title || '';
-      }
+      /* =========================================================
+         Clock
+         ========================================================= */
 
-      const observer = new IntersectionObserver((entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      const clock = document.getElementById("clock");
 
-        if (visible) setActive(visible.target);
-      }, { threshold: [0.5, 0.65, 0.8] });
-
-      pages.forEach((page) => observer.observe(page));
-
-      function updatePageProgress() {
-        const viewportHeight = innerHeight || 1;
-        pages.forEach((page) => {
-          const rect = page.getBoundingClientRect();
-          const center = rect.top + rect.height / 2;
-          const seen = Math.max(0, Math.min(1, 1 - Math.abs(center - viewportHeight / 2) / viewportHeight));
-          page.style.setProperty('--seen', seen.toFixed(3));
-        });
-
-        requestAnimationFrame(updatePageProgress);
-      }
-
-      updatePageProgress();
-
-      function setClock() {
+      function updateClock() {
         if (!clock) return;
-        clock.textContent = new Date().toLocaleTimeString('zh-CN', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZone: 'Asia/Taipei',
-        }) + ' / TPE';
+
+        clock.textContent =
+          new Date().toLocaleTimeString("zh-CN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "Asia/Taipei"
+          }) + " / TPE";
       }
 
-      setClock();
-      setInterval(setClock, 20000);
+      updateClock();
+      setInterval(updateClock, 15000);
 
-      const statusRows = [
-        ['FJ Mobile', '99.9%', [8]],
-        ['TW Edge', '100%', []],
-        ['HK Transit', '98.7%', [2, 11, 12]],
-        ['SG Core', '99.4%', [22]],
-        ['US Backup', '97.8%', [4, 5, 19]],
-      ];
+      /* =========================================================
+         Hero canvas QQ.SG trail effect
+         - Base: black text
+         - Random sweeps: colorful / white strokes clipped inside text
+         - Pointer: mouse / touch move creates temporary bright trail
+         ========================================================= */
 
-      const statusRowsElement = document.getElementById('statusRows');
+      const canvas = document.getElementById("heroCanvas");
+      const hero = document.getElementById("hero");
+      const heroSticky = document.getElementById("heroSticky");
+      const ctx = canvas.getContext("2d", { alpha: true });
 
-      if (statusRowsElement) {
-        statusRowsElement.innerHTML = statusRows.map(([name, percent, issues], row) => {
-          const bars = Array.from({ length: 30 }, (_, i) => {
-            let cls = '';
-            if (issues.includes(i)) cls = issues.length > 2 ? 'bad' : 'mid';
-            return `<i class="${cls}" style="--i:${i};--row:${row}"></i>`;
-          }).join('');
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let textMetrics = null;
+      let titleProgress = 0;
+      let strokes = [];
+      let randomTimer = 0;
 
-          return `
-            <div class="status-row">
-              <span>${name}</span>
-              <div class="bars">${bars}</div>
-              <strong>${percent}</strong>
-            </div>
-          `;
-        }).join('');
+      const text = "QQ.SG";
+
+      function resizeCanvas() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        measureText();
       }
 
-      const terminal = document.getElementById('terminalText');
-      const terminalLines = [
-        '<span>$</span> ping fj-mobile --tcp 443 / 32ms ok',
-        '<span>$</span> route hk-edge via wg0 / keepalive 25s',
-        '<span>$</span> probe sg-core / uptime 99.4%',
-        '<span>$</span> cf worker healthcheck / 200 OK',
-        '<span>$</span> render 30d history / ready',
-      ];
-
-      let terminalIndex = 0;
-
-      if (terminal) {
-        setInterval(() => {
-          terminalIndex = (terminalIndex + 1) % terminalLines.length;
-          terminal.innerHTML = terminalLines[terminalIndex];
-        }, 1600);
+      function getFontSize() {
+        const base = Math.min(width * 0.265, height * 0.31);
+        const mobile = width < 720 ? Math.min(width * 0.31, height * 0.22) : base;
+        return Math.max(76, mobile - titleProgress * 18);
       }
 
-      document.querySelectorAll('.memory-card').forEach((card) => {
-        card.addEventListener('mousemove', (event) => {
-          const rect = card.getBoundingClientRect();
-          card.style.setProperty('--mx', event.clientX - rect.left + 'px');
-          card.style.setProperty('--my', event.clientY - rect.top + 'px');
-        });
-      });
-    })();
-  </script>
-
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-
-    const canvas = document.getElementById('globeCanvas');
-    const card = document.getElementById('globeCard');
-    const nodeTitle = document.getElementById('nodeTitle');
-    const nodeCopy = document.getElementById('nodeCopy');
-    const nodeLatency = document.getElementById('nodeLatency');
-    const nodeRole = document.getElementById('nodeRole');
-    const nodeButtons = document.getElementById('nodeButtons');
-
-    if (canvas && card) {
-      const nodes = [
-        {
-          id: 'sg',
-          name: 'SG CORE',
-          title: 'Singapore Core',
-          lat: 1.35,
-          lon: 103.82,
-          latency: '49 ms',
-          role: 'Transit / WG',
-          copy: '像海风里最先亮起的那盏灯，常常是整个互联的起点。',
-          color: 0xffffff,
-        },
-        {
-          id: 'hk',
-          name: 'HK EDGE',
-          title: 'Hong Kong Edge',
-          lat: 22.32,
-          lon: 114.17,
-          latency: '31 ms',
-          role: 'Edge / Probe',
-          copy: '有时顺，有时绕，但总在靠近。很多跨海的包，都会从这里经过。',
-          color: 0xdff6e8,
-        },
-        {
-          id: 'tw',
-          name: 'TW TEST',
-          title: 'Taiwan Test',
-          lat: 25.03,
-          lon: 121.56,
-          latency: '12 ms',
-          role: 'Test / Route',
-          copy: '像一枚安静的中转页，替我记录延迟、连通与那些细微的变化。',
-          color: 0xfafffd,
-        },
-        {
-          id: 'us',
-          name: 'US BACKUP',
-          title: 'US Backup',
-          lat: 37.77,
-          lon: -122.42,
-          latency: '168 ms',
-          role: 'Backup / Failover',
-          copy: '路程更远，像长夜里的备用灯。平时安静，在需要时替人守着后方。',
-          color: 0xf2fff7,
-        },
-      ];
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-      camera.position.set(0, 0, 7.2);
-
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: true,
-        powerPreference: 'high-performance',
-      });
-
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-      const controls = new OrbitControls(camera, canvas);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.065;
-      controls.enablePan = false;
-      controls.enableZoom = false;
-      controls.rotateSpeed = 0.56;
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.82;
-      controls.touches = {
-        ONE: THREE.TOUCH.ROTATE,
-        TWO: THREE.TOUCH.DOLLY_ROTATE,
-      };
-
-      const ambientLight = new THREE.AmbientLight(0xffffff, 2.2);
-      scene.add(ambientLight);
-
-      const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
-      keyLight.position.set(4, 4, 6);
-      scene.add(keyLight);
-
-      const rimLight = new THREE.DirectionalLight(0xb8e0c5, 1.6);
-      rimLight.position.set(-4, -2, -3);
-      scene.add(rimLight);
-
-      const radius = 2.18;
-      const globeGroup = new THREE.Group();
-      scene.add(globeGroup);
-
-      const sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(radius, 96, 96),
-        new THREE.MeshPhysicalMaterial({
-          color: 0xb9ddc4,
-          roughness: 0.58,
-          metalness: 0.02,
-          clearcoat: 0.38,
-          clearcoatRoughness: 0.24,
-          transparent: true,
-          opacity: 0.94,
-        })
-      );
-      globeGroup.add(sphere);
-
-      const atmosphere = new THREE.Mesh(
-        new THREE.SphereGeometry(radius * 1.035, 96, 96),
-        new THREE.MeshBasicMaterial({
-          color: 0xd9f1e2,
-          transparent: true,
-          opacity: 0.22,
-          side: THREE.BackSide,
-        })
-      );
-      globeGroup.add(atmosphere);
-
-      function latLonToVec3(lat, lon, r = radius) {
-        const phi = ((90 - lat) * Math.PI) / 180;
-        const theta = ((lon + 180) * Math.PI) / 180;
-
-        return new THREE.Vector3(
-          -r * Math.sin(phi) * Math.cos(theta),
-          r * Math.cos(phi),
-          r * Math.sin(phi) * Math.sin(theta)
-        );
+      function getTitlePosition() {
+        const fontSize = getFontSize();
+        const centerY = height * (0.47 - titleProgress * 0.13);
+        return {
+          x: width / 2,
+          y: centerY,
+          fontSize
+        };
       }
 
-      function makeLine(points, color = 0xffffff, opacity = 0.42) {
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({
-          color,
-          transparent: true,
-          opacity,
-        });
-        return new THREE.Line(geometry, material);
+      function measureText() {
+        const pos = getTitlePosition();
+        ctx.font = `900 ${pos.fontSize}px Arial Black, Impact, Inter, system-ui, sans-serif`;
+        const metrics = ctx.measureText(text);
+
+        textMetrics = {
+          x: pos.x,
+          y: pos.y,
+          fontSize: pos.fontSize,
+          width: metrics.width,
+          ascent: metrics.actualBoundingBoxAscent || pos.fontSize * 0.76,
+          descent: metrics.actualBoundingBoxDescent || pos.fontSize * 0.18
+        };
       }
 
-      for (let lat = -60; lat <= 60; lat += 30) {
-        const points = [];
-        for (let lon = -180; lon <= 180; lon += 4) {
-          points.push(latLonToVec3(lat, lon, radius * 1.006));
-        }
-        globeGroup.add(makeLine(points, 0xffffff, 0.18));
-      }
+      function addStroke(x, y, options = {}) {
+        const angle = options.angle ?? (Math.random() * Math.PI * 2);
+        const length = options.length ?? (Math.min(width, height) * (0.16 + Math.random() * 0.16));
+        const speed = options.speed ?? (0.012 + Math.random() * 0.01);
 
-      for (let lon = -150; lon <= 180; lon += 30) {
-        const points = [];
-        for (let lat = -86; lat <= 86; lat += 3) {
-          points.push(latLonToVec3(lat, lon, radius * 1.006));
-        }
-        globeGroup.add(makeLine(points, 0xffffff, 0.14));
-      }
-
-      const markerGroup = new THREE.Group();
-      const arcGroup = new THREE.Group();
-      const flowGroup = new THREE.Group();
-      globeGroup.add(arcGroup, markerGroup, flowGroup);
-
-      const markerMeshes = [];
-      const raycaster = new THREE.Raycaster();
-      const pointer = new THREE.Vector2();
-      let selected = nodes[0];
-
-      function setNode(data) {
-        selected = data;
-
-        nodeTitle.textContent = data.title;
-        nodeCopy.textContent = data.copy;
-        nodeLatency.textContent = data.latency;
-        nodeRole.textContent = data.role;
-
-        document.querySelectorAll('.node-button').forEach((button) => {
-          button.classList.toggle('active', button.dataset.id === data.id);
+        strokes.push({
+          x,
+          y,
+          px: x - Math.cos(angle) * length,
+          py: y - Math.sin(angle) * length,
+          angle,
+          length,
+          age: 0,
+          life: options.life ?? 1,
+          width: options.width ?? (18 + Math.random() * 24),
+          speed,
+          hue: options.hue ?? (80 + Math.random() * 120),
+          white: options.white ?? Math.random() > 0.55
         });
 
-        markerMeshes.forEach((marker) => {
-          const active = marker.userData.id === data.id;
-          marker.scale.setScalar(active ? 1.45 : 1);
-          marker.material.color.set(active ? 0xffffff : marker.userData.color);
+        if (strokes.length > 42) strokes.splice(0, strokes.length - 42);
+      }
+
+      function addRandomSweep() {
+        if (!textMetrics) return;
+
+        const left = textMetrics.x - textMetrics.width / 2;
+        const top = textMetrics.y - textMetrics.ascent;
+        const x = left + Math.random() * textMetrics.width;
+        const y = top + Math.random() * (textMetrics.ascent + textMetrics.descent);
+
+        addStroke(x, y, {
+          angle: -0.92 + (Math.random() - 0.5) * 1.1,
+          length: Math.min(width, height) * (0.35 + Math.random() * 0.25),
+          width: 28 + Math.random() * 34,
+          speed: 0.009,
+          life: 1.2,
+          white: Math.random() > 0.42
         });
       }
 
-      function makeLabel(text) {
-        const labelCanvas = document.createElement('canvas');
-        const context = labelCanvas.getContext('2d');
-
-        labelCanvas.width = 320;
-        labelCanvas.height = 80;
-
-        context.font = '700 28px ui-monospace, Menlo, monospace';
-        context.textBaseline = 'middle';
-        context.fillStyle = 'rgba(32, 63, 51, 0.78)';
-        context.fillText(text, 18, 40);
-
-        const texture = new THREE.CanvasTexture(labelCanvas);
-        texture.colorSpace = THREE.SRGBColorSpace;
-
-        const sprite = new THREE.Sprite(
-          new THREE.SpriteMaterial({
-            map: texture,
-            transparent: true,
-            opacity: 0.92,
-            depthTest: false,
-          })
-        );
-
-        sprite.scale.set(1.35, 0.34, 1);
-        return sprite;
+      function drawTextMask(fillStyle) {
+        const pos = getTitlePosition();
+        ctx.font = `900 ${pos.fontSize}px Arial Black, Impact, Inter, system-ui, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = fillStyle;
+        ctx.fillText(text, pos.x, pos.y);
       }
 
-      nodes.forEach((data, index) => {
-        const position = latLonToVec3(data.lat, data.lon, radius * 1.055);
+      function drawHero() {
+        ctx.clearRect(0, 0, width, height);
 
-        const marker = new THREE.Mesh(
-          new THREE.SphereGeometry(0.055, 24, 24),
-          new THREE.MeshBasicMaterial({ color: data.color })
-        );
+        measureText();
 
-        marker.position.copy(position);
-        marker.userData = data;
-        marker.userData.color = data.color;
-        markerGroup.add(marker);
-        markerMeshes.push(marker);
+        drawTextMask("#111711");
 
-        const halo = new THREE.Mesh(
-          new THREE.SphereGeometry(0.105, 24, 24),
-          new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.16,
-          })
-        );
+        ctx.save();
+        drawTextMask("#000");
+        ctx.globalCompositeOperation = "source-atop";
 
-        halo.position.copy(position.clone().multiplyScalar(1.002));
-        markerGroup.add(halo);
+        strokes.forEach((stroke) => {
+          const alpha = Math.sin(clamp(stroke.age / stroke.life) * Math.PI);
+          const dx = Math.cos(stroke.angle) * stroke.length;
+          const dy = Math.sin(stroke.angle) * stroke.length;
 
-        const label = makeLabel(data.name);
-        label.position.copy(position.clone().multiplyScalar(1.08));
-        markerGroup.add(label);
+          const gradient = ctx.createLinearGradient(stroke.x - dx * 0.5, stroke.y - dy * 0.5, stroke.x + dx * 0.5, stroke.y + dy * 0.5);
 
-        const button = document.createElement('button');
-        button.className = 'node-button' + (index === 0 ? ' active' : '');
-        button.dataset.id = data.id;
-        button.textContent = data.name;
-        button.addEventListener('click', () => setNode(data));
-        button.addEventListener('mouseenter', () => setNode(data));
-        nodeButtons.appendChild(button);
-      });
+          if (stroke.white) {
+            gradient.addColorStop(0, "rgba(255,255,255,0)");
+            gradient.addColorStop(0.38, `rgba(255,255,255,${0.95 * alpha})`);
+            gradient.addColorStop(0.56, `rgba(200,255,0,${0.72 * alpha})`);
+            gradient.addColorStop(1, "rgba(255,255,255,0)");
+          } else {
+            gradient.addColorStop(0, "rgba(255,255,255,0)");
+            gradient.addColorStop(0.28, `hsla(${stroke.hue}, 95%, 62%, ${0.88 * alpha})`);
+            gradient.addColorStop(0.52, `rgba(255,255,255,${0.75 * alpha})`);
+            gradient.addColorStop(0.78, `hsla(${stroke.hue + 80}, 95%, 60%, ${0.72 * alpha})`);
+            gradient.addColorStop(1, "rgba(255,255,255,0)");
+          }
 
-      function arcBetween(a, b, color = 0xffffff) {
-        const start = latLonToVec3(a.lat, a.lon, radius * 1.07);
-        const end = latLonToVec3(b.lat, b.lon, radius * 1.07);
-        const middle = start.clone().add(end).normalize().multiplyScalar(radius * 1.55);
-        const curve = new THREE.QuadraticBezierCurve3(start, middle, end);
-        const points = curve.getPoints(96);
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.strokeStyle = gradient;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.lineWidth = stroke.width;
 
-        const line = makeLine(points, color, 0.62);
-        line.userData.curve = curve;
-        arcGroup.add(line);
+          ctx.beginPath();
+          ctx.moveTo(stroke.px, stroke.py);
+          ctx.quadraticCurveTo(
+            stroke.x,
+            stroke.y,
+            stroke.x + dx,
+            stroke.y + dy
+          );
+          ctx.stroke();
 
-        const dot = new THREE.Mesh(
-          new THREE.SphereGeometry(0.035, 16, 16),
-          new THREE.MeshBasicMaterial({
-            color,
-            transparent: true,
-            opacity: 0.92,
-          })
-        );
+          ctx.restore();
 
-        dot.userData.curve = curve;
-        dot.userData.offset = Math.random();
-        flowGroup.add(dot);
-      }
+          stroke.age += stroke.speed;
+        });
 
-      arcBetween(nodes[0], nodes[1], 0xffffff);
-      arcBetween(nodes[1], nodes[2], 0x4f8d6e);
-      arcBetween(nodes[1], nodes[3], 0xffffff);
-      arcBetween(nodes[0], nodes[2], 0xbfe1ca);
+        ctx.restore();
 
-      const rings = new THREE.Group();
-      scene.add(rings);
+        strokes = strokes.filter((stroke) => stroke.age < stroke.life);
 
-      const ringMaterial = new THREE.LineBasicMaterial({
-        color: 0x7db395,
-        transparent: true,
-        opacity: 0.18,
-      });
-
-      [0, Math.PI / 3, -Math.PI / 3].forEach((rotation, index) => {
-        const points = [];
-        for (let angle = 0; angle <= Math.PI * 2 + 0.02; angle += 0.025) {
-          points.push(new THREE.Vector3(Math.cos(angle) * 2.86, Math.sin(angle) * 2.86, 0));
+        randomTimer += 1;
+        if (randomTimer > 86 + Math.random() * 80) {
+          randomTimer = 0;
+          addRandomSweep();
         }
 
-        const ring = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), ringMaterial.clone());
-        ring.rotation.x = index === 0 ? Math.PI / 2.08 : Math.PI / 2.55;
-        ring.rotation.y = rotation;
-        rings.add(ring);
-      });
-
-      function resize() {
-        const rect = card.getBoundingClientRect();
-        const width = Math.max(280, rect.width);
-        const height = Math.max(280, rect.height || rect.width);
-
-        renderer.setSize(width, height, false);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
+        requestAnimationFrame(drawHero);
       }
 
-      resize();
-      new ResizeObserver(resize).observe(card);
-      card.classList.add('ready');
-
-      function pointerToNdc(event) {
+      function handlePointerMove(event) {
         const rect = canvas.getBoundingClientRect();
-        pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-      }
+        let x = 0;
+        let y = 0;
 
-      function pick(event) {
-        pointerToNdc(event);
-        raycaster.setFromCamera(pointer, camera);
-        const hits = raycaster.intersectObjects(markerMeshes, false);
-
-        canvas.style.cursor = hits.length ? 'pointer' : 'grab';
-
-        if (hits.length) {
-          setNode(hits[0].object.userData);
+        if (event.touches && event.touches[0]) {
+          x = event.touches[0].clientX - rect.left;
+          y = event.touches[0].clientY - rect.top;
+        } else {
+          x = event.clientX - rect.left;
+          y = event.clientY - rect.top;
         }
+
+        addStroke(x, y, {
+          angle: -0.9 + (Math.random() - 0.5) * 1.2,
+          length: Math.min(width, height) * 0.22,
+          width: 24 + Math.random() * 28,
+          speed: 0.021,
+          life: 0.86,
+          white: Math.random() > 0.45
+        });
       }
 
-      canvas.addEventListener('pointermove', pick, { passive: true });
-      canvas.addEventListener('click', pick);
+      canvas.addEventListener("mousemove", handlePointerMove, { passive: true });
+      canvas.addEventListener("touchmove", handlePointerMove, { passive: true });
 
-      canvas.addEventListener('pointerdown', () => {
-        controls.autoRotate = false;
-        canvas.style.cursor = 'grabbing';
-      });
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      drawHero();
 
-      canvas.addEventListener('pointerup', () => {
-        setTimeout(() => {
-          controls.autoRotate = true;
-        }, 900);
-        canvas.style.cursor = 'grab';
-      });
+      /* =========================================================
+         Scroll progress
+         ========================================================= */
 
-      canvas.addEventListener('pointercancel', () => {
-        controls.autoRotate = true;
-        canvas.style.cursor = 'grab';
-      });
+      const heroMarquee = document.getElementById("heroMarquee");
+      const mergeSection = document.getElementById("works");
+      const navDots = [...document.querySelectorAll(".nav-dot a")];
+      const navTargets = ["hero", "flow", "works", "contact"].map((id) => document.getElementById(id));
 
-      let tick = 0;
+      function updateScrollState() {
+        const heroRect = hero.getBoundingClientRect();
+        const heroScrollable = Math.max(1, hero.offsetHeight - window.innerHeight);
+        const heroProgress = clamp(-heroRect.top / heroScrollable);
 
-      function animate() {
-        tick += 0.006;
+        titleProgress = heroProgress;
+        document.documentElement.style.setProperty("--marquee-opacity", clamp((heroProgress - 0.28) / 0.32).toFixed(3));
 
-        controls.update();
+        const mergeRect = mergeSection.getBoundingClientRect();
+        const mergeScrollable = Math.max(1, mergeSection.offsetHeight - window.innerHeight);
+        const mergeProgress = clamp(-mergeRect.top / mergeScrollable);
+        mergeSection.style.setProperty("--merge", mergeProgress.toFixed(3));
 
-        globeGroup.rotation.y += 0.0012;
-        rings.rotation.z += 0.0011;
-        rings.rotation.y += 0.0008;
+        let activeIndex = 0;
+        let best = Infinity;
 
-        markerMeshes.forEach((marker, index) => {
-          if (marker.userData.id !== selected.id) {
-            const pulse = 1 + Math.sin(tick * 4 + index) * 0.07;
-            marker.scale.setScalar(pulse);
+        navTargets.forEach((target, index) => {
+          const rect = target.getBoundingClientRect();
+          const distance = Math.abs(rect.top);
+          if (distance < best) {
+            best = distance;
+            activeIndex = index;
           }
         });
 
-        flowGroup.children.forEach((dot, index) => {
-          dot.userData.offset = (dot.userData.offset + 0.0038 + index * 0.0005) % 1;
-          dot.position.copy(dot.userData.curve.getPoint(dot.userData.offset));
-        });
+        navDots.forEach((dot, index) => dot.classList.toggle("active", index === activeIndex));
 
-        renderer.render(scene, camera);
-        requestAnimationFrame(animate);
+        requestAnimationFrame(updateScrollState);
       }
 
-      setNode(nodes[0]);
-      animate();
-    }
+      updateScrollState();
+
+      /* =========================================================
+         Monitor list
+         ========================================================= */
+
+      const monitorList = document.getElementById("monitorList");
+
+      const monitorRows = [
+        ["status.nkx.moe", "Probe panel", "99.98%", [9]],
+        ["niekaixiang.com", "Blog", "100%", []],
+        ["waline.nkx.moe", "Comment", "99.86%", [3, 19]],
+        ["qq.sg", "Domain", "100%", []],
+        ["Cloudflare Worker", "Edge check", "99.72%", [5, 6, 22]]
+      ];
+
+      monitorList.innerHTML = monitorRows.map(([name, desc, percent, issues], row) => {
+        const bars = Array.from({ length: 30 }, (_, index) => {
+          let cls = "";
+          if (issues.includes(index)) cls = issues.length > 2 ? "bad" : "mid";
+          return `<i class="${cls}" style="--i:${index};--row:${row}"></i>`;
+        }).join("");
+
+        return `
+          <div class="monitor-row">
+            <div class="monitor-name">
+              <b>${name}</b>
+              <span>${desc}</span>
+            </div>
+            <div class="uptime-grid">${bars}</div>
+            <div class="monitor-percent">${percent}</div>
+          </div>
+        `;
+      }).join("");
+    })();
   </script>
 </body>
 </html>
