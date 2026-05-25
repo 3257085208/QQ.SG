@@ -1,1645 +1,379 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>QQ.SG | NKX Infrastructure</title>
-
   <script src="https://cdn.staticfile.net/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdn.staticfile.net/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
-
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #f7f7f2;
-      --paper: #ffffff;
+      --bg: #ffffff;
       --text: #050505;
-      --muted: #777;
-      --line: rgba(5, 5, 5, 0.14);
-      --line-strong: rgba(5, 5, 5, 0.9);
       --accent: #15b85a;
-      --amber: #f59e0b;
-      --red: #ef4444;
-      --dark: #050505;
-      --dark-2: #0b0b0b;
-      --white: #ffffff;
-      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+    
+    body, html {
+      margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font-family: 'Space Grotesk', sans-serif; overflow-x: hidden;
+      cursor: crosshair; /* 极客风十字光标 */
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      background: var(--bg);
-      scroll-behavior: auto;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Space Grotesk", sans-serif;
-      overflow-x: hidden;
-      cursor: none;
-    }
-
-    ::selection {
-      background: var(--text);
-      color: var(--bg);
-    }
-
-    a {
-      color: inherit;
-    }
-
-    .noise {
-      pointer-events: none;
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      opacity: .055;
-      mix-blend-mode: multiply;
-      background-image:
-        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E");
-    }
-
-    .cursor,
-    .cursor-dot {
-      position: fixed;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 10000;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .cursor {
-      width: 38px;
-      height: 38px;
-      border: 1px solid rgba(5,5,5,.45);
-      mix-blend-mode: difference;
-      filter: invert(1);
-      transition: width .25s var(--ease), height .25s var(--ease), border-color .25s var(--ease);
-    }
-
-    .cursor-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--text);
-      mix-blend-mode: difference;
-      filter: invert(1);
-    }
-
-    body.is-hovering .cursor {
-      width: 76px;
-      height: 76px;
-      border-color: rgba(5,5,5,.9);
-    }
-
-    .progress-rail {
-      position: fixed;
-      right: 24px;
-      top: 50%;
-      width: 2px;
-      height: 140px;
-      transform: translateY(-50%);
-      background: rgba(5,5,5,.12);
-      z-index: 100;
-      overflow: hidden;
-    }
-
-    .progress-bar {
-      position: absolute;
-      inset: 0;
-      transform-origin: top;
-      transform: scaleY(0);
-      background: var(--text);
-    }
-
-    /* =========================
-       HERO
-       ========================= */
-
+    /* =========================================
+       1. 巨型 QQ.SG 与拖影交互区
+       ========================================= */
     #hero-container {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(21,184,90,.18), transparent 24vw),
-        linear-gradient(to right, rgba(5,5,5,.055) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(5,5,5,.055) 1px, transparent 1px),
-        var(--bg);
-      background-size: auto, 64px 64px, 64px 64px, auto;
+      position: fixed; /* 牢牢钉在底层 */
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      z-index: -1; 
     }
-
-    .scanline {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: linear-gradient(
-        to bottom,
-        transparent,
-        transparent 48%,
-        rgba(5,5,5,.1) 50%,
-        transparent 52%,
-        transparent
-      );
-      background-size: 100% 7px;
-      opacity: .28;
-      mix-blend-mode: multiply;
-    }
-
-    .hero-inner {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
+    
     .giant-text {
-      position: relative;
-      font-size: clamp(84px, 22vw, 410px);
-      font-weight: 800;
-      line-height: .78;
-      letter-spacing: -.075em;
-      color: var(--text);
-      text-align: center;
+      font-size: clamp(80px, 22vw, 400px);
+      font-weight: 800; line-height: 0.8; letter-spacing: -0.06em;
+      color: var(--text); text-align: center;
       user-select: none;
-      transform-origin: center;
-      will-change: transform, opacity, filter;
     }
 
-    .giant-text span {
-      display: inline-block;
-      will-change: transform;
-    }
-
-    .giant-text::after {
-      content: "QQ.SG";
-      position: absolute;
-      inset: 0;
-      color: transparent;
-      -webkit-text-stroke: 1px rgba(5,5,5,.16);
-      transform: translate(1.6vw, 1.6vw);
-      z-index: -1;
-    }
-
-    .hero-meta {
-      position: absolute;
-      left: 5vw;
-      bottom: 7vh;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      line-height: 1.8;
-      color: rgba(5,5,5,.62);
-      text-transform: uppercase;
-    }
-
-    .hero-coords {
-      position: absolute;
-      right: 5vw;
-      top: 7vh;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: rgba(5,5,5,.62);
-      text-align: right;
-      text-transform: uppercase;
-    }
-
-    .hero-badge {
-      position: absolute;
-      right: 5vw;
-      bottom: 7vh;
-      width: 128px;
-      height: 128px;
-      border: 1px solid rgba(5,5,5,.25);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      color: rgba(5,5,5,.72);
-      text-align: center;
-      animation: spin 18s linear infinite;
-    }
-
-    .hero-badge::before {
-      content: "";
-      position: absolute;
-      inset: 14px;
-      border: 1px dashed rgba(5,5,5,.3);
-      border-radius: 50%;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
+    /* 拖影画布层：盖在文字上，利用差值反色 */
     #trail-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      mix-blend-mode: difference;
-      z-index: 5;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; /* 让鼠标穿透画布，不影响下方操作 */
+      mix-blend-mode: difference; /* 灵魂反色机制 */
+      z-index: 10;
     }
 
-    .scroll-hint {
-      position: absolute;
-      left: 50%;
-      bottom: 26px;
-      transform: translateX(-50%);
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      color: rgba(5,5,5,.55);
-      letter-spacing: .15em;
-      overflow: hidden;
-    }
-
-    .scroll-hint span {
-      display: block;
-      animation: hint 1.65s var(--ease) infinite;
-    }
-
-    @keyframes hint {
-      0% { transform: translateY(-120%); }
-      45%, 55% { transform: translateY(0); }
-      100% { transform: translateY(120%); }
-    }
-
-    /* =========================
-       STRUCTURE
-       ========================= */
-
+    /* =========================================
+       页面流动结构
+       ========================================= */
     .content-wrapper {
-      position: relative;
-      z-index: 2;
-      margin-top: 100vh;
+      margin-top: 100vh; /* 把内容推到首屏下面 */
       background: var(--bg);
-      border-top: 2px solid var(--text);
+      position: relative; z-index: 2;
     }
 
-    .content-wrapper::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(to right, rgba(5,5,5,.045) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(5,5,5,.045) 1px, transparent 1px);
-      background-size: 64px 64px;
-      opacity: .55;
-    }
-
-    .section {
-      position: relative;
-      padding: clamp(84px, 12vw, 160px) 5vw;
-    }
-
-    .section-kicker {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 18px;
-    }
-
-    .section-title {
-      margin: 0 0 64px;
-      font-size: clamp(48px, 9vw, 138px);
-      font-weight: 800;
-      line-height: .9;
-      letter-spacing: -.065em;
-    }
-
-    .split-line {
-      display: block;
-      overflow: hidden;
-    }
-
-    .split-line span {
-      display: inline-block;
-      will-change: transform;
-    }
-
-    /* =========================
-       MARQUEE
-       ========================= */
-
+    /* =========================================
+       2. 反向跑马灯 (Marquee)
+       ========================================= */
     .marquee-section {
-      position: relative;
-      padding: 34px 0;
-      background: var(--dark);
-      color: var(--white);
-      overflow: hidden;
-      border-bottom: 2px solid var(--text);
+      padding: 40px 0; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
+      background: var(--text); color: var(--bg); overflow: hidden;
     }
-
-    .marquee-section::before,
-    .marquee-section::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 18vw;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .marquee-section::before {
-      left: 0;
-      background: linear-gradient(to right, var(--dark), transparent);
-    }
-
-    .marquee-section::after {
-      right: 0;
-      background: linear-gradient(to left, var(--dark), transparent);
-    }
-
     .marquee-row {
-      display: flex;
-      width: max-content;
-      white-space: nowrap;
-      font-family: "JetBrains Mono", monospace;
-      font-size: clamp(26px, 5.4vw, 72px);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: -.04em;
-      will-change: transform;
+      display: flex; white-space: nowrap; width: max-content;
+      font-family: 'JetBrains Mono', monospace; font-size: clamp(24px, 5vw, 60px); font-weight: 700; text-transform: uppercase;
     }
+    .marquee-row.left { animation: scrollLeft 20s linear infinite; }
+    .marquee-row.right { animation: scrollRight 25s linear infinite; margin-top: 10px; }
+    .marquee-row span { padding: 0 40px; }
+    
+    @keyframes scrollLeft { to { transform: translateX(-50%); } }
+    @keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-    .marquee-row span {
-      padding: 0 34px;
+    /* =========================================
+       3. 无极滑动干货区 (监控 & 虚拟化)
+       ========================================= */
+    .data-section {
+      padding: 120px 5vw; border-bottom: 2px solid var(--text);
     }
-
-    .marquee-row .dim {
-      color: rgba(255,255,255,.35);
+    .section-title {
+      font-size: clamp(40px, 8vw, 120px); font-weight: 800; line-height: 1; letter-spacing: -0.04em; margin-bottom: 60px;
     }
-
-    .marquee-row.left {
-      animation: scrollLeft 18s linear infinite;
-    }
-
-    .marquee-row.right {
-      animation: scrollRight 24s linear infinite;
-      margin-top: 8px;
-      -webkit-text-stroke: 1px rgba(255,255,255,.65);
-      color: transparent;
-    }
-
-    @keyframes scrollLeft {
-      to { transform: translateX(-50%); }
-    }
-
-    @keyframes scrollRight {
-      from { transform: translateX(-50%); }
-      to { transform: translateX(0); }
-    }
-
-    /* =========================
-       STATUS
-       ========================= */
-
-    .status-layout {
-      display: grid;
-      grid-template-columns: minmax(0, .85fr) minmax(320px, 1.15fr);
-      gap: clamp(24px, 4vw, 72px);
-      align-items: start;
-    }
-
-    .hud-panel {
-      position: sticky;
-      top: 24px;
-      min-height: 430px;
-      padding: 28px;
-      border: 1px solid var(--line-strong);
-      background:
-        radial-gradient(circle at 75% 20%, rgba(21,184,90,.22), transparent 33%),
-        rgba(255,255,255,.62);
-      backdrop-filter: blur(16px);
-      overflow: hidden;
-    }
-
-    .hud-panel::before {
-      content: "";
-      position: absolute;
-      inset: 12px;
-      border: 1px solid rgba(5,5,5,.12);
-      pointer-events: none;
-    }
-
-    .hud-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .hud-number {
-      margin-top: 54px;
-      font-size: clamp(70px, 12vw, 160px);
-      font-weight: 800;
-      line-height: .82;
-      letter-spacing: -.08em;
-    }
-
-    .hud-number small {
-      font-size: .18em;
-      letter-spacing: 0;
-      margin-left: 8px;
-    }
-
-    .hud-bars {
-      margin-top: 48px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .hud-bar {
-      height: 10px;
-      background: rgba(5,5,5,.1);
-      overflow: hidden;
-    }
-
-    .hud-bar span {
-      display: block;
-      height: 100%;
-      width: var(--w);
-      background: var(--text);
-      transform-origin: left;
-      transform: scaleX(0);
-    }
-
-    .status-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      border-top: 1px solid var(--line-strong);
-    }
-
+    
+    /* 监控列表 */
+    .status-list { list-style: none; padding: 0; margin: 0; }
     .status-item {
-      position: relative;
-      display: grid;
-      grid-template-columns: 54px 1fr auto;
-      gap: 18px;
-      align-items: center;
-      padding: 28px 0;
-      border-bottom: 1px solid var(--line);
-      font-family: "JetBrains Mono", monospace;
-      overflow: hidden;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 30px 0; border-bottom: 1px solid rgba(0,0,0,0.1);
+      font-family: 'JetBrains Mono', monospace; font-size: clamp(14px, 2vw, 24px);
     }
+    .status-item:hover { background: rgba(0,0,0,0.02); padding-left: 20px; transition: all 0.3s ease; }
+    .status-green { color: var(--accent); font-weight: bold; }
+    .status-amber { color: #f59e0b; font-weight: bold; }
 
-    .status-item::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: var(--text);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform .45s var(--ease);
-      z-index: -1;
-    }
-
-    .status-item:hover::before {
-      transform: scaleX(1);
-    }
-
-    .status-item:hover {
-      color: var(--bg);
-    }
-
-    .status-index {
-      color: #aaa;
-      transition: color .35s var(--ease);
-    }
-
-    .status-item:hover .status-index {
-      color: rgba(255,255,255,.45);
-    }
-
-    .status-name {
-      font-size: clamp(14px, 1.7vw, 22px);
-    }
-
-    .status-value {
-      font-size: clamp(12px, 1.2vw, 16px);
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .status-green {
-      color: var(--accent);
-    }
-
-    .status-amber {
-      color: var(--amber);
-    }
-
-    .pulse {
-      display: inline-block;
-      width: 9px;
-      height: 9px;
-      margin-right: 10px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 0 0 currentColor;
-      animation: pulse 1.4s infinite;
-    }
-
-    @keyframes pulse {
-      70% { box-shadow: 0 0 0 12px rgba(21,184,90,0); }
-      100% { box-shadow: 0 0 0 0 rgba(21,184,90,0); }
-    }
-
-    /* =========================
-       SKILLS
-       ========================= */
-
+    /* 技能标签网格 */
     .skills-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      border: 2px solid var(--text);
-      background: var(--text);
-      gap: 2px;
-      perspective: 1000px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px; background: var(--text); border: 2px solid var(--text);
     }
-
     .skill-card {
-      position: relative;
-      min-height: 360px;
-      padding: 34px;
-      background:
-        linear-gradient(135deg, rgba(21,184,90,.08), transparent 28%),
-        var(--paper);
-      overflow: hidden;
-      transform-style: preserve-3d;
-      transition: transform .5s var(--ease), background .5s var(--ease);
+      background: var(--bg); padding: 40px; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;
     }
+    .skill-card h3 { margin: 0; font-size: 32px; font-weight: 700; }
+    .skill-card p { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #666; margin-top: 20px; }
 
-    .skill-card::before {
-      content: attr(data-code);
-      position: absolute;
-      right: 22px;
-      top: 20px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: rgba(5,5,5,.35);
-    }
-
-    .skill-card::after {
-      content: "";
-      position: absolute;
-      inset: auto -20% -42% -20%;
-      height: 55%;
-      background: radial-gradient(circle, rgba(21,184,90,.28), transparent 70%);
-      opacity: 0;
-      transition: opacity .45s var(--ease);
-    }
-
-    .skill-card:hover {
-      transform: translateY(-14px) rotateX(4deg);
-      background: #fbfbf7;
-    }
-
-    .skill-card:hover::after {
-      opacity: 1;
-    }
-
-    .skill-card h3 {
-      position: relative;
-      margin: 0;
-      max-width: 220px;
-      font-size: clamp(28px, 3vw, 42px);
-      line-height: .95;
-      letter-spacing: -.045em;
-      z-index: 1;
-    }
-
-    .skill-card p {
-      position: relative;
-      margin: 110px 0 0;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 13px;
-      line-height: 1.75;
-      color: #666;
-      z-index: 1;
-    }
-
-    .skill-icon {
-      position: absolute;
-      right: 28px;
-      bottom: 24px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 54px;
-      font-weight: 700;
-      color: rgba(5,5,5,.08);
-      z-index: 1;
-    }
-
-    /* =========================
-       MERGE WORKS
-       ========================= */
-
+    /* =========================================
+       4. 滚动合并区 (Works - Scroll Merge)
+       ========================================= */
     .merge-section {
-      position: relative;
-      height: 220vh;
-      background: var(--dark);
-      color: var(--white);
-      overflow: clip;
+      height: 150vh; /* 留出足够的滚动空间来执行合并 */
+      background: var(--text); color: var(--bg); position: relative; overflow: hidden;
     }
-
     .merge-sticky {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
+      position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;
     }
-
-    .merge-bg-text {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      font-size: clamp(120px, 25vw, 460px);
-      font-weight: 800;
-      letter-spacing: -.09em;
-      color: rgba(255,255,255,.035);
-      white-space: nowrap;
-      pointer-events: none;
-    }
-
-    .merge-title {
-      position: absolute;
-      top: 9vh;
-      left: 5vw;
-      right: 5vw;
-      margin: 0;
-      font-size: clamp(44px, 8vw, 112px);
-      line-height: .88;
-      letter-spacing: -.065em;
-      z-index: 2;
-    }
-
+    
     .panels-container {
-      width: 100vw;
-      height: 68vh;
-      position: relative;
+      display: flex; width: 100vw; height: 60vh; justify-content: center; align-items: center; position: relative;
     }
-
     .panel {
-      position: absolute;
-      top: 50%;
-      width: min(680px, 46vw);
-      min-height: 54vh;
-      padding: clamp(28px, 4vw, 58px);
-      border: 1px solid rgba(255,255,255,.72);
-      border-radius: 28px;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.02)),
-        rgba(12,12,12,.86);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 50px 120px rgba(0,0,0,.45);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      will-change: transform;
+      width: 45vw; height: 100%; padding: 40px; border: 2px solid var(--bg); border-radius: 20px;
+      display: flex; flex-direction: column; justify-content: center; position: absolute; background: var(--text);
     }
+    /* 初始状态：左面板在屏幕最左外侧，右面板在最右外侧 */
+    .panel.left { left: -50vw; }
+    .panel.right { right: -50vw; text-align: right; }
+    
+    .panel h3 { font-size: clamp(30px, 5vw, 60px); margin: 0; line-height: 1; }
+    .panel p { font-family: 'JetBrains Mono', monospace; color: #aaa; margin-top: 20px; }
 
-    .panel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
-      background-size: 30px 30px;
-      mask-image: radial-gradient(circle at 50% 30%, black, transparent 70%);
-      pointer-events: none;
-    }
-
-    .panel.left {
-      left: 0;
-      transform: translate(-105%, -50%) rotate(-7deg);
-    }
-
-    .panel.right {
-      right: 0;
-      transform: translate(105%, -50%) rotate(7deg);
-      text-align: right;
-    }
-
-    .panel-kicker {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--accent);
-      letter-spacing: .14em;
-      text-transform: uppercase;
-    }
-
-    .panel h3 {
-      margin: 0;
-      font-size: clamp(40px, 5.4vw, 80px);
-      line-height: .88;
-      letter-spacing: -.06em;
-    }
-
-    .panel p {
-      margin: 26px 0 0;
-      max-width: 560px;
-      font-family: "JetBrains Mono", monospace;
-      color: rgba(255,255,255,.66);
-      line-height: 1.7;
-      font-size: 14px;
-    }
-
-    .panel.right p {
-      margin-left: auto;
-    }
-
-    .merge-core {
-      position: absolute;
-      left: 50%;
-      top: 55%;
-      width: 18px;
-      height: 18px;
-      transform: translate(-50%, -50%) scale(0);
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 80px 35px rgba(21,184,90,.26);
-      z-index: 4;
-      will-change: transform;
-    }
-
-    /* =========================
-       CONTACT
-       ========================= */
-
+    /* =========================================
+       5. 最终联系锚点
+       ========================================= */
     .contact-section {
-      position: relative;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 100px 5vw;
-      background:
-        radial-gradient(circle at 50% 10%, rgba(21,184,90,.14), transparent 32%),
-        var(--bg);
-      color: var(--text);
-      text-align: center;
-      border-top: 2px solid var(--text);
-      overflow: hidden;
+      height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      background: var(--bg); color: var(--text); text-align: center; scroll-snap-align: start;
     }
-
-    .terminal-line {
-      font-family: "JetBrains Mono", monospace;
-      font-size: clamp(12px, 1.4vw, 16px);
-      color: #777;
-      margin-bottom: 34px;
-    }
-
-    .terminal-line::after {
-      content: "█";
-      color: var(--accent);
-      animation: blink .8s steps(1) infinite;
-    }
-
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-
     .email-link {
-      position: relative;
-      display: inline-block;
-      font-size: clamp(44px, 11vw, 164px);
-      font-weight: 800;
-      line-height: .9;
-      letter-spacing: -.08em;
-      color: var(--text);
-      text-decoration: none;
-      transition: color .35s var(--ease);
+      font-size: clamp(40px, 10vw, 150px); font-weight: 800; color: var(--text); text-decoration: none;
+      border-bottom: 8px solid var(--text); transition: color 0.3s, border-color 0.3s;
     }
-
-    .email-link::before,
-    .email-link::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 8px;
-      bottom: -14px;
-      background: var(--text);
-      transform-origin: left;
-    }
-
-    .email-link::after {
-      background: var(--accent);
-      transform: scaleX(0);
-      transition: transform .45s var(--ease);
-    }
-
-    .email-link:hover {
-      color: var(--accent);
-    }
-
-    .email-link:hover::after {
-      transform: scaleX(1);
-    }
-
+    .email-link:hover { color: var(--accent); border-color: var(--accent); }
     .domains-list {
-      margin-top: 72px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 14px;
+      margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 16px;
     }
+    .domains-list span { padding: 10px 20px; border: 1px solid var(--text); border-radius: 99px; }
 
-    .domains-list span {
-      padding: 12px 20px;
-      border: 1px solid var(--text);
-      border-radius: 999px;
-      background: rgba(255,255,255,.4);
-      backdrop-filter: blur(8px);
-      transition: transform .35s var(--ease), background .35s var(--ease), color .35s var(--ease);
-    }
-
-    .domains-list span:hover {
-      transform: translateY(-8px);
-      background: var(--text);
-      color: var(--bg);
-    }
-
-    .footer-copy {
-      margin-top: 86px;
-      font-family: "JetBrains Mono", monospace;
-      color: #888;
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 980px) {
-      body {
-        cursor: auto;
-      }
-
-      .cursor,
-      .cursor-dot {
-        display: none;
-      }
-
-      .progress-rail {
-        display: none;
-      }
-
-      .hero-badge {
-        display: none;
-      }
-
-      .hero-meta,
-      .hero-coords {
-        font-size: 10px;
-      }
-
-      .status-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .hud-panel {
-        position: relative;
-        top: auto;
-        min-height: 320px;
-      }
-
-      .skills-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .skill-card {
-        min-height: 260px;
-      }
-
-      .panel {
-        width: 86vw;
-        min-height: 46vh;
-      }
-
-      .panel.left,
-      .panel.right {
-        left: 7vw;
-        right: auto;
-        text-align: left;
-      }
-
-      .panel.right p {
-        margin-left: 0;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation: none !important;
-        transition: none !important;
-        scroll-behavior: auto !important;
-      }
-    }
   </style>
 </head>
-
 <body>
-  <div class="cursor"></div>
-  <div class="cursor-dot"></div>
-  <div class="progress-rail"><div class="progress-bar"></div></div>
-  <div class="noise"></div>
 
   <div id="hero-container">
+    <div class="giant-text">QQ.SG</div>
     <canvas id="trail-canvas"></canvas>
-    <div class="scanline"></div>
-
-    <div class="hero-inner">
-      <div class="hero-coords">
-        LAT 01.3521° N<br />
-        LON 103.8198° E<br />
-        EDGE / SG
-      </div>
-
-      <div class="hero-meta">
-        NKX INFRASTRUCTURE<br />
-        AS NETWORK / IDENTITY NODE<br />
-        WIREGUARD / BGP / KVM
-      </div>
-
-      <div class="hero-badge">
-        ROUTING<br />ONLINE<br />2026
-      </div>
-
-      <h1 class="giant-text" aria-label="QQ.SG">
-        <span>Q</span><span>Q</span><span>.</span><span>S</span><span>G</span>
-      </h1>
-
-      <div class="scroll-hint"><span>SCROLL</span></div>
-    </div>
   </div>
 
-  <main class="content-wrapper">
-    <section class="marquee-section">
+  <div class="content-wrapper">
+    
+    <div class="marquee-section">
       <div class="marquee-row left">
-        <span>GLOBAL ROUTING</span><span class="dim">//</span><span>BGP SESSIONS</span><span class="dim">//</span><span>AS NETWORK</span><span class="dim">//</span><span>IDENTITY NODE</span><span class="dim">//</span>
-        <span>GLOBAL ROUTING</span><span class="dim">//</span><span>BGP SESSIONS</span><span class="dim">//</span><span>AS NETWORK</span><span class="dim">//</span><span>IDENTITY NODE</span><span class="dim">//</span>
+        <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
+        <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
       </div>
       <div class="marquee-row right">
         <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
         <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
       </div>
+    </div>
+
+    <section class="data-section">
+      <h2 class="section-title">STATUS<br>PROBES.</h2>
+      <ul class="status-list">
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">01</span> SG Core Identity (WireGuard)</div>
+          <div class="status-green">ACTIVE / 12MS</div>
+        </li>
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">02</span> HK Edge Transit (CF Tunnels)</div>
+          <div class="status-green">ACTIVE / 34MS</div>
+        </li>
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">03</span> Oracle Phoenix ARM Container</div>
+          <div class="status-green">ACTIVE / 168MS</div>
+        </li>
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">04</span> Mainland Backup Node</div>
+          <div class="status-amber">LATENCY / 142MS</div>
+        </li>
+      </ul>
     </section>
 
-    <section class="section status-section">
-      <div class="section-kicker">/ LIVE TELEMETRY</div>
-
-      <div class="status-layout">
-        <div>
-          <h2 class="section-title reveal-title">
-            <span class="split-line"><span>STATUS</span></span>
-            <span class="split-line"><span>PROBES.</span></span>
-          </h2>
-
-          <div class="hud-panel">
-            <div class="hud-top">
-              <span>UPTIME INDEX</span>
-              <span>QQ.SG / SG-CORE</span>
-            </div>
-
-            <div class="hud-number">99.98<small>%</small></div>
-
-            <div class="hud-bars">
-              <div class="hud-bar"><span style="--w: 92%"></span></div>
-              <div class="hud-bar"><span style="--w: 76%"></span></div>
-              <div class="hud-bar"><span style="--w: 88%"></span></div>
-              <div class="hud-bar"><span style="--w: 64%"></span></div>
-            </div>
-          </div>
-        </div>
-
-        <ul class="status-list">
-          <li class="status-item reveal-row">
-            <div class="status-index">01</div>
-            <div class="status-name">SG Core Identity / WireGuard</div>
-            <div class="status-value status-green"><span class="pulse"></span>ACTIVE / 12MS</div>
-          </li>
-
-          <li class="status-item reveal-row">
-            <div class="status-index">02</div>
-            <div class="status-name">HK Edge Transit / CF Tunnels</div>
-            <div class="status-value status-green"><span class="pulse"></span>ACTIVE / 34MS</div>
-          </li>
-
-          <li class="status-item reveal-row">
-            <div class="status-index">03</div>
-            <div class="status-name">Oracle Phoenix ARM Container</div>
-            <div class="status-value status-green"><span class="pulse"></span>ACTIVE / 168MS</div>
-          </li>
-
-          <li class="status-item reveal-row">
-            <div class="status-index">04</div>
-            <div class="status-name">Mainland Backup Node</div>
-            <div class="status-value status-amber"><span class="pulse"></span>LATENCY / 142MS</div>
-          </li>
-
-          <li class="status-item reveal-row">
-            <div class="status-index">05</div>
-            <div class="status-name">Zero Trust Access Boundary</div>
-            <div class="status-value status-green"><span class="pulse"></span>SEALED / OK</div>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="section stack-section">
-      <div class="section-kicker">/ VIRTUALIZATION LAYER</div>
-
-      <h2 class="section-title reveal-title">
-        <span class="split-line"><span>INFRA</span></span>
-        <span class="split-line"><span>STACK.</span></span>
-      </h2>
-
+    <section class="data-section" style="background: var(--bg);">
+      <h2 class="section-title">INFRA<br>STACK.</h2>
       <div class="skills-grid">
-        <div class="skill-card" data-code="PVE-01">
+        <div class="skill-card">
           <h3>Proxmox VE</h3>
-          <p>Over 6 years of experience managing virtualized environments, scaling from single bare-metal nodes to clustered deployments.</p>
-          <div class="skill-icon">01</div>
+          <p>Over 6 years of experience managing virtualized environments, scaling from a single Dell R620 to cluster deployments.</p>
         </div>
-
-        <div class="skill-card" data-code="NET-02">
+        <div class="skill-card">
           <h3>Network Routing</h3>
-          <p>IPv6 static routing, BGP sessions, policy control, and secure P2P mesh networks via WireGuard.</p>
-          <div class="skill-icon">02</div>
+          <p>Proficient in IPv6 static routing, BGP session establishment, and P2P mesh networks via WireGuard.</p>
         </div>
-
-        <div class="skill-card" data-code="OPS-03">
+        <div class="skill-card">
           <h3>Container Ops</h3>
-          <p>Docker, LXC, Debian, Alpine Linux, microservice isolation, and low-overhead edge deployment.</p>
-          <div class="skill-icon">03</div>
+          <p>Deep expertise in Docker, LXC, and orchestrating microservices on Debian and Alpine Linux systems.</p>
         </div>
-
-        <div class="skill-card" data-code="CF-04">
+        <div class="skill-card">
           <h3>Edge Delivery</h3>
-          <p>Cloudflare Pages, Workers, Zero Trust, edge tunnels, and serverless frontend delivery pipelines.</p>
-          <div class="skill-icon">04</div>
+          <p>Leveraging Cloudflare Pages, Workers, and Zero Trust ecosystems for secure, serverless frontend delivery.</p>
         </div>
       </div>
     </section>
 
     <section class="merge-section" id="works-section">
       <div class="merge-sticky">
-        <div class="merge-bg-text">SYSTEMS</div>
-
-        <h2 class="merge-title">
-          CUSTOM<br />
-          SYSTEMS.
-        </h2>
-
+        <h2 style="font-size: clamp(40px, 8vw, 100px); margin: 0 0 60px 0; line-height: 1;">CUSTOM SYSTEMS.</h2>
         <div class="panels-container">
-          <div class="merge-core"></div>
-
-          <article class="panel left">
-            <div class="panel-kicker">/ MONITORING UI</div>
-            <div>
-              <h3>NIE-NodeGet</h3>
-              <p>
-                A customized probe frontend tracking real-time latency and resource health across distributed PVE/KVM environments. Designed with strict monochromatic precision.
-              </p>
-            </div>
-          </article>
-
-          <article class="panel right">
-            <div class="panel-kicker">/ SSG ARCHITECTURE</div>
-            <div>
-              <h3>NIE Blog System</h3>
-              <p>
-                A custom static generation engine powered by automated Python build scripts. Rejecting high-saturation templates for absolute geek minimalism.
-              </p>
-            </div>
-          </article>
+          <div class="panel left">
+            <h3>NIE-NodeGet</h3>
+            <p>// MONITORING UI<br><br>A highly customized probe frontend tracking real-time latency and resources across distributed PVE/KVM environments. Designed with strict monochromatic precision.</p>
+          </div>
+          <div class="panel right">
+            <h3>NIE Blog System</h3>
+            <p>// SSG ARCHITECTURE<br><br>A purely custom-built static generation engine powered by automated Python build scripts. Rejecting high-saturation generic templates for absolute geek minimalism.</p>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="contact-section">
-      <div class="terminal-line">ssh identity@qq.sg --connect&nbsp;</div>
-
-      <a href="mailto:ME@QQ.SG" class="email-link magnetic">ME@QQ.SG</a>
-
+      <a href="mailto:ME@QQ.SG" class="email-link">ME@QQ.SG</a>
       <div class="domains-list">
         <span>status.nkx.moe</span>
         <span>niekaixiang.com</span>
         <span>nie.net</span>
-        <span>qq.sg</span>
       </div>
-
-      <p class="footer-copy">
-        © NKX // IDENTITY ESTABLISHED // ROUTING ONLINE
+      <p style="font-family: 'JetBrains Mono', monospace; color: #888; margin-top: 80px; font-size: 14px;">
+        © NKX // IDENTITY ESTABLISHED.
       </p>
     </section>
-  </main>
+
+  </div>
 
   <script>
-    gsap.registerPlugin(ScrollTrigger);
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    /* =========================
-       Smooth Scroll
-       ========================= */
-
-    let lenis = null;
-
-    if (!reduceMotion && window.Lenis) {
-      lenis = new Lenis({
-        duration: 1.18,
-        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        smoothWheel: true,
-        touchMultiplier: 1.65
-      });
-
-      lenis.on("scroll", ScrollTrigger.update);
-
-      gsap.ticker.add(time => {
-        lenis.raf(time * 1000);
-      });
-
-      gsap.ticker.lagSmoothing(0);
-    }
-
-    /* =========================
-       Cursor
-       ========================= */
-
-    const cursor = document.querySelector(".cursor");
-    const cursorDot = document.querySelector(".cursor-dot");
-    const interactive = "a, button, .skill-card, .status-item, .domains-list span";
-
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let cursorX = mouseX;
-    let cursorY = mouseY;
-
-    window.addEventListener("pointermove", e => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-
-      document.documentElement.style.setProperty("--mx", `${e.clientX}px`);
-      document.documentElement.style.setProperty("--my", `${e.clientY}px`);
-
-      if (cursorDot) {
-        cursorDot.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
-      }
-
-      const coords = document.querySelector(".hero-coords");
-      if (coords) {
-        coords.innerHTML = `X ${Math.round(e.clientX).toString().padStart(4, "0")}<br />Y ${Math.round(e.clientY).toString().padStart(4, "0")}<br />EDGE / SG`;
-      }
-    });
-
-    function renderCursor() {
-      cursorX += (mouseX - cursorX) * 0.16;
-      cursorY += (mouseY - cursorY) * 0.16;
-
-      if (cursor) {
-        cursor.style.transform = `translate(${cursorX}px, ${cursorY}px) translate(-50%, -50%)`;
-      }
-
-      requestAnimationFrame(renderCursor);
-    }
-
-    renderCursor();
-
-    document.querySelectorAll(interactive).forEach(el => {
-      el.addEventListener("mouseenter", () => document.body.classList.add("is-hovering"));
-      el.addEventListener("mouseleave", () => document.body.classList.remove("is-hovering"));
-    });
-
-    /* =========================
-       Canvas Trail
-       ========================= */
-
-    const canvas = document.getElementById("trail-canvas");
-    const ctx = canvas.getContext("2d", { alpha: true });
-    let width, height, dpr;
+    // ==========================================
+    // 1. 拖影交互引擎 (Canvas Trail Effect)
+    // ==========================================
+    const canvas = document.getElementById('trail-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
 
     function resizeCanvas() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = canvas.width = Math.floor(window.innerWidth * dpr);
-      height = canvas.height = Math.floor(window.innerHeight * dpr);
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     }
-
+    window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
 
+    // 存储鼠标/触摸的轨迹点
     let points = [];
+    let isDrawing = false;
 
-    function addPoint(x, y) {
-      points.push({
-        x,
-        y,
-        age: 0,
-        radius: window.innerWidth > 768 ? 58 : 34
-      });
+    const addPoint = (x, y) => {
+      points.push({ x, y, age: 0 });
+    };
 
-      if (points.length > 42) points.shift();
-    }
-
-    window.addEventListener("pointermove", e => addPoint(e.clientX, e.clientY), { passive: true });
+    window.addEventListener('mousemove', e => addPoint(e.clientX, e.clientY));
+    window.addEventListener('touchmove', e => {
+      if(e.touches.length > 0) {
+        addPoint(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, {passive: true});
 
     function drawTrail() {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      // 用极低的透明度覆盖全图，制造逐渐消失的拖尾感 (Fade out)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'; 
+      ctx.fillRect(0, 0, width, height);
 
-      for (let i = 0; i < points.length; i++) {
-        const p = points[i];
-        const life = 1 - p.age / 30;
-        if (life <= 0) continue;
-
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * life);
-        g.addColorStop(0, `rgba(255,255,255,${0.95 * life})`);
-        g.addColorStop(0.45, `rgba(255,255,255,${0.55 * life})`);
-        g.addColorStop(1, "rgba(255,255,255,0)");
-
-        ctx.fillStyle = g;
+      // 绘制新的轨迹线 (使用纯白色，在 mix-blend-mode: difference 下会让下方的黑字变白)
+      if (points.length > 1) {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius * life, 0, Math.PI * 2);
-        ctx.fill();
-
-        p.age++;
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          // 贝塞尔曲线让拖尾更加圆润顺滑
+          const xc = (points[i].x + points[i - 1].x) / 2;
+          const yc = (points[i].y + points[i - 1].y) / 2;
+          ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, xc, yc);
+        }
+        ctx.strokeStyle = '#ffffff'; 
+        ctx.lineWidth = window.innerWidth > 768 ? 60 : 40; // 粗壮的刷子
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
       }
 
-      points = points.filter(p => p.age < 30);
+      // 移除老化节点
+      points.forEach(p => p.age++);
+      points = points.filter(p => p.age < 15); // 只保留最近 15 帧的轨迹
+
       requestAnimationFrame(drawTrail);
     }
+    drawTrail();
 
-    if (!reduceMotion) drawTrail();
-
-    /* =========================
-       Hero Animations
-       ========================= */
-
-    const heroLetters = gsap.utils.toArray(".giant-text span");
-
-    gsap.from(heroLetters, {
-      yPercent: 120,
-      rotate: () => gsap.utils.random(-14, 14),
-      opacity: 0,
+    // ==========================================
+    // 2. 丝滑滚动引擎 (Lenis) + GSAP 初始化
+    // ==========================================
+    const lenis = new Lenis({
       duration: 1.2,
-      stagger: .055,
-      ease: "power4.out",
-      delay: .1
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      touchMultiplier: 2
     });
 
-    gsap.to(heroLetters, {
-      y: i => Math.sin(i) * 12,
-      duration: 2.6,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
-      stagger: .08
-    });
-
-    gsap.to(".giant-text", {
-      scrollTrigger: {
-        trigger: ".content-wrapper",
-        start: "top bottom",
-        end: "top top",
-        scrub: true
-      },
-      opacity: .07,
-      scale: .88,
-      filter: "blur(2px)",
-      ease: "none"
-    });
-
-    gsap.to(".hero-meta", {
-      scrollTrigger: {
-        trigger: ".content-wrapper",
-        start: "top bottom",
-        end: "top 40%",
-        scrub: true
-      },
-      y: -80,
-      opacity: 0,
-      ease: "none"
-    });
-
-    gsap.to(".hero-badge", {
-      scrollTrigger: {
-        trigger: ".content-wrapper",
-        start: "top bottom",
-        end: "top top",
-        scrub: true
-      },
-      scale: .3,
-      opacity: 0,
-      ease: "none"
-    });
-
-    /* =========================
-       Progress
-       ========================= */
-
-    gsap.to(".progress-bar", {
-      scaleY: 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: document.documentElement,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: .3
-      }
-    });
-
-    /* =========================
-       Reveal System
-       ========================= */
-
-    gsap.utils.toArray(".reveal-title").forEach(title => {
-      gsap.from(title.querySelectorAll(".split-line span"), {
-        scrollTrigger: {
-          trigger: title,
-          start: "top 82%"
-        },
-        yPercent: 115,
-        rotate: 3,
-        duration: 1.1,
-        stagger: .08,
-        ease: "power4.out"
-      });
-    });
-
-    gsap.utils.toArray(".reveal-row").forEach((row, i) => {
-      gsap.from(row, {
-        scrollTrigger: {
-          trigger: row,
-          start: "top 88%"
-        },
-        x: i % 2 === 0 ? -60 : 60,
-        opacity: 0,
-        duration: .9,
-        ease: "power3.out"
-      });
-    });
-
-    gsap.utils.toArray(".hud-bar span").forEach(bar => {
-      gsap.to(bar, {
-        scrollTrigger: {
-          trigger: ".hud-panel",
-          start: "top 78%"
-        },
-        scaleX: 1,
-        duration: 1.2,
-        ease: "power4.out"
-      });
-    });
-
-    gsap.from(".hud-number", {
-      scrollTrigger: {
-        trigger: ".hud-panel",
-        start: "top 78%"
-      },
-      textShadow: "0 0 35px rgba(21,184,90,.85)",
-      y: 30,
-      opacity: 0,
-      duration: 1,
-      ease: "power4.out"
-    });
-
-    gsap.from(".skill-card", {
-      scrollTrigger: {
-        trigger: ".skills-grid",
-        start: "top 78%"
-      },
-      y: 80,
-      opacity: 0,
-      rotateX: -12,
-      duration: 1,
-      stagger: .08,
-      ease: "power4.out"
-    });
-
-    /* =========================
-       Skill Card Magnetic Tilt
-       ========================= */
-
-    document.querySelectorAll(".skill-card").forEach(card => {
-      card.addEventListener("mousemove", e => {
-        const r = card.getBoundingClientRect();
-        const x = e.clientX - r.left;
-        const y = e.clientY - r.top;
-        const rx = ((y / r.height) - .5) * -8;
-        const ry = ((x / r.width) - .5) * 8;
-
-        gsap.to(card, {
-          rotateX: rx,
-          rotateY: ry,
-          duration: .4,
-          ease: "power3.out"
-        });
-      });
-
-      card.addEventListener("mouseleave", () => {
-        gsap.to(card, {
-          rotateX: 0,
-          rotateY: 0,
-          duration: .7,
-          ease: "elastic.out(1, .45)"
-        });
-      });
-    });
-
-    /* =========================
-       Marquee Scroll Velocity Accent
-       ========================= */
-
-    let lastScroll = 0;
-
-    ScrollTrigger.create({
-      start: 0,
-      end: "max",
-      onUpdate: self => {
-        const velocity = Math.abs(self.getVelocity());
-        const skew = gsap.utils.clamp(0, 12, velocity / 160);
-        gsap.to(".marquee-row", {
-          skewX: self.direction > 0 ? -skew : skew,
-          duration: .25,
-          ease: "power2.out",
-          overwrite: true
-        });
-
-        clearTimeout(lastScroll);
-        lastScroll = setTimeout(() => {
-          gsap.to(".marquee-row", {
-            skewX: 0,
-            duration: .7,
-            ease: "elastic.out(1, .45)"
-          });
-        }, 100);
-      }
-    });
-
-    /* =========================
-       Merge Animation
-       ========================= */
-
-    const isMobile = window.innerWidth <= 980;
-
-    const mergeTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: ".merge-section",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 1.1
-      }
-    });
-
-    if (!isMobile) {
-      mergeTl
-        .to(".panel.left", {
-          x: "55vw",
-          rotate: 0,
-          ease: "none"
-        }, 0)
-        .to(".panel.right", {
-          x: "-55vw",
-          rotate: 0,
-          ease: "none"
-        }, 0)
-        .to(".merge-core", {
-          scale: 12,
-          opacity: .9,
-          ease: "none"
-        }, .34)
-        .to(".merge-bg-text", {
-          scale: .72,
-          opacity: .9,
-          ease: "none"
-        }, 0)
-        .to(".merge-title", {
-          y: -60,
-          opacity: .28,
-          ease: "none"
-        }, 0);
-    } else {
-      mergeTl
-        .to(".panel.left", {
-          y: "-18vh",
-          rotate: 0,
-          ease: "none"
-        }, 0)
-        .to(".panel.right", {
-          y: "18vh",
-          rotate: 0,
-          ease: "none"
-        }, 0)
-        .to(".merge-core", {
-          scale: 8,
-          opacity: .7,
-          ease: "none"
-        }, .35);
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
     }
+    requestAnimationFrame(raf);
 
-    /* =========================
-       Magnetic Email
-       ========================= */
+    gsap.registerPlugin(ScrollTrigger);
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+    gsap.ticker.lagSmoothing(0, 0);
 
-    document.querySelectorAll(".magnetic").forEach(el => {
-      el.addEventListener("mousemove", e => {
-        const r = el.getBoundingClientRect();
-        const x = e.clientX - (r.left + r.width / 2);
-        const y = e.clientY - (r.top + r.height / 2);
+    // ==========================================
+    // 3. 滚动动画逻辑
+    // ==========================================
 
-        gsap.to(el, {
-          x: x * .12,
-          y: y * .18,
-          duration: .45,
-          ease: "power3.out"
-        });
-      });
-
-      el.addEventListener("mouseleave", () => {
-        gsap.to(el, {
-          x: 0,
-          y: 0,
-          duration: .8,
-          ease: "elastic.out(1, .45)"
-        });
-      });
-    });
-
-    /* =========================
-       Contact Reveal
-       ========================= */
-
-    gsap.from(".terminal-line", {
+    // A. 向下滚一点时，巨大的 QQ.SG 不要完全淡出，保留 10% 透明度作为水印
+    gsap.to('.giant-text', {
       scrollTrigger: {
-        trigger: ".contact-section",
-        start: "top 70%"
+        trigger: '.content-wrapper',
+        start: 'top bottom',
+        end: 'top top',
+        scrub: true
       },
-      y: 24,
-      opacity: 0,
-      duration: .8,
-      ease: "power3.out"
+      opacity: 0.08,
+      scale: 0.95
     });
 
-    gsap.from(".email-link", {
+    // B. 第四页：左右面板合并进场 (Merge Animation)
+    // 随着 merge-section 钉在屏幕上，左右面板向中间移动，直到完成合并
+    const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: ".contact-section",
-        start: "top 70%"
-      },
-      y: 80,
-      opacity: 0,
-      scale: .92,
-      duration: 1,
-      ease: "power4.out"
+        trigger: '.merge-section',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1 // 1秒阻尼滑动
+      }
     });
 
-    gsap.from(".domains-list span", {
-      scrollTrigger: {
-        trigger: ".contact-section",
-        start: "top 60%"
-      },
-      y: 30,
-      opacity: 0,
-      duration: .8,
-      stagger: .07,
-      ease: "power3.out"
+    // 左面板从 -50vw 移入，最终定位在中心偏左 (例如 left: 2vw)
+    tl.to('.panel.left', {
+      left: window.innerWidth > 768 ? '4vw' : '0',
+      ease: 'none'
+    }, 0);
+
+    // 右面板从 -50vw 移入，最终定位在中心偏右
+    tl.to('.panel.right', {
+      right: window.innerWidth > 768 ? '4vw' : '0',
+      ease: 'none'
+    }, 0);
+
+    // ==========================================
+    // 4. 强制第五页磁性吸附 (Snap)
+    // ==========================================
+    // 虽然 Lenis 是全局丝滑滚动，我们可以利用 ScrollTrigger 让滚到最后一页时自动吸附对齐
+    ScrollTrigger.create({
+      trigger: '.contact-section',
+      start: 'top top',
+      end: 'bottom bottom',
+      snap: 1 
     });
 
-    /* =========================
-       Final Refresh
-       ========================= */
-
-    window.addEventListener("load", () => {
-      ScrollTrigger.refresh();
-    });
   </script>
 </body>
 </html>
