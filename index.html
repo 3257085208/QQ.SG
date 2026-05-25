@@ -1,351 +1,322 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NKX | Brutalist Signal Node</title>
-  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>QQ.SG | NKX Infrastructure</title>
   <script src="https://cdn.staticfile.net/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdn.staticfile.net/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg: #F4F4F0;         /* 粗野主义特有的发灰暖白色 */
-      --black: #0F0F0F;      /* 极深黑 */
-      --neon: #D2FF00;       /* Lando Norris 标志性荧光黄绿 */
-      --neon-alt: #00FFCC;   /* 拖影的辅色 */
-      --border: 2px solid var(--black);
+      --bg: #ffffff;
+      --text: #050505;
+      --accent: #15b85a;
     }
-
-    * { box-sizing: border-box; }
     
     body, html {
-      margin: 0; padding: 0;
-      background-color: var(--bg);
-      color: var(--black);
-      font-family: 'Space Grotesk', sans-serif;
-      overflow-x: hidden;
-      overscroll-behavior: none;
+      margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font-family: 'Space Grotesk', sans-serif; overflow-x: hidden;
+      cursor: crosshair; /* 极客风十字光标 */
     }
 
-    /* -------------------------------------------
-       0. 全局背景：划过显色的巨大拖影文本
-       ------------------------------------------- */
-    .hero-fixed-bg {
-      position: fixed;
+    /* =========================================
+       1. 巨型 QQ.SG 与拖影交互区
+       ========================================= */
+    #hero-container {
+      position: fixed; /* 牢牢钉在底层 */
       top: 0; left: 0; width: 100vw; height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 0;
-      pointer-events: none; /* 让鼠标事件穿透给底层 */
+      display: flex; justify-content: center; align-items: center;
+      z-index: -1; 
     }
     
-    .huge-text {
-      font-family: 'Oswald', sans-serif;
-      font-size: clamp(100px, 28vw, 400px);
-      font-weight: 700;
-      line-height: 0.8;
-      letter-spacing: -0.05em;
-      margin: 0;
-      text-transform: uppercase;
+    .giant-text {
+      font-size: clamp(80px, 22vw, 400px);
+      font-weight: 800; line-height: 0.8; letter-spacing: -0.06em;
+      color: var(--text); text-align: center;
+      user-select: none;
     }
 
-    /* 基础黑色文本 */
-    .text-base { color: var(--black); }
-
-    /* 覆盖在上面的多彩拖影层 */
-    .text-colorful {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(45deg, var(--neon), var(--neon-alt), #FF00FF);
-      -webkit-background-clip: text;
-      color: transparent;
-      /* 核心：用 JS 动态更新多个径向渐变，形成拖影遮罩 */
-      -webkit-mask-image: var(--trail-mask, none);
-      mask-image: var(--trail-mask, none);
+    /* 拖影画布层：盖在文字上，利用差值反色 */
+    #trail-canvas {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; /* 让鼠标穿透画布，不影响下方操作 */
+      mix-blend-mode: difference; /* 灵魂反色机制 */
+      z-index: 10;
     }
 
-    /* 为了接收鼠标事件的不可见遮罩 */
-    .hero-interaction-layer {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10;
+    /* =========================================
+       页面流动结构
+       ========================================= */
+    .content-wrapper {
+      margin-top: 100vh; /* 把内容推到首屏下面 */
+      background: var(--bg);
+      position: relative; z-index: 2;
     }
 
-    /* -------------------------------------------
-       内容滚动层
-       ------------------------------------------- */
-    .content-scroll { position: relative; z-index: 5; }
+    /* =========================================
+       2. 反向跑马灯 (Marquee)
+       ========================================= */
+    .marquee-section {
+      padding: 40px 0; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
+      background: var(--text); color: var(--bg); overflow: hidden;
+    }
+    .marquee-row {
+      display: flex; white-space: nowrap; width: max-content;
+      font-family: 'JetBrains Mono', monospace; font-size: clamp(24px, 5vw, 60px); font-weight: 700; text-transform: uppercase;
+    }
+    .marquee-row.left { animation: scrollLeft 20s linear infinite; }
+    .marquee-row.right { animation: scrollRight 25s linear infinite; margin-top: 10px; }
+    .marquee-row span { padding: 0 40px; }
     
-    /* 占位第一屏 */
-    .section-hero-spacer { height: 100vh; width: 100%; position: relative; }
-    
-    .scroll-indicator {
-      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-      font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700;
-      text-transform: uppercase;
-    }
+    @keyframes scrollLeft { to { transform: translateX(-50%); } }
+    @keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-    /* -------------------------------------------
-       1. 跑马灯区域 (无极滑动)
-       ------------------------------------------- */
-    .section-marquee { padding: 80px 0; background: var(--bg); border-top: var(--border); border-bottom: var(--border); }
-    .marquee-row { display: flex; white-space: nowrap; overflow: hidden; padding: 10px 0; }
-    .marquee-row.neon-bg { background: var(--neon); border-top: var(--border); border-bottom: var(--border); transform: rotate(-1.5deg) scale(1.05); }
-    .marquee-row.dark-bg { background: var(--black); color: var(--bg); transform: rotate(1deg) scale(1.05); margin-top: 40px; }
-    
-    .marquee-text {
-      font-family: 'Oswald', sans-serif;
-      font-size: clamp(60px, 10vw, 120px);
-      font-weight: 700;
-      text-transform: uppercase;
-      padding-right: 40px;
+    /* =========================================
+       3. 无极滑动干货区 (监控 & 虚拟化)
+       ========================================= */
+    .data-section {
+      padding: 120px 5vw; border-bottom: 2px solid var(--text);
     }
-
-    /* -------------------------------------------
-       2. 监控与技术栈 (无极滑动)
-       ------------------------------------------- */
-    .section-telemetry {
-      padding: 100px 5vw; background: var(--bg);
-      display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
-    }
-    .brutalist-card {
-      border: var(--border); background: #FFF;
-      box-shadow: 12px 12px 0 var(--black); /* 粗野主义标志性硬阴影 */
-      padding: 40px;
-    }
-    .brutalist-title {
-      font-family: 'Oswald', sans-serif; font-size: 40px; text-transform: uppercase;
-      margin: 0 0 30px 0; border-bottom: var(--border); padding-bottom: 20px;
+    .section-title {
+      font-size: clamp(40px, 8vw, 120px); font-weight: 800; line-height: 1; letter-spacing: -0.04em; margin-bottom: 60px;
     }
     
-    /* 监控列表 UI */
+    /* 监控列表 */
     .status-list { list-style: none; padding: 0; margin: 0; }
     .status-item {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.1);
-      font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px;
+      padding: 30px 0; border-bottom: 1px solid rgba(0,0,0,0.1);
+      font-family: 'JetBrains Mono', monospace; font-size: clamp(14px, 2vw, 24px);
     }
-    .status-item:last-child { border: none; }
-    .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #00FF55; border: 2px solid var(--black); }
-    .status-dot.warn { background: #FFCC00; }
+    .status-item:hover { background: rgba(0,0,0,0.02); padding-left: 20px; transition: all 0.3s ease; }
+    .status-green { color: var(--accent); font-weight: bold; }
+    .status-amber { color: #f59e0b; font-weight: bold; }
 
-    /* 技术标签 UI */
-    .tech-tags { display: flex; flex-wrap: wrap; gap: 15px; }
-    .tech-tag {
-      background: var(--black); color: var(--neon);
-      padding: 10px 20px; font-family: 'JetBrains Mono', monospace;
-      font-weight: 700; text-transform: uppercase; font-size: 16px;
+    /* 技能标签网格 */
+    .skills-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px; background: var(--text); border: 2px solid var(--text);
     }
+    .skill-card {
+      background: var(--bg); padding: 40px; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;
+    }
+    .skill-card h3 { margin: 0; font-size: 32px; font-weight: 700; }
+    .skill-card p { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #666; margin-top: 20px; }
 
-    /* -------------------------------------------
-       3. 左右合并作品区 (磁性锁定)
-       ------------------------------------------- */
-    .section-merge {
-      height: 100vh; width: 100%; overflow: hidden; position: relative;
-      background: var(--black); color: var(--bg);
+    /* =========================================
+       4. 滚动合并区 (Works - Scroll Merge)
+       ========================================= */
+    .merge-section {
+      height: 150vh; /* 留出足够的滚动空间来执行合并 */
+      background: var(--text); color: var(--bg); position: relative; overflow: hidden;
+    }
+    .merge-sticky {
+      position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;
     }
     
-    .merge-panel {
-      position: absolute; top: 0; width: 50vw; height: 100vh;
-      display: flex; flex-direction: column; justify-content: center; padding: 5vw;
+    .panels-container {
+      display: flex; width: 100vw; height: 60vh; justify-content: center; align-items: center; position: relative;
     }
-    .panel-left { left: 0; background: var(--black); border-right: 2px solid rgba(255,255,255,0.1); }
-    .panel-right { right: 0; background: var(--neon); color: var(--black); border-left: 2px solid var(--black); }
+    .panel {
+      width: 45vw; height: 100%; padding: 40px; border: 2px solid var(--bg); border-radius: 20px;
+      display: flex; flex-direction: column; justify-content: center; position: absolute; background: var(--text);
+    }
+    /* 初始状态：左面板在屏幕最左外侧，右面板在最右外侧 */
+    .panel.left { left: -50vw; }
+    .panel.right { right: -50vw; text-align: right; }
     
-    .project-num { font-family: 'JetBrains Mono', monospace; font-size: 20px; margin-bottom: 20px; font-weight: 700; }
-    .project-name { font-family: 'Oswald', sans-serif; font-size: clamp(50px, 8vw, 100px); margin: 0; line-height: 1; text-transform: uppercase; }
-    .project-desc { font-size: 18px; margin-top: 20px; max-width: 400px; line-height: 1.5; font-weight: 500; }
+    .panel h3 { font-size: clamp(30px, 5vw, 60px); margin: 0; line-height: 1; }
+    .panel p { font-family: 'JetBrains Mono', monospace; color: #aaa; margin-top: 20px; }
 
-    /* -------------------------------------------
-       4. 触底联系区 (无极至底)
-       ------------------------------------------- */
-    .section-contact {
-      min-height: 80vh; background: var(--bg); display: flex; flex-direction: column;
-      align-items: center; justify-content: center; border-top: var(--border); text-align: center;
+    /* =========================================
+       5. 最终联系锚点
+       ========================================= */
+    .contact-section {
+      height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      background: var(--bg); color: var(--text); text-align: center; scroll-snap-align: start;
     }
-    .huge-link {
-      font-family: 'Oswald', sans-serif; font-size: clamp(60px, 15vw, 200px);
-      color: var(--black); text-decoration: none; position: relative;
-      transition: color 0.3s;
+    .email-link {
+      font-size: clamp(40px, 10vw, 150px); font-weight: 800; color: var(--text); text-decoration: none;
+      border-bottom: 8px solid var(--text); transition: color 0.3s, border-color 0.3s;
     }
-    .huge-link:hover { color: var(--neon-alt); -webkit-text-stroke: 3px var(--black); }
-    .domain-list { margin-top: 40px; display: flex; gap: 20px; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
-    .domain-list span { border: var(--border); padding: 10px 20px; border-radius: 40px; background: #FFF; }
+    .email-link:hover { color: var(--accent); border-color: var(--accent); }
+    .domains-list {
+      margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 16px;
+    }
+    .domains-list span { padding: 10px 20px; border: 1px solid var(--text); border-radius: 99px; }
 
-    /* 移动端适配 */
-    @media (max-width: 900px) {
-      .section-telemetry { grid-template-columns: 1fr; }
-      .merge-panel { width: 100vw; height: 50vh; padding: 10vw; }
-      .panel-left { top: 0; border-right: none; border-bottom: 2px solid rgba(255,255,255,0.1); }
-      .panel-right { top: 50vh; border-left: none; }
-      .domain-list { flex-direction: column; }
-    }
   </style>
 </head>
 <body>
 
-  <div class="hero-fixed-bg" id="heroBg">
-    <h1 class="huge-text text-base">QQ.SG</h1>
-    <h1 class="huge-text text-colorful" id="colorfulText">QQ.SG</h1>
+  <div id="hero-container">
+    <div class="giant-text">QQ.SG</div>
+    <canvas id="trail-canvas"></canvas>
   </div>
 
-  <div class="content-scroll">
+  <div class="content-wrapper">
     
-    <section class="section-hero-spacer">
-      <div class="hero-interaction-layer" id="interactLayer"></div>
-      <div class="scroll-indicator">SCROLL TO IGNITE ↓</div>
+    <div class="marquee-section">
+      <div class="marquee-row left">
+        <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
+        <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
+      </div>
+      <div class="marquee-row right">
+        <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
+        <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
+      </div>
+    </div>
+
+    <section class="data-section">
+      <h2 class="section-title">STATUS<br>PROBES.</h2>
+      <ul class="status-list">
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">01</span> SG Core Identity (WireGuard)</div>
+          <div class="status-green">ACTIVE / 12MS</div>
+        </li>
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">02</span> HK Edge Transit (CF Tunnels)</div>
+          <div class="status-green">ACTIVE / 34MS</div>
+        </li>
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">03</span> Oracle Phoenix ARM Container</div>
+          <div class="status-green">ACTIVE / 168MS</div>
+        </li>
+        <li class="status-item">
+          <div><span style="color:#aaa; margin-right: 20px;">04</span> Mainland Backup Node</div>
+          <div class="status-amber">LATENCY / 142MS</div>
+        </li>
+      </ul>
     </section>
 
-    <section class="section-marquee">
-      <div class="marquee-row neon-bg" id="mq1">
-        <div class="marquee-text">IDENTITY NODE // BGP ROUTING // CLOUDFLARE // SECURE SIGNAL //</div>
-        <div class="marquee-text">IDENTITY NODE // BGP ROUTING // CLOUDFLARE // SECURE SIGNAL //</div>
-      </div>
-      <div class="marquee-row dark-bg" id="mq2">
-        <div class="marquee-text">PVE VIRTUALIZATION // DOCKER RUNTIME // ALPINE LINUX // KVM //</div>
-        <div class="marquee-text">PVE VIRTUALIZATION // DOCKER RUNTIME // ALPINE LINUX // KVM //</div>
-      </div>
-    </section>
-
-    <section class="section-telemetry">
-      <div class="brutalist-card">
-        <h2 class="brutalist-title">Telemetry</h2>
-        <ul class="status-list">
-          <li class="status-item">
-            <span>SG.CORE / 12MS</span>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <span>ONLINE</span><div class="status-dot"></div>
-            </div>
-          </li>
-          <li class="status-item">
-            <span>HK.EDGE / 34MS</span>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <span>ONLINE</span><div class="status-dot"></div>
-            </div>
-          </li>
-          <li class="status-item">
-            <span>JP.BACKUP / 56MS</span>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <span style="color: #FFCC00;">STANDBY</span><div class="status-dot warn"></div>
-            </div>
-          </li>
-          <li class="status-item">
-            <span>NIE.NET PROBE</span>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <span>ACTIVE</span><div class="status-dot"></div>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div class="brutalist-card">
-        <h2 class="brutalist-title">Infra Stack</h2>
-        <div class="tech-tags">
-          <div class="tech-tag">Proxmox VE</div>
-          <div class="tech-tag">KVM</div>
-          <div class="tech-tag">Docker</div>
-          <div class="tech-tag">Alpine</div>
-          <div class="tech-tag">Debian</div>
-          <div class="tech-tag">WireGuard</div>
-          <div class="tech-tag">Tailscale</div>
+    <section class="data-section" style="background: var(--bg);">
+      <h2 class="section-title">INFRA<br>STACK.</h2>
+      <div class="skills-grid">
+        <div class="skill-card">
+          <h3>Proxmox VE</h3>
+          <p>Over 6 years of experience managing virtualized environments, scaling from a single Dell R620 to cluster deployments.</p>
+        </div>
+        <div class="skill-card">
+          <h3>Network Routing</h3>
+          <p>Proficient in IPv6 static routing, BGP session establishment, and P2P mesh networks via WireGuard.</p>
+        </div>
+        <div class="skill-card">
+          <h3>Container Ops</h3>
+          <p>Deep expertise in Docker, LXC, and orchestrating microservices on Debian and Alpine Linux systems.</p>
+        </div>
+        <div class="skill-card">
+          <h3>Edge Delivery</h3>
+          <p>Leveraging Cloudflare Pages, Workers, and Zero Trust ecosystems for secure, serverless frontend delivery.</p>
         </div>
       </div>
     </section>
 
-    <section class="section-merge" id="mergeSection">
-      <div class="merge-panel panel-left" id="panelLeft">
-        <div class="project-num">01 / STATUS</div>
-        <h2 class="project-name">NIE<br>NodeGet</h2>
-        <p class="project-desc">Custom probe UI rejecting high-saturation AI styles. Pure operational monitoring for distributed PVE environments.</p>
-      </div>
-      <div class="merge-panel panel-right" id="panelRight">
-        <div class="project-num">02 / CONTENT</div>
-        <h2 class="project-name">NIE<br>Blog</h2>
-        <p class="project-desc">Custom-built static system powered by automated Python build scripts. Absolute minimalist geek aesthetic.</p>
+    <section class="merge-section" id="works-section">
+      <div class="merge-sticky">
+        <h2 style="font-size: clamp(40px, 8vw, 100px); margin: 0 0 60px 0; line-height: 1;">CUSTOM SYSTEMS.</h2>
+        <div class="panels-container">
+          <div class="panel left">
+            <h3>NIE-NodeGet</h3>
+            <p>// MONITORING UI<br><br>A highly customized probe frontend tracking real-time latency and resources across distributed PVE/KVM environments. Designed with strict monochromatic precision.</p>
+          </div>
+          <div class="panel right">
+            <h3>NIE Blog System</h3>
+            <p>// SSG ARCHITECTURE<br><br>A purely custom-built static generation engine powered by automated Python build scripts. Rejecting high-saturation generic templates for absolute geek minimalism.</p>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="section-contact">
-      <h2 style="font-family: 'JetBrains Mono', monospace; font-size: 20px; text-transform: uppercase;">INITIALIZE CONTACT</h2>
-      <a href="mailto:ME@QQ.SG" class="huge-link">ME@QQ.SG</a>
-      <div class="domain-list">
+    <section class="contact-section">
+      <a href="mailto:ME@QQ.SG" class="email-link">ME@QQ.SG</a>
+      <div class="domains-list">
         <span>status.nkx.moe</span>
         <span>niekaixiang.com</span>
+        <span>nie.net</span>
       </div>
+      <p style="font-family: 'JetBrains Mono', monospace; color: #888; margin-top: 80px; font-size: 14px;">
+        © NKX // IDENTITY ESTABLISHED.
+      </p>
     </section>
 
   </div>
 
   <script>
     // ==========================================
-    // 1. 核心特效：鼠标/触控多彩拖影引擎 (Trail Mask)
+    // 1. 拖影交互引擎 (Canvas Trail Effect)
     // ==========================================
-    const colorfulText = document.getElementById('colorfulText');
-    const interactLayer = document.getElementById('interactLayer');
-    
-    // 记录轨迹历史系坐标，长度决定拖影的长短
-    let trail = [];
-    const TRAIL_LENGTH = 12; 
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let isInteracting = false;
-    let time = 0;
+    const canvas = document.getElementById('trail-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
 
-    // 监听鼠标与手指滑动
-    const updatePosition = (x, y) => {
-      mouseX = x; mouseY = y;
-      isInteracting = true;
-      // 停止交互 2 秒后，让拖影自己开始随机游走
-      clearTimeout(window.interactionTimeout);
-      window.interactionTimeout = setTimeout(() => { isInteracting = false; }, 2000);
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // 存储鼠标/触摸的轨迹点
+    let points = [];
+    let isDrawing = false;
+
+    const addPoint = (x, y) => {
+      points.push({ x, y, age: 0 });
     };
 
-    interactLayer.addEventListener('mousemove', e => updatePosition(e.clientX, e.clientY));
-    interactLayer.addEventListener('touchmove', e => {
-      if(e.touches.length > 0) updatePosition(e.touches[0].clientX, e.touches[0].clientY);
-    });
+    window.addEventListener('mousemove', e => addPoint(e.clientX, e.clientY));
+    window.addEventListener('touchmove', e => {
+      if(e.touches.length > 0) {
+        addPoint(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, {passive: true});
 
-    function animateTrail() {
-      time += 0.04;
-      
-      // 如果用户不操作，生成基于正弦波的丝滑随机游走轨迹
-      if (!isInteracting) {
-        mouseX = window.innerWidth / 2 + Math.sin(time * 0.8) * (window.innerWidth * 0.4);
-        mouseY = window.innerHeight / 2 + Math.cos(time * 1.1) * (window.innerHeight * 0.3);
+    function drawTrail() {
+      // 用极低的透明度覆盖全图，制造逐渐消失的拖尾感 (Fade out)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'; 
+      ctx.fillRect(0, 0, width, height);
+
+      // 绘制新的轨迹线 (使用纯白色，在 mix-blend-mode: difference 下会让下方的黑字变白)
+      if (points.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          // 贝塞尔曲线让拖尾更加圆润顺滑
+          const xc = (points[i].x + points[i - 1].x) / 2;
+          const yc = (points[i].y + points[i - 1].y) / 2;
+          ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, xc, yc);
+        }
+        ctx.strokeStyle = '#ffffff'; 
+        ctx.lineWidth = window.innerWidth > 768 ? 60 : 40; // 粗壮的刷子
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
       }
 
-      // 将最新坐标推入数组头部
-      trail.unshift({ x: mouseX, y: mouseY });
-      if (trail.length > TRAIL_LENGTH) trail.pop();
+      // 移除老化节点
+      points.forEach(p => p.age++);
+      points = points.filter(p => p.age < 15); // 只保留最近 15 帧的轨迹
 
-      // 构建多重径向渐变，形成“头部大实心，尾部小透明”的慧星拖影
-      const maskString = trail.map((p, index) => {
-        const ratio = 1 - (index / TRAIL_LENGTH);
-        const size = 180 * ratio; // 头部尺寸大，尾部逐渐变小
-        const alpha = ratio.toFixed(2);
-        return `radial-gradient(circle ${size}px at ${p.x}px ${p.y}px, rgba(0,0,0,${alpha}), transparent 100%)`;
-      }).join(', ');
-
-      colorfulText.style.webkitMaskImage = maskString;
-      colorfulText.style.maskImage = maskString;
-
-      requestAnimationFrame(animateTrail);
+      requestAnimationFrame(drawTrail);
     }
-    animateTrail();
+    drawTrail();
 
     // ==========================================
-    // 2. GSAP 滚动动画架构 (Lenis 丝滑滚动)
+    // 2. 丝滑滚动引擎 (Lenis) + GSAP 初始化
     // ==========================================
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smooth: true,
+      smoothWheel: true,
+      touchMultiplier: 2
     });
-    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
     requestAnimationFrame(raf);
 
     gsap.registerPlugin(ScrollTrigger);
@@ -353,50 +324,55 @@
     gsap.ticker.add((time) => { lenis.raf(time * 1000); });
     gsap.ticker.lagSmoothing(0, 0);
 
-    // 动画 A：向下滑动时，巨型 QQ.SG 不消失，而是变小、变淡成为整个网站的水印
-    gsap.to('#heroBg', {
+    // ==========================================
+    // 3. 滚动动画逻辑
+    // ==========================================
+
+    // A. 向下滚一点时，巨大的 QQ.SG 不要完全淡出，保留 10% 透明度作为水印
+    gsap.to('.giant-text', {
       scrollTrigger: {
-        trigger: 'body',
-        start: 'top top',
-        end: '100vh top',
+        trigger: '.content-wrapper',
+        start: 'top bottom',
+        end: 'top top',
         scrub: true
       },
-      scale: 0.85,
-      opacity: 0.08, // 降为极淡的底纹
-      y: '-10vh'
+      opacity: 0.08,
+      scale: 0.95
     });
 
-    // 动画 B：跑马灯双向滚动绑定滚轮速度
-    gsap.to('#mq1 .marquee-text', {
-      xPercent: -50, ease: "none",
-      scrollTrigger: { trigger: '.section-marquee', start: "top bottom", end: "bottom top", scrub: 1 }
-    });
-    gsap.to('#mq2 .marquee-text', {
-      xPercent: 50, ease: "none",
-      scrollTrigger: { trigger: '.section-marquee', start: "top bottom", end: "bottom top", scrub: 1 }
-    });
-
-    // 动画 C：第四屏【左右合并磁性动画】
-    // 手机端是从上下合并，桌面端从左右合并
-    const isMobile = window.innerWidth <= 900;
-    
-    // 设定初始位置
-    gsap.set('#panelLeft', { [isMobile ? 'y' : 'x']: '-100%' });
-    gsap.set('#panelRight', { [isMobile ? 'y' : 'x']: '100%' });
-
-    const mergeTl = gsap.timeline({
+    // B. 第四页：左右面板合并进场 (Merge Animation)
+    // 随着 merge-section 钉在屏幕上，左右面板向中间移动，直到完成合并
+    const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: '#mergeSection',
+        trigger: '.merge-section',
         start: 'top top',
-        // 关键：“磁性”阻尼感的来源，页面在这里锁死 150% 的高度，看完合并才能继续滑
-        end: '+=150%', 
-        pin: true,
-        scrub: 1 // 1秒回弹阻尼
+        end: 'bottom bottom',
+        scrub: 1 // 1秒阻尼滑动
       }
     });
 
-    mergeTl.to('#panelLeft', { [isMobile ? 'y' : 'x']: '0%', ease: "none" }, 0);
-    mergeTl.to('#panelRight', { [isMobile ? 'y' : 'x']: '0%', ease: "none" }, 0);
+    // 左面板从 -50vw 移入，最终定位在中心偏左 (例如 left: 2vw)
+    tl.to('.panel.left', {
+      left: window.innerWidth > 768 ? '4vw' : '0',
+      ease: 'none'
+    }, 0);
+
+    // 右面板从 -50vw 移入，最终定位在中心偏右
+    tl.to('.panel.right', {
+      right: window.innerWidth > 768 ? '4vw' : '0',
+      ease: 'none'
+    }, 0);
+
+    // ==========================================
+    // 4. 强制第五页磁性吸附 (Snap)
+    // ==========================================
+    // 虽然 Lenis 是全局丝滑滚动，我们可以利用 ScrollTrigger 让滚到最后一页时自动吸附对齐
+    ScrollTrigger.create({
+      trigger: '.contact-section',
+      start: 'top top',
+      end: 'bottom bottom',
+      snap: 1 
+    });
 
   </script>
 </body>
