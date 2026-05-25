@@ -1,164 +1,933 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>QQ.SG | NKX Infrastructure</title>
+
   <script src="https://cdn.staticfile.net/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdn.staticfile.net/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #ffffff;
+      --bg: #f7f7f2;
+      --paper: #ffffff;
       --text: #050505;
+      --muted: #7a7a72;
+      --line: rgba(0, 0, 0, 0.12);
+      --line-strong: #050505;
       --accent: #15b85a;
-    }
-    
-    body, html {
-      margin: 0; padding: 0; background: var(--bg); color: var(--text);
-      font-family: 'Space Grotesk', sans-serif; overflow-x: hidden;
-      cursor: crosshair; /* 极客风十字光标 */
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --radius: 28px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
     }
 
-    /* =========================================
-       1. 巨型 QQ.SG 与拖影交互区
-       ========================================= */
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Space Grotesk", sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    ::selection {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9997;
+      opacity: .075;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(0,0,0,.5) 0 1px, transparent 1px),
+        radial-gradient(circle at 80% 70%, rgba(0,0,0,.35) 0 1px, transparent 1px);
+      background-size: 4px 4px, 6px 6px;
+      mix-blend-mode: multiply;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background:
+        linear-gradient(rgba(0,0,0,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0%;
+      background: var(--text);
+      z-index: 10000;
+      transform-origin: left center;
+    }
+
+    .cursor-dot,
+    .cursor-ring {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 10001;
+      border-radius: 999px;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-dot {
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      transform: translate(-50%, -50%);
+    }
+
+    .cursor-ring {
+      width: 44px;
+      height: 44px;
+      border: 1px solid #fff;
+      transform: translate(-50%, -50%);
+      transition: width .25s var(--ease), height .25s var(--ease), border-width .25s var(--ease);
+    }
+
+    body.is-hovering .cursor-ring {
+      width: 76px;
+      height: 76px;
+      border-width: 2px;
+    }
+
+    .hud {
+      position: fixed;
+      left: 24px;
+      right: 24px;
+      top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      pointer-events: none;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .05em;
+      mix-blend-mode: difference;
+      color: #fff;
+    }
+
+    .hud-pill {
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 999px;
+      padding: 8px 12px;
+      backdrop-filter: blur(8px);
+      background: rgba(255,255,255,.06);
+    }
+
+    .hud-center {
+      display: flex;
+      gap: 8px;
+    }
+
+    .hud-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #fff;
+      margin-right: 8px;
+      display: inline-block;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(.7); opacity: .55; }
+      50% { transform: scale(1); opacity: 1; }
+    }
+
     #hero-container {
-      position: fixed; /* 牢牢钉在底层 */
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      display: flex; justify-content: center; align-items: center;
-      z-index: -1; 
-    }
-    
-    .giant-text {
-      font-size: clamp(80px, 22vw, 400px);
-      font-weight: 800; line-height: 0.8; letter-spacing: -0.06em;
-      color: var(--text); text-align: center;
-      user-select: none;
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 45%, rgba(21,184,90,.09), transparent 28%),
+        var(--bg);
     }
 
-    /* 拖影画布层：盖在文字上，利用差值反色 */
+    .hero-orbit {
+      position: absolute;
+      width: min(74vw, 920px);
+      aspect-ratio: 1;
+      border: 1px solid rgba(0,0,0,.11);
+      border-radius: 50%;
+      animation: rotateOrbit 28s linear infinite;
+    }
+
+    .hero-orbit::before,
+    .hero-orbit::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: var(--text);
+    }
+
+    .hero-orbit::before {
+      top: 12%;
+      left: 20%;
+    }
+
+    .hero-orbit::after {
+      right: 13%;
+      bottom: 24%;
+      background: var(--accent);
+    }
+
+    @keyframes rotateOrbit {
+      to { transform: rotate(360deg); }
+    }
+
+    .giant-wrap {
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .giant-text {
+      position: relative;
+      font-size: clamp(82px, 22vw, 430px);
+      font-weight: 800;
+      line-height: .78;
+      letter-spacing: -.075em;
+      color: var(--text);
+      text-align: center;
+      user-select: none;
+      filter: contrast(1.12);
+      z-index: 2;
+    }
+
+    .giant-text::before,
+    .giant-text::after {
+      content: "QQ.SG";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: .12;
+      pointer-events: none;
+    }
+
+    .giant-text::before {
+      transform: translate3d(-10px, -8px, 0);
+      color: var(--accent);
+    }
+
+    .giant-text::after {
+      transform: translate3d(10px, 8px, 0);
+      color: #000;
+    }
+
+    .hero-subline {
+      position: absolute;
+      left: 50%;
+      bottom: -54px;
+      transform: translateX(-50%);
+      font-family: "JetBrains Mono", monospace;
+      font-size: clamp(11px, 1.3vw, 14px);
+      white-space: nowrap;
+      color: var(--muted);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
     #trail-canvas {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; /* 让鼠标穿透画布，不影响下方操作 */
-      mix-blend-mode: difference; /* 灵魂反色机制 */
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      mix-blend-mode: difference;
       z-index: 10;
     }
 
-    /* =========================================
-       页面流动结构
-       ========================================= */
-    .content-wrapper {
-      margin-top: 100vh; /* 把内容推到首屏下面 */
+    .scroll-cue {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+      z-index: 20;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .18em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+    }
+
+    .scroll-cue-line {
+      width: 56px;
+      height: 1px;
+      background: var(--text);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-cue-line::after {
+      content: "";
+      position: absolute;
+      inset: 0;
       background: var(--bg);
-      position: relative; z-index: 2;
+      animation: scanLine 1.6s ease-in-out infinite;
     }
 
-    /* =========================================
-       2. 反向跑马灯 (Marquee)
-       ========================================= */
+    @keyframes scanLine {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
+    }
+
+    .content-wrapper {
+      margin-top: 100vh;
+      position: relative;
+      z-index: 2;
+      background: var(--bg);
+      border-top: 2px solid var(--text);
+    }
+
     .marquee-section {
-      padding: 40px 0; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
-      background: var(--text); color: var(--bg); overflow: hidden;
+      position: relative;
+      padding: 36px 0;
+      border-bottom: 2px solid var(--text);
+      background: var(--text);
+      color: var(--bg);
+      overflow: hidden;
     }
+
+    .marquee-section::before,
+    .marquee-section::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 16vw;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .marquee-section::before {
+      left: 0;
+      background: linear-gradient(to right, var(--text), transparent);
+    }
+
+    .marquee-section::after {
+      right: 0;
+      background: linear-gradient(to left, var(--text), transparent);
+    }
+
     .marquee-row {
-      display: flex; white-space: nowrap; width: max-content;
-      font-family: 'JetBrains Mono', monospace; font-size: clamp(24px, 5vw, 60px); font-weight: 700; text-transform: uppercase;
+      display: flex;
+      white-space: nowrap;
+      width: max-content;
+      font-family: "JetBrains Mono", monospace;
+      font-size: clamp(24px, 5vw, 64px);
+      font-weight: 700;
+      text-transform: uppercase;
+      will-change: transform;
     }
-    .marquee-row.left { animation: scrollLeft 20s linear infinite; }
-    .marquee-row.right { animation: scrollRight 25s linear infinite; margin-top: 10px; }
-    .marquee-row span { padding: 0 40px; }
-    
-    @keyframes scrollLeft { to { transform: translateX(-50%); } }
-    @keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-    /* =========================================
-       3. 无极滑动干货区 (监控 & 虚拟化)
-       ========================================= */
+    .marquee-row.left {
+      animation: scrollLeft 19s linear infinite;
+    }
+
+    .marquee-row.right {
+      animation: scrollRight 24s linear infinite;
+      margin-top: 10px;
+      opacity: .52;
+    }
+
+    .marquee-row span {
+      padding: 0 34px;
+    }
+
+    @keyframes scrollLeft {
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes scrollRight {
+      from { transform: translateX(-50%); }
+      to { transform: translateX(0); }
+    }
+
     .data-section {
-      padding: 120px 5vw; border-bottom: 2px solid var(--text);
+      position: relative;
+      padding: clamp(80px, 12vw, 150px) 5vw;
+      border-bottom: 2px solid var(--text);
+      overflow: hidden;
     }
+
+    .section-kicker {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+
     .section-title {
-      font-size: clamp(40px, 8vw, 120px); font-weight: 800; line-height: 1; letter-spacing: -0.04em; margin-bottom: 60px;
+      font-size: clamp(46px, 9vw, 132px);
+      font-weight: 800;
+      line-height: .88;
+      letter-spacing: -.06em;
+      margin: 0 0 62px;
     }
-    
-    /* 监控列表 */
-    .status-list { list-style: none; padding: 0; margin: 0; }
+
+    .split-text .char {
+      display: inline-block;
+      transform-origin: 50% 100%;
+    }
+
+    .status-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border-top: 1px solid var(--line);
+    }
+
     .status-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 30px 0; border-bottom: 1px solid rgba(0,0,0,0.1);
-      font-family: 'JetBrains Mono', monospace; font-size: clamp(14px, 2vw, 24px);
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.5fr .6fr .4fr;
+      gap: 24px;
+      align-items: center;
+      padding: 30px 0;
+      border-bottom: 1px solid var(--line);
+      font-family: "JetBrains Mono", monospace;
+      font-size: clamp(13px, 1.55vw, 22px);
+      overflow: hidden;
     }
-    .status-item:hover { background: rgba(0,0,0,0.02); padding-left: 20px; transition: all 0.3s ease; }
-    .status-green { color: var(--accent); font-weight: bold; }
-    .status-amber { color: #f59e0b; font-weight: bold; }
 
-    /* 技能标签网格 */
+    .status-item::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--text);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .45s var(--ease);
+      z-index: -1;
+    }
+
+    .status-item:hover {
+      color: var(--bg);
+      padding-left: 24px;
+      padding-right: 24px;
+      transition: padding .45s var(--ease), color .3s ease;
+    }
+
+    .status-item:hover::before {
+      transform: scaleX(1);
+    }
+
+    .status-index {
+      color: var(--muted);
+      margin-right: 20px;
+    }
+
+    .status-green,
+    .status-amber {
+      font-weight: 700;
+    }
+
+    .status-green {
+      color: var(--accent);
+    }
+
+    .status-amber {
+      color: var(--amber);
+    }
+
+    .signal {
+      justify-self: end;
+      width: 52px;
+      height: 18px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      align-items: end;
+    }
+
+    .signal span {
+      display: block;
+      background: currentColor;
+      height: 20%;
+      opacity: .35;
+      animation: bars 1.2s ease-in-out infinite;
+    }
+
+    .signal span:nth-child(2) { height: 40%; animation-delay: .1s; }
+    .signal span:nth-child(3) { height: 60%; animation-delay: .2s; }
+    .signal span:nth-child(4) { height: 80%; animation-delay: .3s; }
+    .signal span:nth-child(5) { height: 100%; animation-delay: .4s; }
+
+    @keyframes bars {
+      50% { opacity: 1; transform: scaleY(.55); }
+    }
+
     .skills-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px; background: var(--text); border: 2px solid var(--text);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--text);
+      border: 2px solid var(--text);
+      perspective: 1200px;
     }
+
     .skill-card {
-      background: var(--bg); padding: 40px; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;
+      position: relative;
+      background: var(--bg);
+      padding: clamp(28px, 3vw, 44px);
+      min-height: 270px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: transform .55s var(--ease), background .35s ease, color .35s ease;
     }
-    .skill-card h3 { margin: 0; font-size: 32px; font-weight: 700; }
-    .skill-card p { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #666; margin-top: 20px; }
 
-    /* =========================================
-       4. 滚动合并区 (Works - Scroll Merge)
-       ========================================= */
+    .skill-card::before {
+      content: attr(data-index);
+      position: absolute;
+      right: 22px;
+      top: 18px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .skill-card::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      right: -80px;
+      bottom: -80px;
+      border: 1px solid rgba(0,0,0,.14);
+      transition: transform .65s var(--ease), border-color .35s ease;
+    }
+
+    .skill-card:hover {
+      background: var(--text);
+      color: var(--bg);
+      transform: translateY(-10px) rotateX(4deg) rotateY(-4deg);
+    }
+
+    .skill-card:hover::after {
+      transform: scale(1.6);
+      border-color: rgba(255,255,255,.3);
+    }
+
+    .skill-card h3 {
+      margin: 0;
+      font-size: clamp(28px, 2.5vw, 38px);
+      line-height: 1;
+      letter-spacing: -.035em;
+    }
+
+    .skill-card p {
+      position: relative;
+      z-index: 2;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--muted);
+      margin: 34px 0 0;
+      max-width: 42ch;
+    }
+
+    .skill-card:hover p {
+      color: rgba(255,255,255,.68);
+    }
+
+    .timeline-section {
+      position: relative;
+      padding: clamp(90px, 13vw, 170px) 5vw;
+      background: var(--bg);
+      border-bottom: 2px solid var(--text);
+    }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 18px;
+    }
+
+    .timeline-card {
+      display: grid;
+      grid-template-columns: .35fr 1fr .45fr;
+      gap: 24px;
+      align-items: center;
+      padding: 28px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.45);
+      backdrop-filter: blur(10px);
+      transform-origin: center;
+    }
+
+    .timeline-card strong {
+      font-size: clamp(24px, 3vw, 48px);
+      letter-spacing: -.04em;
+    }
+
+    .timeline-card p,
+    .timeline-card span {
+      font-family: "JetBrains Mono", monospace;
+      color: var(--muted);
+      line-height: 1.7;
+      margin: 0;
+      font-size: 13px;
+    }
+
     .merge-section {
-      height: 150vh; /* 留出足够的滚动空间来执行合并 */
-      background: var(--text); color: var(--bg); position: relative; overflow: hidden;
+      height: 190vh;
+      background: var(--text);
+      color: var(--bg);
+      position: relative;
+      overflow: hidden;
     }
+
+    .merge-section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 25% 35%, rgba(21,184,90,.22), transparent 22%),
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: auto, 42px 42px, 42px 42px;
+      opacity: .9;
+    }
+
     .merge-sticky {
-      position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
     }
-    
+
+    .merge-title {
+      position: relative;
+      z-index: 2;
+      font-size: clamp(44px, 8vw, 108px);
+      margin: 0 0 58px;
+      line-height: .86;
+      letter-spacing: -.06em;
+      text-align: center;
+    }
+
     .panels-container {
-      display: flex; width: 100vw; height: 60vh; justify-content: center; align-items: center; position: relative;
+      display: flex;
+      width: 100vw;
+      height: 62vh;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 3;
+      perspective: 1400px;
     }
+
     .panel {
-      width: 45vw; height: 100%; padding: 40px; border: 2px solid var(--bg); border-radius: 20px;
-      display: flex; flex-direction: column; justify-content: center; position: absolute; background: var(--text);
+      width: min(45vw, 640px);
+      height: 100%;
+      padding: clamp(28px, 4vw, 54px);
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: absolute;
+      background: rgba(5,5,5,.72);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 30px 80px rgba(0,0,0,.32);
+      overflow: hidden;
+      will-change: transform, left, right;
     }
-    /* 初始状态：左面板在屏幕最左外侧，右面板在最右外侧 */
-    .panel.left { left: -50vw; }
-    .panel.right { right: -50vw; text-align: right; }
-    
-    .panel h3 { font-size: clamp(30px, 5vw, 60px); margin: 0; line-height: 1; }
-    .panel p { font-family: 'JetBrains Mono', monospace; color: #aaa; margin-top: 20px; }
 
-    /* =========================================
-       5. 最终联系锚点
-       ========================================= */
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.18), transparent 42%);
+      opacity: .45;
+      pointer-events: none;
+    }
+
+    .panel.left {
+      left: -58vw;
+      transform: rotateY(16deg) rotateZ(-2deg);
+    }
+
+    .panel.right {
+      right: -58vw;
+      text-align: right;
+      transform: rotateY(-16deg) rotateZ(2deg);
+    }
+
+    .panel h3 {
+      position: relative;
+      z-index: 2;
+      font-size: clamp(34px, 5vw, 68px);
+      margin: 0;
+      line-height: .92;
+      letter-spacing: -.05em;
+    }
+
+    .panel p {
+      position: relative;
+      z-index: 2;
+      font-family: "JetBrains Mono", monospace;
+      color: rgba(255,255,255,.62);
+      margin: 22px 0 0;
+      line-height: 1.8;
+      max-width: 44ch;
+    }
+
+    .panel.right p {
+      margin-left: auto;
+    }
+
+    .panel-tag {
+      position: relative;
+      z-index: 2;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: .15em;
+    }
+
     .contact-section {
-      height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-      background: var(--bg); color: var(--text); text-align: center; scroll-snap-align: start;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      padding: 80px 24px;
     }
-    .email-link {
-      font-size: clamp(40px, 10vw, 150px); font-weight: 800; color: var(--text); text-decoration: none;
-      border-bottom: 8px solid var(--text); transition: color 0.3s, border-color 0.3s;
-    }
-    .email-link:hover { color: var(--accent); border-color: var(--accent); }
-    .domains-list {
-      margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 16px;
-    }
-    .domains-list span { padding: 10px 20px; border: 1px solid var(--text); border-radius: 99px; }
 
+    .contact-section::before {
+      content: "CONTACT";
+      position: absolute;
+      font-size: 22vw;
+      font-weight: 800;
+      letter-spacing: -.08em;
+      opacity: .035;
+      pointer-events: none;
+    }
+
+    .email-link {
+      position: relative;
+      font-size: clamp(42px, 10vw, 156px);
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -.07em;
+      line-height: .86;
+    }
+
+    .email-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -12px;
+      height: clamp(4px, .7vw, 10px);
+      background: var(--text);
+      transform-origin: left;
+      transition: transform .5s var(--ease), background .3s ease;
+    }
+
+    .email-link:hover {
+      color: var(--accent);
+    }
+
+    .email-link:hover::after {
+      background: var(--accent);
+      transform: scaleX(.62);
+    }
+
+    .domains-list {
+      margin-top: 54px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+    }
+
+    .domains-list span {
+      padding: 11px 18px;
+      border: 1px solid var(--text);
+      border-radius: 999px;
+      background: rgba(255,255,255,.28);
+      backdrop-filter: blur(8px);
+      transition: transform .35s var(--ease), background .35s ease, color .35s ease;
+    }
+
+    .domains-list span:hover {
+      transform: translateY(-6px);
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .footer-note {
+      font-family: "JetBrains Mono", monospace;
+      color: var(--muted);
+      margin-top: 84px;
+      font-size: 12px;
+      letter-spacing: .12em;
+    }
+
+    @media (max-width: 980px) {
+      body,
+      html {
+        cursor: auto;
+      }
+
+      .cursor-dot,
+      .cursor-ring {
+        display: none;
+      }
+
+      .hud {
+        left: 14px;
+        right: 14px;
+        top: 14px;
+        font-size: 10px;
+      }
+
+      .hud-center {
+        display: none;
+      }
+
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-item {
+        grid-template-columns: 1fr;
+      }
+
+      .signal {
+        justify-self: start;
+      }
+
+      .timeline-card {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        width: 84vw;
+        height: 44%;
+      }
+
+      .panel.left {
+        top: 4%;
+      }
+
+      .panel.right {
+        bottom: 4%;
+      }
+
+      .merge-title {
+        margin-bottom: 24px;
+      }
+
+      .panels-container {
+        height: 70vh;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
+
 <body>
+  <div class="progress-bar"></div>
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+
+  <header class="hud">
+    <div class="hud-pill"><span class="hud-dot"></span>NKX ONLINE</div>
+    <div class="hud-center">
+      <div class="hud-pill">ASN / EDGE / IDENTITY</div>
+      <div class="hud-pill" id="clock">--:--:--</div>
+    </div>
+    <div class="hud-pill">QQ.SG</div>
+  </header>
 
   <div id="hero-container">
-    <div class="giant-text">QQ.SG</div>
+    <div class="hero-orbit"></div>
+    <div class="giant-wrap">
+      <div class="giant-text">QQ.SG</div>
+      <div class="hero-subline">NKX Infrastructure / Private Routing Identity</div>
+    </div>
     <canvas id="trail-canvas"></canvas>
   </div>
 
-  <div class="content-wrapper">
-    
-    <div class="marquee-section">
+  <div class="scroll-cue">
+    <span>SCROLL</span>
+    <span class="scroll-cue-line"></span>
+  </div>
+
+  <main class="content-wrapper">
+    <section class="marquee-section">
       <div class="marquee-row left">
         <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
         <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
@@ -167,213 +936,564 @@
         <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
         <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
       </div>
-    </div>
+    </section>
 
     <section class="data-section">
-      <h2 class="section-title">STATUS<br>PROBES.</h2>
+      <div class="section-kicker">/ real-time probe matrix</div>
+      <h2 class="section-title split-text">STATUS<br>PROBES.</h2>
+
       <ul class="status-list">
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">01</span> SG Core Identity (WireGuard)</div>
+        <li class="status-item reveal">
+          <div><span class="status-index">01</span>SG Core Identity / WireGuard</div>
           <div class="status-green">ACTIVE / 12MS</div>
+          <div class="signal status-green"><span></span><span></span><span></span><span></span><span></span></div>
         </li>
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">02</span> HK Edge Transit (CF Tunnels)</div>
+        <li class="status-item reveal">
+          <div><span class="status-index">02</span>HK Edge Transit / CF Tunnels</div>
           <div class="status-green">ACTIVE / 34MS</div>
+          <div class="signal status-green"><span></span><span></span><span></span><span></span><span></span></div>
         </li>
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">03</span> Oracle Phoenix ARM Container</div>
+        <li class="status-item reveal">
+          <div><span class="status-index">03</span>Oracle Phoenix ARM Container</div>
           <div class="status-green">ACTIVE / 168MS</div>
+          <div class="signal status-green"><span></span><span></span><span></span><span></span><span></span></div>
         </li>
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">04</span> Mainland Backup Node</div>
+        <li class="status-item reveal">
+          <div><span class="status-index">04</span>Mainland Backup Node</div>
           <div class="status-amber">LATENCY / 142MS</div>
+          <div class="signal status-amber"><span></span><span></span><span></span><span></span><span></span></div>
         </li>
       </ul>
     </section>
 
-    <section class="data-section" style="background: var(--bg);">
-      <h2 class="section-title">INFRA<br>STACK.</h2>
+    <section class="data-section">
+      <div class="section-kicker">/ infrastructure capability layer</div>
+      <h2 class="section-title split-text">INFRA<br>STACK.</h2>
+
       <div class="skills-grid">
-        <div class="skill-card">
+        <div class="skill-card reveal" data-index="01">
           <h3>Proxmox VE</h3>
           <p>Over 6 years of experience managing virtualized environments, scaling from a single Dell R620 to cluster deployments.</p>
         </div>
-        <div class="skill-card">
+        <div class="skill-card reveal" data-index="02">
           <h3>Network Routing</h3>
           <p>Proficient in IPv6 static routing, BGP session establishment, and P2P mesh networks via WireGuard.</p>
         </div>
-        <div class="skill-card">
+        <div class="skill-card reveal" data-index="03">
           <h3>Container Ops</h3>
           <p>Deep expertise in Docker, LXC, and orchestrating microservices on Debian and Alpine Linux systems.</p>
         </div>
-        <div class="skill-card">
+        <div class="skill-card reveal" data-index="04">
           <h3>Edge Delivery</h3>
           <p>Leveraging Cloudflare Pages, Workers, and Zero Trust ecosystems for secure, serverless frontend delivery.</p>
         </div>
       </div>
     </section>
 
+    <section class="timeline-section">
+      <div class="section-kicker">/ deployment memory</div>
+      <h2 class="section-title split-text">SYSTEM<br>TRACE.</h2>
+
+      <div class="timeline">
+        <div class="timeline-card">
+          <span>PHASE 01</span>
+          <strong>Identity Node</strong>
+          <p>Domain, mailbox, routing and private identity are consolidated into a single minimal public surface.</p>
+        </div>
+        <div class="timeline-card">
+          <span>PHASE 02</span>
+          <strong>Edge Mesh</strong>
+          <p>Multiple regions are stitched by WireGuard, Cloudflare Tunnel and lightweight Linux services.</p>
+        </div>
+        <div class="timeline-card">
+          <span>PHASE 03</span>
+          <strong>Probe UI</strong>
+          <p>Monitoring frontends expose latency, health and container state with strict monochrome interface rules.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="merge-section" id="works-section">
       <div class="merge-sticky">
-        <h2 style="font-size: clamp(40px, 8vw, 100px); margin: 0 0 60px 0; line-height: 1;">CUSTOM SYSTEMS.</h2>
+        <h2 class="merge-title">CUSTOM<br>SYSTEMS.</h2>
+
         <div class="panels-container">
           <div class="panel left">
-            <h3>NIE-NodeGet</h3>
-            <p>// MONITORING UI<br><br>A highly customized probe frontend tracking real-time latency and resources across distributed PVE/KVM environments. Designed with strict monochromatic precision.</p>
+            <div class="panel-tag">/ MONITORING UI</div>
+            <div>
+              <h3>NIE-NodeGet</h3>
+              <p>A highly customized probe frontend tracking real-time latency and resources across distributed PVE/KVM environments. Designed with strict monochromatic precision.</p>
+            </div>
           </div>
+
           <div class="panel right">
-            <h3>NIE Blog System</h3>
-            <p>// SSG ARCHITECTURE<br><br>A purely custom-built static generation engine powered by automated Python build scripts. Rejecting high-saturation generic templates for absolute geek minimalism.</p>
+            <div class="panel-tag">/ SSG ARCHITECTURE</div>
+            <div>
+              <h3>NIE Blog System</h3>
+              <p>A purely custom-built static generation engine powered by automated Python build scripts. Rejecting high-saturation generic templates for absolute geek minimalism.</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <section class="contact-section">
-      <a href="mailto:ME@QQ.SG" class="email-link">ME@QQ.SG</a>
-      <div class="domains-list">
-        <span>status.nkx.moe</span>
-        <span>niekaixiang.com</span>
-        <span>nie.net</span>
-      </div>
-      <p style="font-family: 'JetBrains Mono', monospace; color: #888; margin-top: 80px; font-size: 14px;">
-        © NKX // IDENTITY ESTABLISHED.
-      </p>
-    </section>
+      <a href="mailto:ME@QQ.SG" class="email-link magnetic">ME@QQ.SG</a>
 
-  </div>
+      <div class="domains-list">
+        <span class="magnetic">status.nkx.moe</span>
+        <span class="magnetic">niekaixiang.com</span>
+        <span class="magnetic">nie.net</span>
+      </div>
+
+      <p class="footer-note">© NKX // IDENTITY ESTABLISHED // QQ.SG</p>
+    </section>
+  </main>
 
   <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     // ==========================================
-    // 1. 拖影交互引擎 (Canvas Trail Effect)
+    // 1. Smooth Scroll
     // ==========================================
-    const canvas = document.getElementById('trail-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
+    let lenis;
+
+    if (!prefersReducedMotion) {
+      lenis = new Lenis({
+        duration: 1.25,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        touchMultiplier: 1.6
+      });
+
+      lenis.on("scroll", ScrollTrigger.update);
+
+      gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // ==========================================
+    // 2. Clock
+    // ==========================================
+    const clock = document.getElementById("clock");
+
+    function updateClock() {
+      const now = new Date();
+      clock.textContent = now.toLocaleTimeString("zh-CN", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ==========================================
+    // 3. Custom Cursor
+    // ==========================================
+    const dot = document.querySelector(".cursor-dot");
+    const ring = document.querySelector(".cursor-ring");
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let ringX = mouseX;
+    let ringY = mouseY;
+
+    window.addEventListener("mousemove", (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      gsap.set(dot, { x: mouseX, y: mouseY });
+    });
+
+    gsap.ticker.add(() => {
+      ringX += (mouseX - ringX) * 0.16;
+      ringY += (mouseY - ringY) * 0.16;
+      gsap.set(ring, { x: ringX, y: ringY });
+    });
+
+    document.querySelectorAll("a, .skill-card, .status-item, .magnetic").forEach((el) => {
+      el.addEventListener("mouseenter", () => document.body.classList.add("is-hovering"));
+      el.addEventListener("mouseleave", () => document.body.classList.remove("is-hovering"));
+    });
+
+    // ==========================================
+    // 4. Canvas Trail Effect
+    // ==========================================
+    const canvas = document.getElementById("trail-canvas");
+    const ctx = canvas.getContext("2d");
+    let width;
+    let height;
+    let points = [];
 
     function resizeCanvas() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = canvas.width = window.innerWidth * dpr;
+      height = canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    window.addEventListener('resize', resizeCanvas);
+
     resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
-    // 存储鼠标/触摸的轨迹点
-    let points = [];
-    let isDrawing = false;
+    function addPoint(x, y) {
+      points.push({
+        x,
+        y,
+        age: 0,
+        life: 22 + Math.random() * 10,
+        size: window.innerWidth > 768 ? 64 : 42
+      });
+    }
 
-    const addPoint = (x, y) => {
-      points.push({ x, y, age: 0 });
-    };
+    window.addEventListener("mousemove", (e) => addPoint(e.clientX, e.clientY));
 
-    window.addEventListener('mousemove', e => addPoint(e.clientX, e.clientY));
-    window.addEventListener('touchmove', e => {
-      if(e.touches.length > 0) {
+    window.addEventListener("touchmove", (e) => {
+      if (e.touches.length > 0) {
         addPoint(e.touches[0].clientX, e.touches[0].clientY);
       }
-    }, {passive: true});
+    }, { passive: true });
 
     function drawTrail() {
-      // 用极低的透明度覆盖全图，制造逐渐消失的拖尾感 (Fade out)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'; 
-      ctx.fillRect(0, 0, width, height);
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-      // 绘制新的轨迹线 (使用纯白色，在 mix-blend-mode: difference 下会让下方的黑字变白)
+      for (let i = 0; i < points.length; i++) {
+        const p = points[i];
+        const alpha = Math.max(0, 1 - p.age / p.life);
+        const radius = p.size * alpha;
+
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
+        gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+        gradient.addColorStop(1, `rgba(255,255,255,0)`);
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        p.age++;
+      }
+
       if (points.length > 1) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
+
         for (let i = 1; i < points.length; i++) {
-          // 贝塞尔曲线让拖尾更加圆润顺滑
           const xc = (points[i].x + points[i - 1].x) / 2;
           const yc = (points[i].y + points[i - 1].y) / 2;
           ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, xc, yc);
         }
-        ctx.strokeStyle = '#ffffff'; 
-        ctx.lineWidth = window.innerWidth > 768 ? 60 : 40; // 粗壮的刷子
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+
+        ctx.strokeStyle = "rgba(255,255,255,.85)";
+        ctx.lineWidth = window.innerWidth > 768 ? 46 : 30;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         ctx.stroke();
       }
 
-      // 移除老化节点
-      points.forEach(p => p.age++);
-      points = points.filter(p => p.age < 15); // 只保留最近 15 帧的轨迹
-
+      points = points.filter((p) => p.age < p.life);
       requestAnimationFrame(drawTrail);
     }
+
     drawTrail();
 
     // ==========================================
-    // 2. 丝滑滚动引擎 (Lenis) + GSAP 初始化
+    // 5. Split Text
     // ==========================================
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      touchMultiplier: 2
+    document.querySelectorAll(".split-text").forEach((el) => {
+      const html = el.innerHTML;
+      const parts = html.split("<br>");
+      el.innerHTML = parts.map(line => {
+        return line.split("").map(char => {
+          if (char === " ") return " ";
+          return `<span class="char">${char}</span>`;
+        }).join("");
+      }).join("<br>");
     });
 
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
+    // ==========================================
+    // 6. Intro Animation
+    // ==========================================
+    const intro = gsap.timeline();
 
-    gsap.registerPlugin(ScrollTrigger);
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => { lenis.raf(time * 1000); });
-    gsap.ticker.lagSmoothing(0, 0);
+    intro
+      .from(".hero-orbit", {
+        scale: 0.55,
+        opacity: 0,
+        duration: 1.4,
+        ease: "expo.out"
+      })
+      .from(".giant-text", {
+        yPercent: 20,
+        scale: 0.92,
+        opacity: 0,
+        filter: "blur(18px)",
+        duration: 1.3,
+        ease: "expo.out"
+      }, "-=1.05")
+      .from(".hero-subline", {
+        y: 18,
+        opacity: 0,
+        duration: .9,
+        ease: "power3.out"
+      }, "-=.6")
+      .from(".hud-pill", {
+        y: -16,
+        opacity: 0,
+        stagger: .08,
+        duration: .7,
+        ease: "power3.out"
+      }, "-=.8")
+      .from(".scroll-cue", {
+        y: 14,
+        opacity: 0,
+        duration: .8,
+        ease: "power3.out"
+      }, "-=.5");
 
     // ==========================================
-    // 3. 滚动动画逻辑
+    // 7. Hero Parallax
     // ==========================================
+    window.addEventListener("mousemove", (e) => {
+      const x = (e.clientX / window.innerWidth - .5) * 2;
+      const y = (e.clientY / window.innerHeight - .5) * 2;
 
-    // A. 向下滚一点时，巨大的 QQ.SG 不要完全淡出，保留 10% 透明度作为水印
-    gsap.to('.giant-text', {
+      gsap.to(".giant-wrap", {
+        rotationY: x * 5,
+        rotationX: -y * 5,
+        x: x * 18,
+        y: y * 12,
+        duration: .8,
+        ease: "power3.out"
+      });
+
+      gsap.to(".hero-orbit", {
+        x: -x * 20,
+        y: -y * 16,
+        duration: 1.2,
+        ease: "power3.out"
+      });
+    });
+
+    // ==========================================
+    // 8. Scroll Progress
+    // ==========================================
+    gsap.to(".progress-bar", {
+      width: "100%",
+      ease: "none",
       scrollTrigger: {
-        trigger: '.content-wrapper',
-        start: 'top bottom',
-        end: 'top top',
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
         scrub: true
-      },
-      opacity: 0.08,
-      scale: 0.95
-    });
-
-    // B. 第四页：左右面板合并进场 (Merge Animation)
-    // 随着 merge-section 钉在屏幕上，左右面板向中间移动，直到完成合并
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: '.merge-section',
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 1 // 1秒阻尼滑动
       }
     });
 
-    // 左面板从 -50vw 移入，最终定位在中心偏左 (例如 left: 2vw)
-    tl.to('.panel.left', {
-      left: window.innerWidth > 768 ? '4vw' : '0',
-      ease: 'none'
-    }, 0);
-
-    // 右面板从 -50vw 移入，最终定位在中心偏右
-    tl.to('.panel.right', {
-      right: window.innerWidth > 768 ? '4vw' : '0',
-      ease: 'none'
-    }, 0);
-
     // ==========================================
-    // 4. 强制第五页磁性吸附 (Snap)
+    // 9. Hero Fade / Watermark
     // ==========================================
-    // 虽然 Lenis 是全局丝滑滚动，我们可以利用 ScrollTrigger 让滚到最后一页时自动吸附对齐
-    ScrollTrigger.create({
-      trigger: '.contact-section',
-      start: 'top top',
-      end: 'bottom bottom',
-      snap: 1 
+    gsap.to(".giant-text", {
+      opacity: .07,
+      scale: .92,
+      y: -70,
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".content-wrapper",
+        start: "top bottom",
+        end: "top top",
+        scrub: true
+      }
     });
 
+    gsap.to(".hero-orbit", {
+      scale: 1.3,
+      opacity: .12,
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".content-wrapper",
+        start: "top bottom",
+        end: "top top",
+        scrub: true
+      }
+    });
+
+    gsap.to(".scroll-cue", {
+      opacity: 0,
+      y: 20,
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".content-wrapper",
+        start: "top 85%",
+        end: "top 60%",
+        scrub: true
+      }
+    });
+
+    // ==========================================
+    // 10. Reveal Animations
+    // ==========================================
+    gsap.utils.toArray(".split-text").forEach((title) => {
+      gsap.from(title.querySelectorAll(".char"), {
+        yPercent: 110,
+        rotateX: -80,
+        opacity: 0,
+        stagger: .018,
+        duration: .9,
+        ease: "expo.out",
+        scrollTrigger: {
+          trigger: title,
+          start: "top 82%"
+        }
+      });
+    });
+
+    gsap.utils.toArray(".reveal").forEach((el, index) => {
+      gsap.from(el, {
+        y: 54,
+        opacity: 0,
+        filter: "blur(10px)",
+        duration: .95,
+        delay: index * .025,
+        ease: "expo.out",
+        scrollTrigger: {
+          trigger: el,
+          start: "top 86%"
+        }
+      });
+    });
+
+    gsap.utils.toArray(".timeline-card").forEach((card, i) => {
+      gsap.from(card, {
+        x: i % 2 === 0 ? -80 : 80,
+        opacity: 0,
+        rotate: i % 2 === 0 ? -1.5 : 1.5,
+        duration: 1,
+        ease: "expo.out",
+        scrollTrigger: {
+          trigger: card,
+          start: "top 84%"
+        }
+      });
+
+      gsap.to(card, {
+        scale: .94,
+        opacity: .55,
+        scrollTrigger: {
+          trigger: card,
+          start: "top 18%",
+          end: "bottom 8%",
+          scrub: true
+        }
+      });
+    });
+
+    // ==========================================
+    // 11. Merge Animation
+    // ==========================================
+    const isMobile = window.innerWidth <= 980;
+
+    const mergeTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".merge-section",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1.15
+      }
+    });
+
+    mergeTl
+      .from(".merge-title", {
+        y: 90,
+        opacity: 0,
+        scale: .92,
+        duration: .25,
+        ease: "none"
+      }, 0)
+      .to(".panel.left", {
+        left: isMobile ? "8vw" : "4vw",
+        rotationY: 0,
+        rotationZ: 0,
+        ease: "none"
+      }, .08)
+      .to(".panel.right", {
+        right: isMobile ? "8vw" : "4vw",
+        rotationY: 0,
+        rotationZ: 0,
+        ease: "none"
+      }, .08)
+      .to(".merge-title", {
+        scale: .82,
+        opacity: .28,
+        y: -60,
+        ease: "none"
+      }, .45)
+      .to(".panel.left", {
+        x: isMobile ? 0 : "22vw",
+        scale: .92,
+        borderRadius: "42px",
+        ease: "none"
+      }, .58)
+      .to(".panel.right", {
+        x: isMobile ? 0 : "-22vw",
+        scale: .92,
+        borderRadius: "42px",
+        ease: "none"
+      }, .58);
+
+    // ==========================================
+    // 12. Magnetic Elements
+    // ==========================================
+    document.querySelectorAll(".magnetic").forEach((el) => {
+      el.addEventListener("mousemove", (e) => {
+        const rect = el.getBoundingClientRect();
+        const relX = e.clientX - rect.left - rect.width / 2;
+        const relY = e.clientY - rect.top - rect.height / 2;
+
+        gsap.to(el, {
+          x: relX * .18,
+          y: relY * .18,
+          duration: .45,
+          ease: "power3.out"
+        });
+      });
+
+      el.addEventListener("mouseleave", () => {
+        gsap.to(el, {
+          x: 0,
+          y: 0,
+          duration: .65,
+          ease: "elastic.out(1, .35)"
+        });
+      });
+    });
+
+    // ==========================================
+    // 13. Contact Snap
+    // ==========================================
+    ScrollTrigger.create({
+      trigger: ".contact-section",
+      start: "top 80%",
+      end: "top top",
+      snap: {
+        snapTo: 1,
+        duration: .55,
+        ease: "power3.inOut"
+      }
+    });
+
+    // ==========================================
+    // 14. Refresh
+    // ==========================================
+    window.addEventListener("load", () => {
+      ScrollTrigger.refresh();
+    });
   </script>
 </body>
 </html>
