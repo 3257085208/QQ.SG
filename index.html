@@ -1,366 +1,441 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NKX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NKX | Interactive Signal Node</title>
+    <script src="https://cdn.staticfile.net/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.staticfile.net/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            /* === 浅色模式 === */
-            --bg: #FAFAFA;
-            --card-bg: #FFFFFF;
-            --text-main: #111111;
-            --text-sub: #666666;
-            --text-legal: #999999;
-            --border: #E5E5E5;
-            --clock-line: #E0E0E0;
-            --clock-text: #B0B0B0;
-            --pointer: #555555; 
-            --toast-bg: rgba(0,0,0,0.9);
-            --toast-text: #FFFFFF;
+            --bg-dark: #070707;
+            --bg-light: #F4F5F7;
+            --pure-white: #FFFFFF;
+            --text-dark: #111111;
+            --text-light: #F4F5F7;
+            --accent: #15b85a; 
         }
-
-        /* === 深色模式 === */
-        [data-theme="dark"] {
-            --bg: #000000;
-            --card-bg: #111111;
-            --text-main: #FFFFFF;
-            --text-sub: #888888;
-            --text-legal: #555555;
-            --border: #222222;
-            --clock-line: #444444; 
-            --clock-text: #DDDDDD; 
-            --pointer: #FFFFFF;
-            --toast-bg: rgba(255,255,255,0.9);
-            --toast-text: #000000;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg);
-            color: var(--text-main);
-            /* 2. 应用 Nunito 字体 */
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100dvh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        
+        * { box-sizing: border-box; }
+        
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--bg-dark);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
             overscroll-behavior: none;
-            transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
         }
 
-        /* === 顶部切换按钮 === */
-        .theme-toggle {
-            position: fixed; 
-            top: 30px; 
-            right: 30px;
-            width: 44px; height: 44px; border-radius: 50%;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.01);
-            backdrop-filter: blur(5px);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-main);
-            transition: all 0.2s; z-index: 999;
-        }
-        .theme-toggle:active { transform: scale(0.92); background: var(--card-bg); }
-        .theme-toggle svg { width: 20px; height: 20px; stroke-width: 1.8; }
+        h1, h2, h3, p { margin: 0; }
+        .tag { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; color: var(--accent); }
+        .tag-dark { color: #666; border: 1px solid #E0E0E0; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-right: 8px; margin-top: 8px; font-size: 12px;}
 
-        /* === 背景：巨型时钟 === */
-        .giant-clock-wrapper {
+        /* ----- 1. 互动 Canvas 背景 ----- */
+        #interactive-canvas {
             position: fixed;
-            bottom: 0; right: 0; z-index: 0;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 0; /* 放在最底层 */
             pointer-events: none;
-            transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
-            width: 90vh; height: 90vh;
-            transform: translate(40%, 40%); 
-            opacity: 0.2;
-        }
-        @media (min-width: 1024px) {
-            .giant-clock-wrapper {
-                width: 150vh; height: 150vh;
-                transform: translate(45%, 45%); 
-                opacity: 0.6; 
-            }
-        }
-        .clock-svg { width: 100%; height: 100%; overflow: visible; }
-        .dial-ring { transform-origin: 50% 50%; transition: transform 1s cubic-bezier(0.2, 0, 0, 1); }
-        .seconds-ring { transition: transform 0.2s cubic-bezier(0.4, 2.5, 0.6, 0.5); }
-
-        /* 激光指针 */
-        .laser-pointer-line {
-            position: absolute;
-            top: 50%; left: 50%; width: 53%; height: 2px; 
-            background: linear-gradient(90deg, transparent 0%, var(--pointer) 20%, var(--pointer) 100%);
-            opacity: 0.8; z-index: 1;
-            transform-origin: left center;
-            transform: rotate(-135deg);
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .laser-pointer-line::after {
-            content: 'UTC+8';
-            position: absolute; right: 0; bottom: 8px;
-            font-size: 11px; font-weight: 700; color: var(--pointer);
-            font-family: 'JetBrains Mono', monospace;
-            opacity: 1; transform: rotate(180deg);
+            mix-blend-mode: screen;
         }
 
-        /* === 内容容器 === */
-        .container {
-            width: 100%; max-width: 400px; padding: 24px;
-            box-sizing: border-box; display: flex; flex-direction: column;
-            justify-content: center; min-height: 100%; position: relative; z-index: 10;
+        /* ----- 2. 动态噪点 ----- */
+        .noise-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 9998; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            animation: noiseAnim 0.2s infinite linear;
         }
-        @media (min-width: 1024px) {
-            .container {
-                position: absolute; left: 10vw; top: 50%;
-                transform: translateY(-50%); max-width: 600px; padding: 0;
-            }
+        @keyframes noiseAnim { 0% { transform: translate(0, 0); } 10% { transform: translate(-1%, -1%); } 20% { transform: translate(1%, 1%); } 30% { transform: translate(-2%, -2%); } 40% { transform: translate(2%, 2%); } 100% { transform: translate(0, 0); } }
+
+        /* ----- 页面主体 ----- */
+        .main-wrapper {
+            position: relative; z-index: 2; background-color: transparent;
+            margin-bottom: 100vh; 
         }
 
-        /* 头部 */
-        .header {
-            margin-bottom: 40px; display: flex; flex-direction: column; gap: 20px;
-            text-align: center; width: 100%;
+        /* 抽象装饰元素（打破单调） */
+        .abstract-orb {
+            position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.5; pointer-events: none;
         }
-        @media (min-width: 1024px) {
-            .header { flex-direction: row; align-items: center; text-align: left; gap: 24px; margin-bottom: 50px; }
-        }
-        .avatar {
-            width: 80px; height: 80px; border-radius: 20px;
-            background-image: url('https://img.i8-mc.cn/file/J0NJk8wH.jpeg');
-            background-size: cover; background-position: center;
-            background-color: var(--card-bg); border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin: 0 auto;
-        }
-        @media (min-width: 1024px) { .avatar { margin: 0; width: 100px; height: 100px; border-radius: 24px; } }
-        .identity h1 { font-size: 32px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px; }
-        .identity p { font-size: 16px; color: var(--text-sub); margin: 0; line-height: 1.5; }
-        @media (min-width: 1024px) { .identity h1 { font-size: 48px; letter-spacing: -1px; } .identity p { font-size: 18px; } }
 
-        /* 卡片网格 */
-        .grid { display: flex; flex-direction: column; gap: 14px; width: 100%; }
-        @media (min-width: 1024px) { .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
-        .card {
-            background: rgba(255, 255, 255, 0.65); border: 1px solid var(--border);
-            border-radius: 18px; padding: 20px 24px; text-decoration: none;
-            color: var(--text-main); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; backdrop-filter: blur(20px);
+        .section-hero {
+            position: sticky; top: 0; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: var(--text-light); text-align: center;
         }
-        [data-theme="dark"] .card { background: rgba(20, 20, 20, 0.65); }
-        .card:hover { border-color: var(--text-main); background: var(--card-bg); transform: translateY(-2px); }
-        .card:active { transform: scale(0.98); }
-        .card.featured { padding: 24px 24px; }
-        @media (min-width: 1024px) { .card.featured { grid-column: span 2; padding: 32px; } .card.featured .value { font-size: 24px; } }
-        .card-content { display: flex; flex-direction: column; gap: 4px; }
-        .label { font-size: 11px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .value { font-size: 17px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .hero-title { font-size: clamp(60px, 15vw, 250px); font-weight: 800; line-height: 0.8; letter-spacing: -0.06em; }
+        .hero-subtitle { font-family: 'JetBrains Mono', monospace; font-size: clamp(12px, 1.5vw, 18px); color: #888; margin-top: 30px; max-width: 600px; line-height: 1.5; padding: 0 20px; }
 
-        /* 图标样式 */
-        .icon-box { color: var(--icon-normal); transition: color 0.2s; }
-        .card:hover .icon-box { color: var(--icon-active); }
-        .icon-box.success { color: var(--success) !important; transform: scale(1.1); }
-        /* 3. 统一设置所有 SVG 图标的线条粗细为 2px (除了复制图标) */
-        .icon-box svg { stroke-width: 2; }
-
-        /* 底部 */
-        footer { margin-top: 60px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
-        @media (min-width: 1024px) { footer { align-items: flex-start; text-align: left; margin-top: 40px; } }
-        .copyright-row { font-size: 12px; color: var(--text-sub); opacity: 0.8; }
-        .disclaimer { font-size: 10px; color: var(--text-legal); opacity: 0.6; line-height: 1.4; max-width: 300px; }
-
-        /* 提示条 */
-        .toast {
-            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--toast-bg); backdrop-filter: blur(10px); color: var(--toast-text);
-            padding: 10px 24px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
-            transition: all 0.4s; z-index: 200;
+        .section-nodes {
+            position: relative; background-color: var(--bg-light); border-radius: 40px 40px 0 0;
+            padding: 100px 5vw; color: var(--text-dark);
         }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .section-heading { font-size: clamp(40px, 8vw, 120px); font-weight: 500; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: 60px;}
+        
+        .nodes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .node-card { 
+            background: var(--pure-white); border-radius: 30px; padding: 40px; 
+            display: flex; flex-direction: column; justify-content: space-between; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.03); position: relative; overflow: hidden;
+        }
+        /* 卡片内部的几何装饰 */
+        .node-card::before {
+            content: ''; position: absolute; right: -20px; top: -20px; width: 100px; height: 100px;
+            background: linear-gradient(135deg, rgba(21,184,90,0.1) 0%, transparent 100%);
+            border-radius: 50%;
+        }
+
+        .section-timeline { position: relative; background-color: var(--bg-light); overflow: hidden; }
+        /* 桌面端横向容器 */
+        .h-scroll-container { display: flex; flex-wrap: nowrap; align-items: center; padding-left: 5vw; height: 100vh; width: 400vw; }
+        .timeline-panel { width: 80vw; flex-shrink: 0; margin-right: 15vw; position: relative; }
+        .timeline-year { font-size: clamp(80px, 15vw, 200px); font-weight: 800; color: transparent; -webkit-text-stroke: 2px rgba(0,0,0,0.05); line-height: 1; }
+        .timeline-content { font-size: clamp(20px, 3vw, 40px); font-weight: 500; max-width: 800px; margin-top: -20px; line-height: 1.3;}
+
+        .section-projects { position: relative; background-color: var(--text-dark); color: var(--text-light); display: flex; padding: 100px 5vw; }
+        .sticky-left { width: 40%; height: 100vh; position: sticky; top: 0; display: flex; align-items: center; }
+        .scroll-right { width: 60%; display: flex; flex-direction: column; gap: 30vh; padding: 20vh 0; }
+        .project-card { 
+            background: #151515; border-radius: 30px; padding: 50px; min-height: 350px; 
+            border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: space-between;
+            position: relative; overflow: hidden;
+        }
+        /* 项目卡片的光晕装饰 */
+        .project-card .abstract-orb { width: 200px; height: 200px; background: var(--accent); bottom: -50px; right: -50px; }
+
+        .section-footer {
+            position: fixed; bottom: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; 
+            background-color: var(--text-dark); color: var(--text-light);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .footer-link { font-size: clamp(40px, 8vw, 150px); font-weight: 800; text-decoration: none; color: var(--pure-white); letter-spacing: -0.05em; transition: color 0.3s; }
+        .footer-link:hover { color: var(--accent); }
+
+        /* ==========================================
+           三端自适应 (Responsive Media Queries) 
+           ========================================== */
+        @media (max-width: 1024px) {
+            .section-projects { flex-direction: column; padding: 80px 5vw; height: auto; }
+            .sticky-left { width: 100%; height: auto; position: relative; margin-bottom: 60px; }
+            .scroll-right { width: 100%; padding: 0; gap: 40px; }
+            .project-card { min-height: auto; }
+        }
+
+        @media (max-width: 768px) {
+            .main-wrapper { margin-bottom: 0; } /* 手机端取消 Footer 视差，改为正常滚动以防卡顿 */
+            .section-footer { position: relative; height: 60vh; }
+            
+            .section-nodes { border-radius: 30px 30px 0 0; padding: 80px 5vw; }
+            .nodes-grid { grid-template-columns: 1fr; }
+            
+            /* 手机端取消横向滚动，改为垂直流式排版 */
+            .section-timeline { height: auto; padding: 80px 5vw; }
+            .h-scroll-container { width: 100%; height: auto; flex-direction: column; padding-left: 0; }
+            .timeline-panel { width: 100%; margin-right: 0; margin-bottom: 60px; }
+            .timeline-year { -webkit-text-stroke: 1px rgba(0,0,0,0.1); }
+        }
     </style>
 </head>
 <body>
 
-    <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme"></button>
+    <div class="noise-bg"></div>
+    <canvas id="interactive-canvas"></canvas>
 
-    <div class="giant-clock-wrapper">
-        <div class="laser-pointer-line"></div>
-        <svg class="clock-svg" viewBox="0 0 500 500">
-            <g class="dial-ring hour-ring" id="hourRing">
-                <circle cx="250" cy="250" r="140" fill="none" stroke="var(--border)" stroke-width="1.5" />
-            </g>
-            <g class="dial-ring minute-ring" id="minuteRing">
-                <circle cx="250" cy="250" r="190" fill="none" stroke="var(--border)" stroke-width="1" />
-            </g>
-            <g class="dial-ring seconds-ring" id="secondRing">
-                <circle cx="250" cy="250" r="240" fill="none" stroke="var(--clock-line)" stroke-width="0.5" />
-                <path d="M250 5 L250 30" stroke="var(--border)" stroke-width="3" />
-                <path d="M250 470 L250 495" stroke="var(--border)" stroke-width="2" />
-                <path d="M5 250 L30 250" stroke="var(--border)" stroke-width="2" />
-                <path d="M470 250 L495 250" stroke="var(--border)" stroke-width="2" />
-            </g>
-        </svg>
+    <div class="main-wrapper">
+        <section class="section-hero">
+            <div class="abstract-orb" style="width: 40vw; height: 40vw; background: rgba(21,184,90,0.15); top: 20%; left: 30%;"></div>
+            <div class="tag scramble" data-text="NIE KAIXIANG // NKX">NIE KAIXIANG // NKX</div>
+            <h1 class="hero-title scramble" data-text="QQ.SG">QQ.SG</h1>
+            <p class="hero-subtitle scramble" data-text="A highly customized personal signal node. Routing global traffic, managing PVE environments, and hosting the NIE ecosystem.">
+                A highly customized personal signal node.<br>
+                Routing global traffic, managing PVE environments, and hosting the NIE ecosystem.
+            </p>
+        </section>
+
+        <section class="section-nodes">
+            <h2 class="section-heading scramble" data-text="INFRASTRUCTURE">INFRASTRUCTURE<br>& NODES.</h2>
+            <div class="nodes-grid">
+                <div class="node-card gsap-up">
+                    <div>
+                        <span class="tag">SG Core Identity</span>
+                        <h3 style="font-size: 32px; margin-top: 10px;">Singapore</h3>
+                        <p style="color: #666; margin-top: 10px; font-size: 14px;">The primary front door handling main DNS resolution and BGP sessions.</p>
+                    </div>
+                    <div><span class="tag-dark">WireGuard</span><span class="tag-dark">IPv6</span></div>
+                </div>
+                <div class="node-card gsap-up">
+                    <div>
+                        <span class="tag">HK Edge Transit</span>
+                        <h3 style="font-size: 32px; margin-top: 10px;">Hong Kong</h3>
+                        <p style="color: #666; margin-top: 10px; font-size: 14px;">Optimized transit proxy layer leveraging Cloudflare Pages and Tunnels.</p>
+                    </div>
+                    <div><span class="tag-dark">CF Tunnels</span></div>
+                </div>
+                <div class="node-card gsap-up">
+                    <div>
+                        <span class="tag">Phoenix Compute</span>
+                        <h3 style="font-size: 32px; margin-top: 10px;">Oracle ARM</h3>
+                        <p style="color: #666; margin-top: 10px; font-size: 14px;">Captured after 178 days of bot attempts. Handling heavy container workloads.</p>
+                    </div>
+                    <div><span class="tag-dark">Docker</span><span class="tag-dark">Ubuntu</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-timeline">
+            <div class="h-scroll-container">
+                <div class="timeline-panel gsap-fade">
+                    <div class="timeline-year">2020</div>
+                    <div class="timeline-content">Started the IDC journey with a single Dell R620 server. Self-taught Linux administration.</div>
+                    <div class="tag" style="margin-top: 20px;">HARDWARE GENESIS</div>
+                </div>
+                <div class="timeline-panel gsap-fade">
+                    <div class="timeline-year">2023</div>
+                    <div class="timeline-content">Scaled the infrastructure. Successfully managed operations for over 500+ customers.</div>
+                    <div class="tag" style="margin-top: 20px;">IDC EXPANSION</div>
+                </div>
+                <div class="timeline-panel gsap-fade">
+                    <div class="timeline-year">2026</div>
+                    <div class="timeline-content">Admitted to Fujian Chuanzheng Communications College. Planning Fujian Suchen Internet Co., Ltd.</div>
+                    <div class="tag" style="margin-top: 20px;">ACADEMIA & BUSINESS</div>
+                </div>
+                <div class="timeline-panel gsap-fade">
+                    <div class="timeline-year">2031</div>
+                    <div class="timeline-content">Complete exams by 2029, aiming for graduate school admission and deep network engineering.</div>
+                    <div class="tag" style="margin-top: 20px;">FUTURE TARGETS</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-projects">
+            <div class="sticky-left">
+                <h2 style="font-size: clamp(40px, 6vw, 100px); font-weight: 500; line-height: 0.9;" class="scramble" data-text="CUSTOM SYSTEMS.">CUSTOM<br>SYSTEMS.</h2>
+            </div>
+            <div class="scroll-right">
+                <div class="project-card gsap-up">
+                    <div class="abstract-orb"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">nie.net</span>
+                        <h3 style="font-size: clamp(30px, 4vw, 60px); margin: 20px 0;">NIE Blog System</h3>
+                        <p style="font-size: 16px; color: #888; line-height: 1.5;">A completely custom static blog built with Python scripts. Black-and-white geek aesthetic, explicitly rejecting AI styles.</p>
+                    </div>
+                </div>
+                <div class="project-card gsap-up">
+                    <div class="abstract-orb" style="background: #333;"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">status.nkx.moe</span>
+                        <h3 style="font-size: clamp(30px, 4vw, 60px); margin: 20px 0;">NIE-NodeGet</h3>
+                        <p style="font-size: 16px; color: #888; line-height: 1.5;">Custom monitoring frontend tracking latency and resources across distributed KVM environments.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <div class="container">
-        
-        <div class="header">
-            <div class="avatar"></div>
-            <div class="identity">
-                <h1>NKX</h1>
-                <p>This is the channel of MarkNKX.</p>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="card featured" id="emailCard" onclick="copyEmail()">
-                <div class="card-content">
-                    <span class="label">Primary Email</span>
-                    <span class="value">ME@QQ.SG</span>
-                </div>
-                <div class="icon-box" id="copyIconBox">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </div>
-            </div>
-
-            <a href="https://github.com/3257085208" target="_blank" class="card">
-                <div class="card-content">
-                    <span class="label">Code</span>
-                    <span class="value">GitHub</span>
-                </div>
-                <div class="icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </div>
-            </a>
-
-            <a href="https://聶.NET" target="_blank" class="card">
-                <div class="card-content">
-                    <span class="label">Blog</span>
-                    <span class="value">聶.NET</span>
-                </div>
-                <div class="icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                </div>
-            </a>
-        </div>
-
-        <footer>
-            <div class="copyright-row">© 2026 NKX · QQ.SG</div>
-            <div class="disclaimer">QQ.SG has no connection with Tencent Group, QQ.COM, or Tencent Holdings.</div>
-        </footer>
-    </div>
-
-    <div class="toast" id="toast">Copied to clipboard</div>
+    <section class="section-footer">
+        <span class="tag" style="color: var(--accent); margin-bottom: 20px;">ALL ROUTES OPEN</span>
+        <a href="mailto:ME@QQ.SG" class="footer-link">ME@QQ.SG</a>
+        <p style="margin-top: 30px; font-family: 'JetBrains Mono'; color: #666; font-size: 12px;">© 2026 Nie Kaixiang (NKX)</p>
+    </section>
 
     <script>
-        const svgNS = "http://www.w3.org/2000/svg";
-        function createText(x, y, content, size, color, weight="500") {
-            const text = document.createElementNS(svgNS, "text");
-            text.setAttribute("x", x); text.setAttribute("y", y);
-            text.setAttribute("font-size", size); text.setAttribute("fill", color);
-            text.setAttribute("text-anchor", "middle"); text.setAttribute("dominant-baseline", "middle");
-            text.setAttribute("font-family", "JetBrains Mono"); text.setAttribute("font-weight", weight);
-            text.textContent = content; return text;
-        }
-        function createLine(x1, y1, x2, y2, width, color) {
-            const line = document.createElementNS(svgNS, "line");
-            line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-            line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-            line.setAttribute("stroke", color); line.setAttribute("stroke-width", width);
-            return line;
-        }
+        // ==========================================
+        // 1. 互动 Canvas 流体拖尾 (Interactive Mouse Trail)
+        // ==========================================
+        const canvas = document.getElementById('interactive-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let mouse = { x: -1000, y: -1000 };
 
-        const hourGroup = document.getElementById('hourRing');
-        for(let i=1; i<=12; i++) {
-            const angle = (i * 30 - 90) * (Math.PI / 180);
-            const r = 120;
-            const x = 250 + r * Math.cos(angle); const y = 250 + r * Math.sin(angle);
-            const text = createText(x, y, i, 18, "var(--text-main)", "800");
-            text.setAttribute("transform", `rotate(${i*30}, ${x}, ${y})`);
-            hourGroup.appendChild(text);
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
         }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        const minGroup = document.getElementById('minuteRing');
-        for(let i=0; i<60; i++) {
-            const angle = (i * 6 - 90) * (Math.PI / 180);
-            const r1 = 180; const r2 = i % 5 === 0 ? 160 : 175;
-            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
-            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
-            const line = createLine(x1, y1, x2, y2, i % 5 === 0 ? 2 : 1, "var(--clock-line)");
-            minGroup.appendChild(line);
-            if(i % 5 === 0) {
-                const rText = 145;
-                const tx = 250 + rText * Math.cos(angle); const ty = 250 + rText * Math.sin(angle);
-                const text = createText(tx, ty, i === 0 ? "60" : i, 12, "var(--clock-text)");
-                text.setAttribute("transform", `rotate(${i*6}, ${tx}, ${ty})`);
-                minGroup.appendChild(text);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            // 每次滑动添加粒子
+            for (let i = 0; i < 3; i++) {
+                particles.push(new Particle(mouse.x, mouse.y));
+            }
+        });
+
+        // 触屏支持
+        window.addEventListener('touchmove', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+            for (let i = 0; i < 2; i++) { particles.push(new Particle(mouse.x, mouse.y)); }
+        });
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x + (Math.random() - 0.5) * 20;
+                this.y = y + (Math.random() - 0.5) * 20;
+                this.size = Math.random() * 4 + 1;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.speedY = (Math.random() - 0.5) * 2 - 0.5; // 轻微向上浮动
+                this.life = 1; // 寿命衰减
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= 0.02; // 消失速度
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                // 极客绿发光效果
+                ctx.fillStyle = `rgba(21, 184, 90, ${this.life * 0.5})`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(21, 184, 90, 0.8)';
+                ctx.fill();
             }
         }
 
-        const secGroup = document.getElementById('secondRing');
-        for(let i=0; i<60; i++) {
-            const angle = (i * 6 - 90) * (Math.PI / 180);
-            const r1 = 240; const r2 = 230;
-            const x1 = 250 + r1 * Math.cos(angle); const y1 = 250 + r1 * Math.sin(angle);
-            const x2 = 250 + r2 * Math.cos(angle); const y2 = 250 + r2 * Math.sin(angle);
-            const line = createLine(x1, y1, x2, y2, 1, "var(--border)");
-            secGroup.appendChild(line);
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // ==========================================
+        // 2. 解码文本特效
+        // ==========================================
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.update = this.update.bind(this);
+            }
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40);
+                    const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0; this.update(); return promise;
+            }
+            update() {
+                let output = ''; let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) { complete++; output += to; } 
+                    else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) { char = this.randomChar(); this.queue[i].char = char; }
+                        output += `<span style="color: var(--accent)">${char}</span>`;
+                    } else { output += from; }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) { this.resolve(); } 
+                else { this.frameRequest = requestAnimationFrame(this.update); this.frame++; }
+            }
+            randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
         }
 
-        function updateClock() {
-            const now = new Date();
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const sgTime = new Date(utc + (3600000 * 8));
-            const h = sgTime.getHours(); const m = sgTime.getMinutes(); const s = sgTime.getSeconds(); const ms = sgTime.getMilliseconds();
-            
-            const OFFSET = -45;
+        // ==========================================
+        // 3. GSAP 滚动引擎与三端自适应 (MatchMedia)
+        // ==========================================
+        const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
 
-            const secDeg = -1 * ((s + ms/1000) * 6) + OFFSET;
-            const minDeg = -1 * ((m + s/60) * 6) + OFFSET;
-            const h12 = h % 12 || 12;
-            const hourDeg = -1 * ((h12 + m/60) * 30) + OFFSET;
-            
-            document.getElementById('secondRing').style.transform = `rotate(${secDeg}deg)`;
-            document.getElementById('minuteRing').style.transform = `rotate(${minDeg}deg)`;
-            document.getElementById('hourRing').style.transform = `rotate(${hourDeg}deg)`;
-            requestAnimationFrame(updateClock);
-        }
-        requestAnimationFrame(updateClock);
+        gsap.registerPlugin(ScrollTrigger);
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+        gsap.ticker.lagSmoothing(0, 0);
 
-        function copyEmail() {
-            navigator.clipboard.writeText("ME@QQ.SG").then(() => {
-                const toast = document.getElementById('toast');
-                const iconBox = document.getElementById('copyIconBox');
-                const originalIcon = iconBox.innerHTML;
-                // 复制成功后的图标也加粗
-                iconBox.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                iconBox.classList.add('success'); toast.classList.add('show');
-                setTimeout(() => { toast.classList.remove('show'); iconBox.classList.remove('success'); iconBox.innerHTML = originalIcon; }, 2000);
+        // 页面加载时的文字解码
+        window.onload = () => {
+            document.querySelectorAll('.section-hero .scramble').forEach(el => {
+                const fx = new TextScramble(el);
+                fx.setText(el.getAttribute('data-text'));
             });
-        }
-
-        const themeBtn = document.getElementById('themeBtn');
-        const html = document.documentElement;
-        const icons = {
-            light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
-            dark:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
-            system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`
         };
-        const modes = ['system', 'light', 'dark'];
-        function getStoredTheme() { return localStorage.getItem('theme') || 'system'; }
-        function setTheme(mode) {
-            themeBtn.innerHTML = icons[mode];
-            if (mode === 'system') { localStorage.removeItem('theme'); html.removeAttribute('data-theme'); } 
-            else { localStorage.setItem('theme', mode); html.setAttribute('data-theme', mode); }
-        }
-        let currentMode = getStoredTheme(); setTheme(currentMode);
-        themeBtn.addEventListener('click', () => {
-            currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length]; setTheme(currentMode);
+
+        // 滚动触发解码
+        document.querySelectorAll('.scramble:not(.section-hero .scramble)').forEach(el => {
+            const fx = new TextScramble(el);
+            ScrollTrigger.create({
+                trigger: el, start: "top 85%",
+                onEnter: () => fx.setText(el.getAttribute('data-text'))
+            });
+        });
+
+        // 响应式滚动编排
+        let mm = gsap.matchMedia();
+
+        mm.add("(min-width: 769px)", () => {
+            // 桌面端 & 平板端：复杂转场
+            gsap.to('.section-hero', {
+                scrollTrigger: { trigger: '.main-wrapper', start: "top top", end: "100vh top", scrub: true },
+                scale: 0.85, opacity: 0.2, filter: "blur(10px)", ease: "none"
+            });
+
+            const hContainer = document.querySelector('.h-scroll-container');
+            gsap.to(hContainer, {
+                x: () => -(hContainer.scrollWidth - window.innerWidth),
+                ease: "none",
+                scrollTrigger: {
+                    trigger: ".section-timeline", pin: true, scrub: 1, 
+                    end: () => "+=" + hContainer.scrollWidth 
+                }
+            });
+
+            gsap.utils.toArray('.project-card').forEach(card => {
+                gsap.from(card, {
+                    scrollTrigger: { trigger: card, start: "top 90%", end: "top 30%", scrub: true },
+                    y: 100, opacity: 0.3, scale: 0.95
+                });
+            });
+        });
+
+        mm.add("(max-width: 768px)", () => {
+            // 手机端：取消强劫持，改为正常的平滑上浮，防止滑动卡死
+            gsap.to('.section-hero', {
+                scrollTrigger: { trigger: '.main-wrapper', start: "top top", end: "50vh top", scrub: true },
+                opacity: 0, ease: "none"
+            });
+            
+            gsap.utils.toArray('.timeline-panel').forEach(panel => {
+                gsap.from(panel, {
+                    scrollTrigger: { trigger: panel, start: "top 85%" },
+                    y: 50, opacity: 0, duration: 0.8, ease: "power2.out"
+                });
+            });
+        });
+
+        // 通用的卡片上浮动画 (所有端生效)
+        gsap.utils.toArray('.gsap-up').forEach(el => {
+            gsap.from(el, {
+                scrollTrigger: { trigger: el, start: "top 85%" },
+                y: 60, opacity: 0, duration: 1, ease: "power3.out"
+            });
         });
     </script>
 </body>
