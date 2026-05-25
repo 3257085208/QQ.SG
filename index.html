@@ -1,509 +1,1133 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NKX | Premium Interactive Node</title>
-    <script src="https://cdn.staticfile.net/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdn.staticfile.net/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --bg-dark: #070707;
-            --bg-light: #F4F5F7;
-            --pure-white: #FFFFFF;
-            --text-dark: #111111;
-            --text-light: #F4F5F7;
-            --accent: #15b85a; 
-        }
-        
-        body, html {
-            margin: 0; padding: 0;
-            background-color: var(--bg-dark);
-            font-family: 'Outfit', sans-serif;
-            overflow-x: hidden;
-            overscroll-behavior: none;
-            cursor: none; 
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NKX — Interactive Infrastructure Portfolio</title>
+  <meta name="description" content="Nie Kaixiang / NKX interactive portfolio, infrastructure, systems and network projects." />
+  <style>
+    :root {
+      --paper: #f5f3ee;
+      --paper-2: #ebe7df;
+      --ink: #11110f;
+      --muted: #6f6a60;
+      --line: rgba(17, 17, 15, .14);
+      --line-dark: rgba(245, 243, 238, .16);
+      --green: #1d6b45;
+      --green-soft: #c6dccf;
+      --orange: #ef6b2d;
+      --black: #090909;
+      --card: rgba(255,255,255,.52);
+      --radius: 28px;
+      --ease: cubic-bezier(.19, 1, .22, 1);
+    }
 
-        h1, h2, h3, p { margin: 0; }
-        .tag { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; color: var(--accent); letter-spacing: 1px;}
-        .tag-dark { color: #666; border: 1px solid rgba(0,0,0,0.1); padding: 4px 12px; border-radius: 20px; display: inline-block; margin-right: 8px; margin-top: 8px; font-size: 14px;}
-        
-        /* 移动端暗色标签适配 */
-        .project-card .tag-dark { border-color: rgba(255,255,255,0.1); color: #aaa; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
 
-        /* ----- 1. 交互式背景与噪点 ----- */
-        .noise-bg {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 9998; opacity: 0.04;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
-        #canvas-network {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 0; pointer-events: none; opacity: 0.6;
-        }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    ::selection { background: var(--ink); color: var(--paper); }
 
-        /* ----- 2. 差值反色鼠标 (Lando 核心交互) ----- */
-        .cursor-dot, .cursor-outline {
-            position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none;
-            z-index: 9999; transform: translate(-50%, -50%);
-            mix-blend-mode: difference; /* 灵魂反色 */
-        }
-        .cursor-dot { width: 8px; height: 8px; background-color: #FFF; }
-        .cursor-outline { 
-            width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.5); 
-            transition: width 0.3s cubic-bezier(0.19, 1, 0.22, 1), height 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .cursor-outline.hover-state { width: 90px; height: 90px; background-color: #FFF; border-color: transparent; }
-        /* 移动端隐藏自定义鼠标 */
-        @media (max-width: 768px) { .cursor-dot, .cursor-outline { display: none !important; } body { cursor: auto; } }
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      opacity: .055;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.75'/%3E%3C/svg%3E");
+    }
 
-        /* ----- 3. 预加载器 ----- */
-        .loader {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: var(--text-dark); z-index: 10000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: var(--pure-white); font-family: 'JetBrains Mono', monospace;
-        }
-        .loader-percent { font-size: clamp(60px, 15vw, 200px); font-weight: 800; line-height: 1; }
+    .cursor,
+    .cursor-ring {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 999;
+      border-radius: 50%;
+      transform: translate3d(-50%, -50%, 0);
+      mix-blend-mode: difference;
+    }
+    .cursor {
+      width: 7px;
+      height: 7px;
+      background: #fff;
+    }
+    .cursor-ring {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255,255,255,.68);
+      transition: width .45s var(--ease), height .45s var(--ease), background .45s var(--ease), border .45s var(--ease);
+    }
+    body.is-hovering .cursor-ring {
+      width: 88px;
+      height: 88px;
+      background: rgba(255,255,255,.82);
+      border-color: transparent;
+    }
 
-        /* ----- 4. 页面主体结构 & 自适应布局 ----- */
-        .main-wrapper {
-            position: relative; z-index: 2; background-color: transparent;
-            margin-bottom: 100vh; box-shadow: 0 20px 100px rgba(0,0,0,0.9); 
-        }
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 800;
+      display: grid;
+      place-items: center;
+      background: var(--black);
+      color: var(--paper);
+      transition: transform 1.05s var(--ease), opacity 1.05s var(--ease);
+    }
+    .loader.done { transform: translateY(-100%); opacity: .98; }
+    .loader-inner {
+      width: min(560px, 86vw);
+    }
+    .loader-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,.58);
+      margin-bottom: 18px;
+    }
+    .loader-num {
+      font-size: clamp(64px, 16vw, 160px);
+      line-height: .8;
+      letter-spacing: -.09em;
+      font-weight: 750;
+    }
+    .loader-line {
+      height: 1px;
+      background: rgba(245,243,238,.18);
+      overflow: hidden;
+    }
+    .loader-line span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--paper);
+      transition: width .15s linear;
+    }
 
-        /* Hero */
-        .section-hero {
-            position: sticky; top: 0; height: 100vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: var(--text-light); will-change: transform, filter; overflow: hidden; text-align: center; padding: 0 5vw;
-        }
-        .hero-title { font-size: clamp(80px, 20vw, 300px); font-weight: 800; line-height: 0.8; letter-spacing: -0.06em; }
-        .hero-subtitle { font-family: 'JetBrains Mono', monospace; font-size: clamp(12px, 1.5vw, 18px); color: #888; margin-top: 30px; max-width: 600px; line-height: 1.6; }
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 220;
+      height: 74px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 0 clamp(18px, 4vw, 54px);
+      color: var(--paper);
+      mix-blend-mode: difference;
+      pointer-events: none;
+    }
+    .brand,
+    .chapter,
+    .clock {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .chapter { justify-self: center; }
+    .clock { justify-self: end; }
 
-        /* Nodes Grid */
-        .section-nodes {
-            position: relative; background-color: var(--bg-light); border-radius: 60px 60px 0 0;
-            padding: 150px 5vw; color: var(--text-dark);
-        }
-        .section-heading { font-size: clamp(40px, 8vw, 120px); font-weight: 500; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: 80px;}
-        .nodes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; perspective: 1000px; }
-        
-        /* 3D 卡片基座 */
-        .card-3d-wrap { transform-style: preserve-3d; }
-        .node-card { 
-            background: var(--pure-white); border-radius: 40px; padding: 50px; display: flex; flex-direction: column; justify-content: space-between; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.04); min-height: 380px;
-            transition: transform 0.1s; transform-style: preserve-3d;
-        }
-        /* 卡片内部元素悬浮出高度 */
-        .node-card > div { transform: translateZ(30px); }
+    .side-nav {
+      position: fixed;
+      right: clamp(16px, 3vw, 42px);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 230;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      mix-blend-mode: difference;
+    }
+    .side-nav a {
+      width: 32px;
+      height: 16px;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,.48);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      letter-spacing: .08em;
+      transition: color .35s var(--ease), transform .35s var(--ease);
+    }
+    .side-nav a::before {
+      content: "";
+      width: 18px;
+      height: 1px;
+      background: currentColor;
+      transition: width .35s var(--ease);
+    }
+    .side-nav a span { display: none; }
+    .side-nav a.active { color: #fff; transform: translateX(-5px); }
+    .side-nav a.active::before { width: 32px; }
 
-        /* Timeline (横向卷轴) */
-        .section-timeline { position: relative; background-color: var(--bg-light); height: 100vh; overflow: hidden; }
-        .h-scroll-container { width: 400vw; height: 100%; display: flex; flex-wrap: nowrap; align-items: center; padding-left: 5vw; }
-        .timeline-panel { width: 80vw; flex-shrink: 0; margin-right: 15vw; }
-        .timeline-year { font-size: clamp(80px, 18vw, 250px); font-weight: 800; color: transparent; -webkit-text-stroke: 2px rgba(0,0,0,0.08); line-height: 1; }
-        .timeline-content { font-size: clamp(20px, 4vw, 42px); font-weight: 500; max-width: 800px; margin-top: -20px; line-height: 1.3;}
+    main {
+      position: relative;
+      z-index: 1;
+    }
 
-        /* Projects (粘性堆叠) */
-        .section-projects { position: relative; background-color: var(--text-dark); color: var(--text-light); display: flex; padding: 150px 5vw; }
-        .sticky-left { width: 40%; height: 100vh; position: sticky; top: 0; display: flex; align-items: center; }
-        .scroll-right { width: 60%; display: flex; flex-direction: column; gap: 40vh; padding: 25vh 0; perspective: 1000px;}
-        .project-card { 
-            background: #151515; border-radius: 40px; padding: 60px; min-height: 450px; 
-            border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: space-between;
-            transform-style: preserve-3d;
-        }
-        .project-card > div { transform: translateZ(40px); }
+    .panel {
+      min-height: 100svh;
+      position: relative;
+      display: grid;
+      align-items: center;
+      padding: 112px clamp(18px, 5vw, 76px) 70px;
+      overflow: clip;
+    }
+    .panel.dark {
+      background: var(--black);
+      color: var(--paper);
+    }
+    .panel.paper { background: var(--paper); }
+    .panel.soft { background: var(--paper-2); }
 
-        /* Footer */
-        .section-footer {
-            position: fixed; bottom: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; 
-            background-color: var(--accent); color: var(--text-dark);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 5vw;
-        }
-        .magnetic-wrap { display: inline-block; padding: 20px; }
-        .footer-link { 
-            font-size: clamp(40px, 10vw, 150px); font-weight: 800; text-decoration: none; 
-            color: var(--bg-dark); letter-spacing: -0.05em; display: inline-block;
-        }
+    .panel-no {
+      position: absolute;
+      left: clamp(18px, 5vw, 76px);
+      top: 96px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .dark .panel-no { color: rgba(245,243,238,.48); }
 
-        /* ----- 5. 三端自适应媒体查询 (Media Queries) ----- */
-        @media (max-width: 1024px) {
-            .section-nodes { padding: 100px 5vw; border-radius: 40px 40px 0 0;}
-            .section-projects { flex-direction: column; padding: 100px 5vw; }
-            .sticky-left { width: 100%; height: auto; position: relative; padding-bottom: 80px; }
-            .scroll-right { width: 100%; gap: 50px; padding: 0; }
-        }
+    .split-line {
+      overflow: hidden;
+      display: block;
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(42px);
+      transition: opacity .9s var(--ease), transform .9s var(--ease);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal.delay-1 { transition-delay: .08s; }
+    .reveal.delay-2 { transition-delay: .16s; }
+    .reveal.delay-3 { transition-delay: .24s; }
 
-        @media (max-width: 768px) {
-            .section-nodes { padding: 60px 5vw; border-radius: 30px 30px 0 0;}
-            .nodes-grid { grid-template-columns: 1fr; gap: 20px;}
-            .node-card { padding: 30px; min-height: auto; }
-            
-            /* 手机端取消横向滚动，改为优雅的垂直信息流 */
-            .section-timeline { height: auto; padding: 80px 5vw; }
-            .h-scroll-container { width: 100%; flex-direction: column; padding-left: 0; }
-            .timeline-panel { width: 100%; margin-right: 0; margin-bottom: 60px; }
-            .timeline-year { -webkit-text-stroke: 1px rgba(0,0,0,0.1); margin-bottom: 20px;}
-            .timeline-content { margin-top: 0; }
+    .hero {
+      background: var(--black);
+      color: var(--paper);
+      isolation: isolate;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(245,243,238,.065) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,243,238,.065) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at 56% 45%, black, transparent 72%);
+      z-index: -2;
+    }
+    .hero-orbit {
+      position: absolute;
+      width: min(72vw, 900px);
+      aspect-ratio: 1;
+      right: -18vw;
+      top: 7vh;
+      border: 1px solid rgba(245,243,238,.11);
+      border-radius: 50%;
+      z-index: -1;
+      animation: spin 28s linear infinite;
+    }
+    .hero-orbit::before,
+    .hero-orbit::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(245,243,238,.11);
+      inset: 14%;
+    }
+    .hero-orbit::after { inset: 30%; }
+    .hero-dot {
+      position: absolute;
+      top: 18%;
+      left: 6%;
+      width: 12px;
+      height: 12px;
+      border-radius: 99px;
+      background: var(--orange);
+      box-shadow: 0 0 38px rgba(239,107,45,.8);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-            .project-card { padding: 30px; min-height: auto; }
-        }
-    </style>
+    .hero-layout {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+      gap: clamp(24px, 6vw, 90px);
+      align-items: end;
+    }
+    .eyebrow {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,.52);
+      margin-bottom: 22px;
+    }
+    .hero-title {
+      font-size: clamp(82px, 17.6vw, 264px);
+      line-height: .72;
+      letter-spacing: -.095em;
+      margin: 0;
+      font-weight: 780;
+    }
+    .hero-title .char {
+      display: inline-block;
+      transform: translateY(120%) rotate(8deg);
+      opacity: 0;
+      animation: charIn .95s var(--ease) forwards;
+      animation-delay: calc(var(--i) * .045s + 1.25s);
+    }
+    @keyframes charIn { to { transform: translateY(0) rotate(0); opacity: 1; } }
+    .hero-copy {
+      font-size: clamp(18px, 2vw, 27px);
+      line-height: 1.2;
+      letter-spacing: -.035em;
+      color: rgba(245,243,238,.78);
+      max-width: 430px;
+      margin-bottom: 8px;
+    }
+    .hero-meta {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line-dark);
+    }
+    .hero-meta div {
+      padding: 18px 16px 0 0;
+      min-width: 0;
+    }
+    .hero-meta b {
+      display: block;
+      font-size: 28px;
+      letter-spacing: -.05em;
+    }
+    .hero-meta span {
+      display: block;
+      margin-top: 4px;
+      color: rgba(245,243,238,.47);
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      left: clamp(18px, 5vw, 76px);
+      bottom: 30px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      color: rgba(245,243,238,.56);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .scroll-hint i {
+      display: block;
+      width: 38px;
+      height: 1px;
+      background: currentColor;
+      transform-origin: left;
+      animation: pulseLine 1.5s ease-in-out infinite;
+    }
+    @keyframes pulseLine { 50% { transform: scaleX(.35); opacity: .45; } }
+
+    .big-heading {
+      margin: 0;
+      font-size: clamp(46px, 8vw, 126px);
+      line-height: .92;
+      letter-spacing: -.075em;
+      font-weight: 720;
+      max-width: 1120px;
+    }
+    .kicker {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .dark .kicker { color: rgba(245,243,238,.48); }
+    .lead {
+      font-size: clamp(20px, 2.6vw, 38px);
+      line-height: 1.16;
+      letter-spacing: -.05em;
+      color: rgba(17,17,15,.72);
+      max-width: 840px;
+      margin-top: 28px;
+    }
+    .dark .lead { color: rgba(245,243,238,.74); }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.06fr) minmax(300px, .94fr);
+      gap: clamp(26px, 5vw, 80px);
+      align-items: center;
+      width: 100%;
+    }
+    .portrait-card {
+      min-height: 550px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.28));
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+    .portrait-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(29,107,69,.26), transparent 32%),
+        linear-gradient(rgba(17,17,15,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17,17,15,.06) 1px, transparent 1px);
+      background-size: auto, 36px 36px, 36px 36px;
+      transition: opacity .4s var(--ease);
+    }
+    .portrait-card .mark {
+      position: absolute;
+      left: 32px;
+      bottom: 28px;
+      font-size: clamp(64px, 12vw, 176px);
+      line-height: .76;
+      font-weight: 780;
+      letter-spacing: -.09em;
+      color: var(--ink);
+    }
+    .portrait-card .coords {
+      position: absolute;
+      right: 28px;
+      top: 28px;
+      text-align: right;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .08em;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .profile-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 36px;
+    }
+    .profile-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 22px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .profile-row span {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .profile-row p {
+      margin: 0;
+      color: rgba(17,17,15,.76);
+      line-height: 1.6;
+    }
+
+    .infra-wrap {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(260px, .62fr) minmax(0, 1fr);
+      gap: clamp(24px, 5vw, 72px);
+      align-items: end;
+    }
+    .route-map {
+      position: relative;
+      min-height: 560px;
+      border: 1px solid var(--line-dark);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(rgba(245,243,238,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,243,238,.05) 1px, transparent 1px),
+        radial-gradient(circle at 18% 22%, rgba(29,107,69,.32), transparent 26%),
+        radial-gradient(circle at 76% 58%, rgba(239,107,45,.22), transparent 30%);
+      background-size: 34px 34px, 34px 34px, auto, auto;
+      overflow: hidden;
+    }
+    .route-line {
+      position: absolute;
+      height: 1px;
+      background: rgba(245,243,238,.48);
+      transform-origin: left;
+      opacity: .55;
+    }
+    .route-line.l1 { width: 52%; left: 20%; top: 31%; transform: rotate(20deg); }
+    .route-line.l2 { width: 44%; left: 35%; top: 53%; transform: rotate(-16deg); }
+    .route-line.l3 { width: 36%; left: 23%; top: 67%; transform: rotate(8deg); }
+    .node {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--paper);
+      box-shadow: 0 0 0 10px rgba(245,243,238,.07), 0 0 34px rgba(245,243,238,.45);
+    }
+    .node::after {
+      content: attr(data-name);
+      position: absolute;
+      left: 18px;
+      top: -8px;
+      color: rgba(245,243,238,.72);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      white-space: nowrap;
+      letter-spacing: .08em;
+    }
+    .node.sg { left: 20%; top: 30%; background: var(--green-soft); }
+    .node.hk { left: 64%; top: 49%; background: var(--orange); }
+    .node.tw { left: 36%; top: 69%; }
+    .node.us { left: 78%; top: 61%; }
+    .route-caption {
+      position: absolute;
+      left: 28px;
+      bottom: 24px;
+      right: 28px;
+      color: rgba(245,243,238,.5);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      letter-spacing: .06em;
+    }
+    .infra-cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .mini-card {
+      border: 1px solid var(--line-dark);
+      border-radius: 22px;
+      padding: 22px;
+      min-height: 185px;
+      background: rgba(255,255,255,.035);
+      transition: transform .55s var(--ease), background .55s var(--ease), border-color .55s var(--ease);
+    }
+    .mini-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255,255,255,.07);
+      border-color: rgba(245,243,238,.3);
+    }
+    .mini-card b {
+      display: block;
+      font-size: 32px;
+      letter-spacing: -.06em;
+      margin-bottom: 14px;
+    }
+    .mini-card p {
+      color: rgba(245,243,238,.58);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .systems-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 30px;
+      margin-bottom: 54px;
+    }
+    .systems-head .big-heading { max-width: 830px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .project-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+      min-height: 510px;
+    }
+    .project-feature,
+    .project-stack {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.42);
+      overflow: hidden;
+    }
+    .project-feature {
+      position: relative;
+      padding: 28px;
+      display: grid;
+      align-content: space-between;
+    }
+    .project-feature::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0 47%, rgba(17,17,15,.08) 47% 47.2%, transparent 47.2%),
+        linear-gradient(rgba(17,17,15,.055) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 36px;
+      pointer-events: none;
+    }
+    .browser-line {
+      display: flex;
+      gap: 7px;
+      position: relative;
+      z-index: 1;
+    }
+    .browser-line span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(17,17,15,.24);
+    }
+    .status-board {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 16px;
+      margin: 42px 0;
+    }
+    .status-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 56px;
+      gap: 16px;
+      align-items: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .bars {
+      height: 30px;
+      display: grid;
+      grid-template-columns: repeat(30, 1fr);
+      gap: 4px;
+    }
+    .bars i {
+      border-radius: 5px;
+      background: #b8d6c2;
+      transform-origin: bottom;
+      animation: barIn .9s var(--ease) both;
+      animation-delay: calc(var(--i) * .016s);
+    }
+    .bars i.mid { background: #d9c58d; }
+    .bars i.bad { background: #d88977; }
+    @keyframes barIn { from { transform: scaleY(.2); opacity: .25; } }
+    .project-title {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 30px;
+      border-top: 1px solid var(--line);
+      padding-top: 24px;
+    }
+    .project-title h3 {
+      margin: 0;
+      font-size: clamp(38px, 6vw, 86px);
+      line-height: .86;
+      letter-spacing: -.08em;
+    }
+    .project-title p {
+      max-width: 310px;
+      margin: 0;
+      color: rgba(17,17,15,.62);
+      line-height: 1.55;
+    }
+    .project-stack {
+      display: grid;
+      grid-template-rows: repeat(3, 1fr);
+    }
+    .stack-item {
+      padding: 26px;
+      display: grid;
+      align-content: space-between;
+      border-bottom: 1px solid var(--line);
+      min-height: 150px;
+      transition: background .45s var(--ease), padding-left .45s var(--ease);
+    }
+    .stack-item:last-child { border-bottom: 0; }
+    .stack-item:hover { background: rgba(255,255,255,.45); padding-left: 34px; }
+    .stack-item span {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .stack-item b {
+      font-size: 27px;
+      letter-spacing: -.05em;
+      line-height: 1.05;
+      font-weight: 670;
+    }
+
+    .timeline-wrap {
+      width: 100%;
+    }
+    .timeline-line {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 0;
+      margin-top: 70px;
+      border-top: 1px solid var(--line-dark);
+    }
+    .time-card {
+      min-height: 380px;
+      padding: 30px 28px 0 0;
+      border-right: 1px solid var(--line-dark);
+      display: grid;
+      align-content: space-between;
+      position: relative;
+    }
+    .time-card::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 0;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--paper);
+    }
+    .time-card:last-child { border-right: 0; }
+    .time-card .year {
+      font-size: clamp(54px, 8vw, 112px);
+      line-height: .82;
+      letter-spacing: -.08em;
+      font-weight: 760;
+      color: transparent;
+      -webkit-text-stroke: 1.3px rgba(245,243,238,.55);
+    }
+    .time-card p {
+      margin: 26px 0 0;
+      color: rgba(245,243,238,.68);
+      line-height: 1.55;
+      max-width: 320px;
+    }
+    .time-card .tagline {
+      margin-top: 32px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .1em;
+      color: rgba(245,243,238,.42);
+      text-transform: uppercase;
+    }
+
+    .contact-layout {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      gap: clamp(24px, 5vw, 78px);
+      align-items: end;
+    }
+    .contact-title {
+      font-size: clamp(64px, 13vw, 210px);
+      line-height: .76;
+      letter-spacing: -.1em;
+      margin: 0;
+      font-weight: 780;
+    }
+    .contact-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.5);
+      padding: 28px;
+      min-height: 430px;
+      display: grid;
+      align-content: space-between;
+    }
+    .contact-card p {
+      margin: 0;
+      color: rgba(17,17,15,.68);
+      font-size: 20px;
+      line-height: 1.45;
+      letter-spacing: -.025em;
+    }
+    .contact-links {
+      display: grid;
+      gap: 10px;
+    }
+    .contact-link {
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 22px;
+      transition: background .45s var(--ease), color .45s var(--ease), transform .45s var(--ease);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .contact-link:hover {
+      background: var(--ink);
+      color: var(--paper);
+      transform: translateX(7px);
+    }
+    .contact-link i {
+      font-style: normal;
+      font-size: 18px;
+    }
+
+    @media (max-width: 920px) {
+      body { cursor: auto; }
+      .cursor, .cursor-ring { display: none; }
+      .topbar { height: 64px; grid-template-columns: 1fr auto; }
+      .chapter { display: none; }
+      .side-nav { display: none; }
+      .panel { min-height: auto; padding: 98px 20px 62px; }
+      .hero { min-height: 100svh; }
+      .hero-layout,
+      .profile-grid,
+      .infra-wrap,
+      .contact-layout { grid-template-columns: 1fr; }
+      .hero-copy { margin-top: 22px; }
+      .hero-meta { grid-template-columns: 1fr; gap: 12px; border-top: 0; }
+      .hero-meta div { border-top: 1px solid var(--line-dark); }
+      .portrait-card { min-height: 420px; }
+      .profile-row { grid-template-columns: 1fr; gap: 8px; }
+      .route-map { min-height: 420px; }
+      .infra-cards { grid-template-columns: 1fr; }
+      .systems-head { display: grid; }
+      .project-grid { grid-template-columns: 1fr; }
+      .project-title { display: grid; }
+      .status-row { grid-template-columns: 1fr; gap: 8px; }
+      .timeline-line { grid-template-columns: 1fr; margin-top: 42px; }
+      .time-card { border-right: 0; border-bottom: 1px solid var(--line-dark); min-height: auto; padding: 34px 0; }
+      .time-card:last-child { border-bottom: 0; }
+      .time-card::before { top: -6px; }
+      .contact-card { min-height: 340px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
 </head>
 <body>
+  <div class="grain"></div>
+  <div class="cursor"></div>
+  <div class="cursor-ring"></div>
 
-    <div class="noise-bg"></div>
-    <canvas id="canvas-network"></canvas>
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
-
-    <div class="loader">
-        <div class="loader-percent" id="loaderNum">00</div>
-        <div style="font-size: 14px; margin-top: 20px; letter-spacing: 2px;">SYNCING GLOBAL NODES_</div>
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+      <div class="loader-top">
+        <span>NKX / Route handshake</span>
+        <span id="loaderText">000%</span>
+      </div>
+      <div class="loader-num" id="loaderNum">00</div>
+      <div class="loader-line"><span id="loaderBar"></span></div>
     </div>
+  </div>
 
-    <div class="main-wrapper">
-        <section class="section-hero">
-            <div class="tag">NIE KAIXIANG // NKX</div>
-            <h1 class="hero-title scramble" data-text="QQ.SG">QQ.SG</h1>
-            <p class="hero-subtitle">
-                A premium interactive signal node.<br>
-                Routing global traffic, managing PVE/KVM environments, and hosting the NIE ecosystem since 2020.
-            </p>
-        </section>
+  <header class="topbar">
+    <div class="brand">NKX / QQ.SG</div>
+    <div class="chapter" id="chapter">01 — SIGNAL</div>
+    <div class="clock" id="clock">Asia/Taipei</div>
+  </header>
 
-        <section class="section-nodes">
-            <h2 class="section-heading scramble" data-text="INFRASTRUCTURE">INFRASTRUCTURE<br>& NODES.</h2>
-            <div class="nodes-grid">
-                <div class="card-3d-wrap hover-target">
-                    <div class="node-card tilt-card">
-                        <div>
-                            <span class="tag">SG Core Identity</span>
-                            <h3 style="font-size: 32px; margin-top: 15px;">Singapore</h3>
-                            <p style="color: #666; margin-top: 10px;">The primary front door. Handling main DNS resolution, personal routes, and global BGP sessions.</p>
-                        </div>
-                        <div><span class="tag-dark">WireGuard</span><span class="tag-dark">IPv6 Static</span></div>
-                    </div>
-                </div>
-                <div class="card-3d-wrap hover-target">
-                    <div class="node-card tilt-card">
-                        <div>
-                            <span class="tag">HK Edge Transit</span>
-                            <h3 style="font-size: 32px; margin-top: 15px;">Hong Kong</h3>
-                            <p style="color: #666; margin-top: 10px;">Optimized transit proxy layer leveraging Cloudflare Pages, Workers, and secure Tunnels.</p>
-                        </div>
-                        <div><span class="tag-dark">CF Tunnels</span><span class="tag-dark">Reverse Proxy</span></div>
-                    </div>
-                </div>
-                <div class="card-3d-wrap hover-target">
-                    <div class="node-card tilt-card">
-                        <div>
-                            <span class="tag">Phoenix Compute</span>
-                            <h3 style="font-size: 32px; margin-top: 15px;">Oracle ARM</h3>
-                            <p style="color: #666; margin-top: 10px;">Captured on Apr 10, 2026, after 178 days of automated attempts. Handling heavy containerized workloads.</p>
-                        </div>
-                        <div><span class="tag-dark">Docker</span><span class="tag-dark">Ubuntu Runtime</span></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <nav class="side-nav" aria-label="page navigation">
+    <a href="#signal" class="active" data-title="01 — SIGNAL"><span>01</span></a>
+    <a href="#profile" data-title="02 — PROFILE"><span>02</span></a>
+    <a href="#infra" data-title="03 — INFRA"><span>03</span></a>
+    <a href="#systems" data-title="04 — SYSTEMS"><span>04</span></a>
+    <a href="#timeline" data-title="05 — TIMELINE"><span>05</span></a>
+    <a href="#contact" data-title="06 — CONTACT"><span>06</span></a>
+  </nav>
 
-        <section class="section-timeline" id="timeline-sec">
-            <div class="h-scroll-container">
-                <div class="timeline-panel">
-                    <div class="timeline-year">2020</div>
-                    <div class="timeline-content">Started the IDC journey at age 14 with a single Dell R620 server. Self-taught Linux administration.</div>
-                    <div class="tag" style="margin-top: 20px;">GENESIS // HARDWARE</div>
-                </div>
-                <div class="timeline-panel">
-                    <div class="timeline-year">2023</div>
-                    <div class="timeline-content">Scaled the infrastructure with Supermicro hardware. Managed operations for over 500+ customers.</div>
-                    <div class="tag" style="margin-top: 20px;">IDC EXPANSION</div>
-                </div>
-                <div class="timeline-panel">
-                    <div class="timeline-year">2026</div>
-                    <div class="timeline-content">Vocational graduation. Admitted to Fujian Chuanzheng Communications College. Planning Fujian Suchen Internet.</div>
-                    <div class="tag" style="margin-top: 20px;">ACADEMIA & BUSINESS</div>
-                </div>
-                <div class="timeline-panel">
-                    <div class="timeline-year">2031</div>
-                    <div class="timeline-content">Roadmap: Complete Junior-to-Bachelor exams in 2029, aiming for graduate school and deep network engineering.</div>
-                    <div class="tag" style="margin-top: 20px;">FUTURE TARGETS</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section-projects">
-            <div class="sticky-left">
-                <h2 style="font-size: clamp(50px, 6vw, 120px); font-weight: 500; line-height: 0.9;" class="scramble" data-text="CUSTOM SYSTEMS.">CUSTOM<br>SYSTEMS.</h2>
-            </div>
-            <div class="scroll-right">
-                <div class="card-3d-wrap hover-target">
-                    <div class="project-card tilt-card">
-                        <div>
-                            <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">nie.net</span>
-                            <h3 style="font-size: clamp(32px, 4vw, 60px); margin: 20px 0;">NIE Blog System</h3>
-                            <p style="font-size: 18px; color: #888; line-height: 1.5;">A purely custom-built static blog system powered by Python build scripts. Absolute minimalist geek aesthetic.</p>
-                        </div>
-                        <div style="font-family: 'JetBrains Mono'; color: var(--accent); margin-top: 30px;">// BUILD.PY DEPLOYED</div>
-                    </div>
-                </div>
-                <div class="card-3d-wrap hover-target">
-                    <div class="project-card tilt-card">
-                        <div>
-                            <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">status.nkx.moe</span>
-                            <h3 style="font-size: clamp(32px, 4vw, 60px); margin: 20px 0;">NIE-NodeGet</h3>
-                            <p style="font-size: 18px; color: #888; line-height: 1.5;">Custom monitoring frontend tracking real-time latency and resources across distributed PVE/KVM environments.</p>
-                        </div>
-                        <div style="font-family: 'JetBrains Mono'; color: var(--accent); margin-top: 30px;">// METRICS ONLINE</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <section class="section-footer">
-        <span class="tag" style="color: var(--bg-dark); margin-bottom: 30px;">ALL ROUTES OPEN</span>
-        <div class="magnetic-wrap hover-target">
-            <a href="mailto:ME@QQ.SG" class="footer-link magnetic-btn">ME@QQ.SG</a>
+  <main>
+    <section class="panel hero dark" id="signal" data-title="01 — SIGNAL">
+      <div class="hero-orbit"><span class="hero-dot"></span></div>
+      <div class="panel-no">Page 01 / 06</div>
+      <div class="hero-layout">
+        <div>
+          <div class="eyebrow reveal">Nie Kaixiang · Infrastructure / Network / Web Systems</div>
+          <h1 class="hero-title" data-split="QQ.SG">QQ.SG</h1>
         </div>
-        <p style="margin-top: 40px; font-family: 'JetBrains Mono'; color: rgba(0,0,0,0.5); font-size: 14px;">
-            © 2026 Nie Kaixiang (NKX) <br>
-            福建省苏晨互联有限公司 (Planning phase)
-        </p>
+        <div class="reveal delay-2">
+          <p class="hero-copy">不是“黑客风模板”，而是一张能体现真实工程经历的个人数字名片。</p>
+          <div class="hero-meta">
+            <div><b>IDC</b><span>Finance / Panel / Ops</span></div>
+            <div><b>PVE</b><span>KVM / Hyper-V / ESXi</span></div>
+            <div><b>CF</b><span>Pages / Workers / DNS</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-hint"><i></i>Scroll to explore</div>
     </section>
 
-    <script>
-        // --- 1. 响应式鼠标 & 磁性特效 ---
-        const cursorDot = document.querySelector('.cursor-dot');
-        const cursorOutline = document.querySelector('.cursor-outline');
-        let mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
-        let outline = { x: window.innerWidth/2, y: window.innerHeight/2 };
+    <section class="panel paper" id="profile" data-title="02 — PROFILE">
+      <div class="panel-no">Page 02 / 06</div>
+      <div class="profile-grid">
+        <div>
+          <div class="kicker reveal">Profile</div>
+          <h2 class="big-heading reveal delay-1">把服务器、网络和网站做成自己的作品集。</h2>
+          <p class="lead reveal delay-2">从接触云服务器开始，逐渐扩展到虚拟化、IDC 财务系统、监控前端、静态博客、Cloudflare 边缘服务和多节点网络实验。</p>
+          <div class="profile-list reveal delay-3">
+            <div class="profile-row"><span>Focus</span><p>网络工程、虚拟化、IDC 运维、轻量化 Web 工具。</p></div>
+            <div class="profile-row"><span>Style</span><p>少一点模板感，多一点真实项目和清晰结构。</p></div>
+            <div class="profile-row"><span>Current</span><p>已录取福建船政交通职业学院，继续往计算机网络方向深入。</p></div>
+          </div>
+        </div>
+        <div class="portrait-card interactive-card reveal delay-2">
+          <div class="coords">LONGYAN / FUJIAN<br />ASIA-TAIPEI +08<br />NKX ECOSYSTEM</div>
+          <div class="mark">N<br />KX</div>
+        </div>
+      </div>
+    </section>
 
-        if(window.innerWidth > 768) {
-            const setDotX = gsap.quickSetter(cursorDot, "x", "px");
-            const setDotY = gsap.quickSetter(cursorDot, "y", "px");
-            const setOutX = gsap.quickSetter(cursorOutline, "x", "px");
-            const setOutY = gsap.quickSetter(cursorOutline, "y", "px");
+    <section class="panel dark" id="infra" data-title="03 — INFRA">
+      <div class="panel-no">Page 03 / 06</div>
+      <div class="infra-wrap">
+        <div>
+          <div class="kicker reveal">Infrastructure</div>
+          <h2 class="big-heading reveal delay-1">节点不是装饰，是你真实折腾过的网络地图。</h2>
+          <p class="lead reveal delay-2">这里更适合展示你的 SG / HK / TW / US 节点、WireGuard 内网、监控探针和线路实验，而不是泛泛写“global traffic”。</p>
+          <div class="infra-cards reveal delay-3" style="margin-top: 34px;">
+            <div class="mini-card"><b>WG</b><p>多节点内网、路由转发、MTU / BBR 调优。</p></div>
+            <div class="mini-card"><b>Probe</b><p>NodeGet / Nezha 风格状态展示与延迟监控。</p></div>
+            <div class="mini-card"><b>DNS</b><p>Cloudflare DNS、缓存规则、边缘解析实验。</p></div>
+            <div class="mini-card"><b>VPS</b><p>PVE、KVM、Hyper-V、VMware ESXi 实战经历。</p></div>
+          </div>
+        </div>
+        <div class="route-map reveal delay-2">
+          <span class="route-line l1"></span>
+          <span class="route-line l2"></span>
+          <span class="route-line l3"></span>
+          <span class="node sg" data-name="SG CORE"></span>
+          <span class="node hk" data-name="HK EDGE"></span>
+          <span class="node tw" data-name="TW TEST"></span>
+          <span class="node us" data-name="US BACKUP"></span>
+          <div class="route-caption">LIVE-STYLE MAP / Replace these points with your real VPS regions, ASN, route notes and uptime data.</div>
+        </div>
+      </div>
+    </section>
 
-            window.addEventListener("mousemove", e => {
-                mouse.x = e.x; mouse.y = e.y;
-                setDotX(mouse.x); setDotY(mouse.y);
-            });
+    <section class="panel soft" id="systems" data-title="04 — SYSTEMS">
+      <div class="panel-no">Page 04 / 06</div>
+      <div class="timeline-wrap">
+        <div class="systems-head">
+          <div>
+            <div class="kicker reveal">Systems</div>
+            <h2 class="big-heading reveal delay-1">作品区要像产品页，而不是普通卡片墙。</h2>
+          </div>
+          <span class="pill reveal delay-2">Status / Blog / Tools</span>
+        </div>
+        <div class="project-grid reveal delay-3">
+          <article class="project-feature interactive-card">
+            <div class="browser-line"><span></span><span></span><span></span></div>
+            <div class="status-board" id="statusBoard"></div>
+            <div class="project-title">
+              <h3>NIE<br />NodeGet</h3>
+              <p>把监控主题做成“产品预览”：近 30 天小格子、节点状态、延迟趋势和资源占用可以直接成为视觉主体。</p>
+            </div>
+          </article>
+          <aside class="project-stack">
+            <div class="stack-item"><span>01 / Blog</span><b>NIE Static Blog<br />Python + Markdown + SSG</b></div>
+            <div class="stack-item"><span>02 / Tools</span><b>VPS Value Calculator<br />Tailwind + Capture</b></div>
+            <div class="stack-item"><span>03 / Edge</span><b>Cloudflare Pages<br />Workers + DNS APIs</b></div>
+          </aside>
+        </div>
+      </div>
+    </section>
 
-            gsap.ticker.add(() => {
-                outline.x += (mouse.x - outline.x) * 0.15;
-                outline.y += (mouse.y - outline.y) * 0.15;
-                setOutX(outline.x); setOutY(outline.y);
-            });
+    <section class="panel dark" id="timeline" data-title="05 — TIMELINE">
+      <div class="panel-no">Page 05 / 06</div>
+      <div class="timeline-wrap">
+        <div class="kicker reveal">Timeline</div>
+        <h2 class="big-heading reveal delay-1">经历不用写得很满，但要有清晰的成长线。</h2>
+        <div class="timeline-line reveal delay-2">
+          <div class="time-card">
+            <div><div class="year">2020</div><p>开始接触云服务器、Linux、网站部署和基础运维。</p></div>
+            <div class="tagline">First server</div>
+          </div>
+          <div class="time-card">
+            <div><div class="year">2023</div><p>接触 IDC 财务/管理系统，理解 VPS 售卖、节点、工单和服务交付。</p></div>
+            <div class="tagline">IDC workflow</div>
+          </div>
+          <div class="time-card">
+            <div><div class="year">2025</div><p>深入折腾 PVE、KVM、WireGuard、Cloudflare、监控面板和静态站点。</p></div>
+            <div class="tagline">Infra stack</div>
+          </div>
+          <div class="time-card">
+            <div><div class="year">2026</div><p>进入新的学习阶段，把个人经历整理成可展示、可迭代的作品集。</p></div>
+            <div class="tagline">Next chapter</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-            document.querySelectorAll('.hover-target').forEach(el => {
-                el.addEventListener('mouseenter', () => cursorOutline.classList.add('hover-state'));
-                el.addEventListener('mouseleave', () => cursorOutline.classList.remove('hover-state'));
-            });
+    <section class="panel paper" id="contact" data-title="06 — CONTACT">
+      <div class="panel-no">Page 06 / 06</div>
+      <div class="contact-layout">
+        <div>
+          <div class="kicker reveal">Contact</div>
+          <h2 class="contact-title reveal delay-1">Let’s<br />Route.</h2>
+        </div>
+        <div class="contact-card reveal delay-2">
+          <p>这一页不需要堆很多按钮。只保留真正重要的入口，让访问者知道你是谁、做过什么、怎么联系你。</p>
+          <div class="contact-links">
+            <a class="contact-link" href="mailto:me@qq.sg">me@qq.sg <i>↗</i></a>
+            <a class="contact-link" href="https://status.nkx.moe" target="_blank" rel="noreferrer">status.nkx.moe <i>↗</i></a>
+            <a class="contact-link" href="https://niekaixiang.com" target="_blank" rel="noreferrer">niekaixiang.com <i>↗</i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-            // 磁性按钮
-            const magnetBtn = document.querySelector('.magnetic-btn');
-            const magnetWrap = document.querySelector('.magnetic-wrap');
-            magnetWrap.addEventListener('mousemove', (e) => {
-                const rect = magnetWrap.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-                gsap.to(magnetBtn, { x: x * 0.4, y: y * 0.4, duration: 0.4, ease: "power2.out" });
-            });
-            magnetWrap.addEventListener('mouseleave', () => {
-                gsap.to(magnetBtn, { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1, 0.3)" });
-            });
+  <script>
+    const root = document.documentElement;
+    const loader = document.getElementById('loader');
+    const loaderNum = document.getElementById('loaderNum');
+    const loaderText = document.getElementById('loaderText');
+    const loaderBar = document.getElementById('loaderBar');
+    let p = 0;
 
-            // --- 3D 悬浮倾斜 (Lando Norris 卡片物理感) ---
-            document.querySelectorAll('.card-3d-wrap').forEach(wrap => {
-                const card = wrap.querySelector('.tilt-card');
-                wrap.addEventListener('mousemove', e => {
-                    const rect = wrap.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    const rotateX = ((y - centerY) / centerY) * -10; // 最大倾斜 10 度
-                    const rotateY = ((x - centerX) / centerX) * 10;
-                    
-                    gsap.to(card, {
-                        rotateX: rotateX, rotateY: rotateY, 
-                        transformPerspective: 1000, ease: "power1.out", duration: 0.3
-                    });
-                });
-                wrap.addEventListener('mouseleave', () => {
-                    gsap.to(card, { rotateX: 0, rotateY: 0, ease: "elastic.out(1, 0.3)", duration: 0.8 });
-                });
-            });
-        }
+    const tickLoader = () => {
+      p += Math.max(1, Math.round((100 - p) * 0.08));
+      if (p > 100) p = 100;
+      loaderNum.textContent = String(p).padStart(2, '0');
+      loaderText.textContent = String(p).padStart(3, '0') + '%';
+      loaderBar.style.width = p + '%';
+      if (p < 100) requestAnimationFrame(tickLoader);
+      else setTimeout(() => loader.classList.add('done'), 360);
+    };
+    requestAnimationFrame(tickLoader);
 
-        // --- 2. 交互式连线背景 (Canvas Particle Web) ---
-        const canvas = document.getElementById('canvas-network');
-        const ctx = canvas.getContext('2d');
-        let width, height, particles = [];
-        
-        function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            particles = [];
-            const count = window.innerWidth > 768 ? 80 : 30; // 手机上减少粒子
-            for(let i=0; i<count; i++) {
-                particles.push({
-                    x: Math.random() * width, y: Math.random() * height,
-                    vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5
-                });
-            }
-        }
-        initCanvas();
-        window.addEventListener('resize', initCanvas);
+    const title = document.querySelector('[data-split]');
+    const raw = title.dataset.split;
+    title.innerHTML = [...raw].map((c, i) => `<span class="char" style="--i:${i}">${c}</span>`).join('');
 
-        function drawCanvas() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = 'rgba(21, 184, 90, 0.5)';
-            ctx.strokeStyle = 'rgba(21, 184, 90, 0.15)';
-            
-            particles.forEach(p => {
-                p.x += p.vx; p.y += p.vy;
-                if(p.x < 0 || p.x > width) p.vx *= -1;
-                if(p.y < 0 || p.y > height) p.vy *= -1;
-                
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-                ctx.fill();
+    const cursor = document.querySelector('.cursor');
+    const ring = document.querySelector('.cursor-ring');
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
+    });
+    const moveRing = () => {
+      rx += (mx - rx) * .16;
+      ry += (my - ry) * .16;
+      ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
+      requestAnimationFrame(moveRing);
+    };
+    moveRing();
 
-                // 节点之间的连线
-                particles.forEach(p2 => {
-                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if(dist < 100) {
-                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-                    }
-                });
+    document.querySelectorAll('a, button, .interactive-card, .mini-card, .stack-item').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('is-hovering'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('is-hovering'));
+    });
 
-                // 鼠标靠近时的吸附连线
-                if(window.innerWidth > 768) {
-                    const mouseDist = Math.hypot(p.x - mouse.x, p.y - mouse.y);
-                    if(mouseDist < 150) {
-                        ctx.strokeStyle = `rgba(21, 184, 90, ${1 - mouseDist/150})`;
-                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
-                        ctx.strokeStyle = 'rgba(21, 184, 90, 0.15)'; // 恢复
-                    }
-                }
-            });
-            requestAnimationFrame(drawCanvas);
-        }
-        drawCanvas();
+    document.querySelectorAll('.interactive-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left;
+        const y = e.clientY - r.top;
+        card.style.setProperty('--mx', `${x}px`);
+        card.style.setProperty('--my', `${y}px`);
+        const px = (x / r.width - .5) * 8;
+        const py = (y / r.height - .5) * -8;
+        if (innerWidth > 920) card.style.transform = `perspective(900px) rotateX(${py}deg) rotateY(${px}deg)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+      });
+    });
 
-        // --- 3. 解码文本特效 ---
-        class TextScramble {
-            constructor(el) { this.el = el; this.chars = '!<>-_\\/[]{}—=+*^?#________'; this.update = this.update.bind(this); }
-            setText(newText) {
-                const oldText = this.el.innerText;
-                const length = Math.max(oldText.length, newText.length);
-                const promise = new Promise((resolve) => this.resolve = resolve);
-                this.queue = [];
-                for (let i = 0; i < length; i++) {
-                    const from = oldText[i] || ''; const to = newText[i] || '';
-                    const start = Math.floor(Math.random() * 40); const end = start + Math.floor(Math.random() * 40);
-                    this.queue.push({ from, to, start, end });
-                }
-                cancelAnimationFrame(this.frameRequest); this.frame = 0; this.update();
-                return promise;
-            }
-            update() {
-                let output = ''; let complete = 0;
-                for (let i = 0, n = this.queue.length; i < n; i++) {
-                    let { from, to, start, end, char } = this.queue[i];
-                    if (this.frame >= end) { complete++; output += to; } 
-                    else if (this.frame >= start) {
-                        if (!char || Math.random() < 0.28) { char = this.randomChar(); this.queue[i].char = char; }
-                        output += `<span style="color: var(--accent)">${char}</span>`;
-                    } else { output += from; }
-                }
-                this.el.innerHTML = output;
-                if (complete === this.queue.length) { this.resolve(); } 
-                else { this.frameRequest = requestAnimationFrame(this.update); this.frame++; }
-            }
-            randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
-        }
+    const reveals = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('in');
+      });
+    }, { threshold: .18 });
+    reveals.forEach(el => revealObserver.observe(el));
 
-        // --- 4. 预加载与 GSAP 核心逻辑 (包含响应式 MatchMedia) ---
-        const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
-        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-        requestAnimationFrame(raf);
+    const navs = [...document.querySelectorAll('.side-nav a')];
+    const chapter = document.getElementById('chapter');
+    const panels = [...document.querySelectorAll('.panel')];
+    const panelObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        const title = entry.target.dataset.title;
+        chapter.textContent = title;
+        navs.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
+      });
+    }, { threshold: .52 });
+    panels.forEach(panel => panelObserver.observe(panel));
 
-        gsap.registerPlugin(ScrollTrigger);
-        lenis.on('scroll', ScrollTrigger.update);
-        gsap.ticker.add((time) => { lenis.raf(time * 1000); });
-        gsap.ticker.lagSmoothing(0, 0);
+    const clock = document.getElementById('clock');
+    const setClock = () => {
+      const now = new Date();
+      clock.textContent = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' }) + ' / TPE';
+    };
+    setClock();
+    setInterval(setClock, 1000 * 20);
 
-        const tlLoader = gsap.timeline();
-        let counter = { value: 0 };
-        tlLoader.to(counter, {
-            value: 100, duration: 1.5, ease: "power4.inOut",
-            onUpdate: () => document.getElementById("loaderNum").innerText = Math.round(counter.value).toString().padStart(2, '0')
-        })
-        .to(".loader", {
-            yPercent: -100, duration: 1, ease: "power4.inOut",
-            onComplete: () => {
-                const fx = new TextScramble(document.querySelector('.section-hero .scramble'));
-                fx.setText('QQ.SG');
-            }
-        });
+    const statusBoard = document.getElementById('statusBoard');
+    const rows = [
+      ['FJ Mobile', '99.9%', [8,18]],
+      ['TW Edge', '100%', []],
+      ['HK Transit', '98.7%', [2,11,12]],
+      ['SG Core', '99.4%', [22]],
+    ];
+    statusBoard.innerHTML = rows.map(([name, pct, issues]) => {
+      const bars = Array.from({ length: 30 }, (_, i) => {
+        const cls = issues.includes(i) ? (issues.length > 2 ? 'bad' : 'mid') : '';
+        return `<i class="${cls}" style="--i:${i}"></i>`;
+      }).join('');
+      return `<div class="status-row"><span>${name}</span><div class="bars">${bars}</div><strong>${pct}</strong></div>`;
+    }).join('');
 
-        // 往下滚遇到标题时触发解码
-        document.querySelectorAll('.section-nodes .scramble, .section-projects .scramble').forEach(el => {
-            const fx = new TextScramble(el);
-            ScrollTrigger.create({ trigger: el, start: "top 80%", onEnter: () => fx.setText(el.getAttribute('data-text')) });
-        });
-
-        // 背景压暗
-        gsap.to('.section-hero', {
-            scrollTrigger: { trigger: '.main-wrapper', start: "top top", end: "100vh top", scrub: true },
-            scale: 0.8, opacity: 0.2, filter: "blur(10px)", ease: "none"
-        });
-
-        // --- 5. 三端自适应滚动逻辑 (核心机制) ---
-        let mm = gsap.matchMedia();
-
-        mm.add("(min-width: 769px)", () => {
-            // 桌面端 & 平板端：保留高级的横向滚动
-            const hContainer = document.querySelector('.h-scroll-container');
-            gsap.to(hContainer, {
-                x: () => -(hContainer.scrollWidth - window.innerWidth),
-                ease: "none",
-                scrollTrigger: {
-                    trigger: "#timeline-sec",
-                    pin: true, scrub: 1, end: () => "+=" + hContainer.scrollWidth 
-                }
-            });
-
-            // 桌面端粘性卡片视差
-            gsap.utils.toArray('.project-card').forEach(card => {
-                gsap.from(card, {
-                    scrollTrigger: { trigger: card, start: "top 95%", end: "top 30%", scrub: true },
-                    y: 100, opacity: 0.5, scale: 0.95, transformOrigin: "center bottom"
-                });
-            });
-        });
-
-        mm.add("(max-width: 768px)", () => {
-            // 手机端：取消横向锁定，恢复顺滑的垂直自然滚动
-            // 卡片使用简单的淡入上浮动画即可，保证性能
-            gsap.utils.toArray('.timeline-panel, .project-card, .node-card').forEach(el => {
-                gsap.from(el, {
-                    scrollTrigger: { trigger: el, start: "top 85%" },
-                    y: 50, opacity: 0, duration: 0.8, ease: "power2.out"
-                });
-            });
-        });
-    </script>
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      const hero = document.querySelector('.hero-title');
+      const progress = Math.min(1, y / Math.max(1, innerHeight));
+      hero.style.transform = `translateY(${progress * -42}px) scale(${1 - progress * .08})`;
+      hero.style.opacity = String(1 - progress * .38);
+    }, { passive: true });
+  </script>
 </body>
 </html>
