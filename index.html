@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NKX | Interactive Signal Node</title>
+    <title>NKX | Premium Interactive Node</title>
     <script src="https://cdn.staticfile.net/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.staticfile.net/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
@@ -19,194 +19,222 @@
             --accent: #15b85a; 
         }
         
-        * { box-sizing: border-box; }
-        
         body, html {
             margin: 0; padding: 0;
             background-color: var(--bg-dark);
             font-family: 'Outfit', sans-serif;
             overflow-x: hidden;
             overscroll-behavior: none;
+            cursor: none; 
         }
 
         h1, h2, h3, p { margin: 0; }
-        .tag { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; color: var(--accent); }
-        .tag-dark { color: #666; border: 1px solid #E0E0E0; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-right: 8px; margin-top: 8px; font-size: 12px;}
+        .tag { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; color: var(--accent); letter-spacing: 1px;}
+        .tag-dark { color: #666; border: 1px solid rgba(0,0,0,0.1); padding: 4px 12px; border-radius: 20px; display: inline-block; margin-right: 8px; margin-top: 8px; font-size: 14px;}
+        
+        /* 移动端暗色标签适配 */
+        .project-card .tag-dark { border-color: rgba(255,255,255,0.1); color: #aaa; }
 
-        /* ----- 1. 互动 Canvas 背景 ----- */
-        #interactive-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 0; /* 放在最底层 */
-            pointer-events: none;
-            mix-blend-mode: screen;
-        }
-
-        /* ----- 2. 动态噪点 ----- */
+        /* ----- 1. 交互式背景与噪点 ----- */
         .noise-bg {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 9998; opacity: 0.03;
+            pointer-events: none; z-index: 9998; opacity: 0.04;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            animation: noiseAnim 0.2s infinite linear;
         }
-        @keyframes noiseAnim { 0% { transform: translate(0, 0); } 10% { transform: translate(-1%, -1%); } 20% { transform: translate(1%, 1%); } 30% { transform: translate(-2%, -2%); } 40% { transform: translate(2%, 2%); } 100% { transform: translate(0, 0); } }
+        #canvas-network {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none; opacity: 0.6;
+        }
 
-        /* ----- 页面主体 ----- */
+        /* ----- 2. 差值反色鼠标 (Lando 核心交互) ----- */
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none;
+            z-index: 9999; transform: translate(-50%, -50%);
+            mix-blend-mode: difference; /* 灵魂反色 */
+        }
+        .cursor-dot { width: 8px; height: 8px; background-color: #FFF; }
+        .cursor-outline { 
+            width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.5); 
+            transition: width 0.3s cubic-bezier(0.19, 1, 0.22, 1), height 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .cursor-outline.hover-state { width: 90px; height: 90px; background-color: #FFF; border-color: transparent; }
+        /* 移动端隐藏自定义鼠标 */
+        @media (max-width: 768px) { .cursor-dot, .cursor-outline { display: none !important; } body { cursor: auto; } }
+
+        /* ----- 3. 预加载器 ----- */
+        .loader {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--text-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: var(--pure-white); font-family: 'JetBrains Mono', monospace;
+        }
+        .loader-percent { font-size: clamp(60px, 15vw, 200px); font-weight: 800; line-height: 1; }
+
+        /* ----- 4. 页面主体结构 & 自适应布局 ----- */
         .main-wrapper {
             position: relative; z-index: 2; background-color: transparent;
-            margin-bottom: 100vh; 
+            margin-bottom: 100vh; box-shadow: 0 20px 100px rgba(0,0,0,0.9); 
         }
 
-        /* 抽象装饰元素（打破单调） */
-        .abstract-orb {
-            position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.5; pointer-events: none;
-        }
-
+        /* Hero */
         .section-hero {
             position: sticky; top: 0; height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: var(--text-light); text-align: center;
+            color: var(--text-light); will-change: transform, filter; overflow: hidden; text-align: center; padding: 0 5vw;
         }
-        .hero-title { font-size: clamp(60px, 15vw, 250px); font-weight: 800; line-height: 0.8; letter-spacing: -0.06em; }
-        .hero-subtitle { font-family: 'JetBrains Mono', monospace; font-size: clamp(12px, 1.5vw, 18px); color: #888; margin-top: 30px; max-width: 600px; line-height: 1.5; padding: 0 20px; }
+        .hero-title { font-size: clamp(80px, 20vw, 300px); font-weight: 800; line-height: 0.8; letter-spacing: -0.06em; }
+        .hero-subtitle { font-family: 'JetBrains Mono', monospace; font-size: clamp(12px, 1.5vw, 18px); color: #888; margin-top: 30px; max-width: 600px; line-height: 1.6; }
 
+        /* Nodes Grid */
         .section-nodes {
-            position: relative; background-color: var(--bg-light); border-radius: 40px 40px 0 0;
-            padding: 100px 5vw; color: var(--text-dark);
+            position: relative; background-color: var(--bg-light); border-radius: 60px 60px 0 0;
+            padding: 150px 5vw; color: var(--text-dark);
         }
-        .section-heading { font-size: clamp(40px, 8vw, 120px); font-weight: 500; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: 60px;}
+        .section-heading { font-size: clamp(40px, 8vw, 120px); font-weight: 500; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: 80px;}
+        .nodes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; perspective: 1000px; }
         
-        .nodes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        /* 3D 卡片基座 */
+        .card-3d-wrap { transform-style: preserve-3d; }
         .node-card { 
-            background: var(--pure-white); border-radius: 30px; padding: 40px; 
-            display: flex; flex-direction: column; justify-content: space-between; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.03); position: relative; overflow: hidden;
+            background: var(--pure-white); border-radius: 40px; padding: 50px; display: flex; flex-direction: column; justify-content: space-between; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.04); min-height: 380px;
+            transition: transform 0.1s; transform-style: preserve-3d;
         }
-        /* 卡片内部的几何装饰 */
-        .node-card::before {
-            content: ''; position: absolute; right: -20px; top: -20px; width: 100px; height: 100px;
-            background: linear-gradient(135deg, rgba(21,184,90,0.1) 0%, transparent 100%);
-            border-radius: 50%;
-        }
+        /* 卡片内部元素悬浮出高度 */
+        .node-card > div { transform: translateZ(30px); }
 
-        .section-timeline { position: relative; background-color: var(--bg-light); overflow: hidden; }
-        /* 桌面端横向容器 */
-        .h-scroll-container { display: flex; flex-wrap: nowrap; align-items: center; padding-left: 5vw; height: 100vh; width: 400vw; }
-        .timeline-panel { width: 80vw; flex-shrink: 0; margin-right: 15vw; position: relative; }
-        .timeline-year { font-size: clamp(80px, 15vw, 200px); font-weight: 800; color: transparent; -webkit-text-stroke: 2px rgba(0,0,0,0.05); line-height: 1; }
-        .timeline-content { font-size: clamp(20px, 3vw, 40px); font-weight: 500; max-width: 800px; margin-top: -20px; line-height: 1.3;}
+        /* Timeline (横向卷轴) */
+        .section-timeline { position: relative; background-color: var(--bg-light); height: 100vh; overflow: hidden; }
+        .h-scroll-container { width: 400vw; height: 100%; display: flex; flex-wrap: nowrap; align-items: center; padding-left: 5vw; }
+        .timeline-panel { width: 80vw; flex-shrink: 0; margin-right: 15vw; }
+        .timeline-year { font-size: clamp(80px, 18vw, 250px); font-weight: 800; color: transparent; -webkit-text-stroke: 2px rgba(0,0,0,0.08); line-height: 1; }
+        .timeline-content { font-size: clamp(20px, 4vw, 42px); font-weight: 500; max-width: 800px; margin-top: -20px; line-height: 1.3;}
 
-        .section-projects { position: relative; background-color: var(--text-dark); color: var(--text-light); display: flex; padding: 100px 5vw; }
+        /* Projects (粘性堆叠) */
+        .section-projects { position: relative; background-color: var(--text-dark); color: var(--text-light); display: flex; padding: 150px 5vw; }
         .sticky-left { width: 40%; height: 100vh; position: sticky; top: 0; display: flex; align-items: center; }
-        .scroll-right { width: 60%; display: flex; flex-direction: column; gap: 30vh; padding: 20vh 0; }
+        .scroll-right { width: 60%; display: flex; flex-direction: column; gap: 40vh; padding: 25vh 0; perspective: 1000px;}
         .project-card { 
-            background: #151515; border-radius: 30px; padding: 50px; min-height: 350px; 
+            background: #151515; border-radius: 40px; padding: 60px; min-height: 450px; 
             border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: space-between;
-            position: relative; overflow: hidden;
+            transform-style: preserve-3d;
         }
-        /* 项目卡片的光晕装饰 */
-        .project-card .abstract-orb { width: 200px; height: 200px; background: var(--accent); bottom: -50px; right: -50px; }
+        .project-card > div { transform: translateZ(40px); }
 
+        /* Footer */
         .section-footer {
             position: fixed; bottom: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; 
-            background-color: var(--text-dark); color: var(--text-light);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            background-color: var(--accent); color: var(--text-dark);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 5vw;
         }
-        .footer-link { font-size: clamp(40px, 8vw, 150px); font-weight: 800; text-decoration: none; color: var(--pure-white); letter-spacing: -0.05em; transition: color 0.3s; }
-        .footer-link:hover { color: var(--accent); }
+        .magnetic-wrap { display: inline-block; padding: 20px; }
+        .footer-link { 
+            font-size: clamp(40px, 10vw, 150px); font-weight: 800; text-decoration: none; 
+            color: var(--bg-dark); letter-spacing: -0.05em; display: inline-block;
+        }
 
-        /* ==========================================
-           三端自适应 (Responsive Media Queries) 
-           ========================================== */
+        /* ----- 5. 三端自适应媒体查询 (Media Queries) ----- */
         @media (max-width: 1024px) {
-            .section-projects { flex-direction: column; padding: 80px 5vw; height: auto; }
-            .sticky-left { width: 100%; height: auto; position: relative; margin-bottom: 60px; }
-            .scroll-right { width: 100%; padding: 0; gap: 40px; }
-            .project-card { min-height: auto; }
+            .section-nodes { padding: 100px 5vw; border-radius: 40px 40px 0 0;}
+            .section-projects { flex-direction: column; padding: 100px 5vw; }
+            .sticky-left { width: 100%; height: auto; position: relative; padding-bottom: 80px; }
+            .scroll-right { width: 100%; gap: 50px; padding: 0; }
         }
 
         @media (max-width: 768px) {
-            .main-wrapper { margin-bottom: 0; } /* 手机端取消 Footer 视差，改为正常滚动以防卡顿 */
-            .section-footer { position: relative; height: 60vh; }
+            .section-nodes { padding: 60px 5vw; border-radius: 30px 30px 0 0;}
+            .nodes-grid { grid-template-columns: 1fr; gap: 20px;}
+            .node-card { padding: 30px; min-height: auto; }
             
-            .section-nodes { border-radius: 30px 30px 0 0; padding: 80px 5vw; }
-            .nodes-grid { grid-template-columns: 1fr; }
-            
-            /* 手机端取消横向滚动，改为垂直流式排版 */
+            /* 手机端取消横向滚动，改为优雅的垂直信息流 */
             .section-timeline { height: auto; padding: 80px 5vw; }
-            .h-scroll-container { width: 100%; height: auto; flex-direction: column; padding-left: 0; }
+            .h-scroll-container { width: 100%; flex-direction: column; padding-left: 0; }
             .timeline-panel { width: 100%; margin-right: 0; margin-bottom: 60px; }
-            .timeline-year { -webkit-text-stroke: 1px rgba(0,0,0,0.1); }
+            .timeline-year { -webkit-text-stroke: 1px rgba(0,0,0,0.1); margin-bottom: 20px;}
+            .timeline-content { margin-top: 0; }
+
+            .project-card { padding: 30px; min-height: auto; }
         }
     </style>
 </head>
 <body>
 
     <div class="noise-bg"></div>
-    <canvas id="interactive-canvas"></canvas>
+    <canvas id="canvas-network"></canvas>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <div class="loader">
+        <div class="loader-percent" id="loaderNum">00</div>
+        <div style="font-size: 14px; margin-top: 20px; letter-spacing: 2px;">SYNCING GLOBAL NODES_</div>
+    </div>
 
     <div class="main-wrapper">
         <section class="section-hero">
-            <div class="abstract-orb" style="width: 40vw; height: 40vw; background: rgba(21,184,90,0.15); top: 20%; left: 30%;"></div>
-            <div class="tag scramble" data-text="NIE KAIXIANG // NKX">NIE KAIXIANG // NKX</div>
+            <div class="tag">NIE KAIXIANG // NKX</div>
             <h1 class="hero-title scramble" data-text="QQ.SG">QQ.SG</h1>
-            <p class="hero-subtitle scramble" data-text="A highly customized personal signal node. Routing global traffic, managing PVE environments, and hosting the NIE ecosystem.">
-                A highly customized personal signal node.<br>
-                Routing global traffic, managing PVE environments, and hosting the NIE ecosystem.
+            <p class="hero-subtitle">
+                A premium interactive signal node.<br>
+                Routing global traffic, managing PVE/KVM environments, and hosting the NIE ecosystem since 2020.
             </p>
         </section>
 
         <section class="section-nodes">
             <h2 class="section-heading scramble" data-text="INFRASTRUCTURE">INFRASTRUCTURE<br>& NODES.</h2>
             <div class="nodes-grid">
-                <div class="node-card gsap-up">
-                    <div>
-                        <span class="tag">SG Core Identity</span>
-                        <h3 style="font-size: 32px; margin-top: 10px;">Singapore</h3>
-                        <p style="color: #666; margin-top: 10px; font-size: 14px;">The primary front door handling main DNS resolution and BGP sessions.</p>
+                <div class="card-3d-wrap hover-target">
+                    <div class="node-card tilt-card">
+                        <div>
+                            <span class="tag">SG Core Identity</span>
+                            <h3 style="font-size: 32px; margin-top: 15px;">Singapore</h3>
+                            <p style="color: #666; margin-top: 10px;">The primary front door. Handling main DNS resolution, personal routes, and global BGP sessions.</p>
+                        </div>
+                        <div><span class="tag-dark">WireGuard</span><span class="tag-dark">IPv6 Static</span></div>
                     </div>
-                    <div><span class="tag-dark">WireGuard</span><span class="tag-dark">IPv6</span></div>
                 </div>
-                <div class="node-card gsap-up">
-                    <div>
-                        <span class="tag">HK Edge Transit</span>
-                        <h3 style="font-size: 32px; margin-top: 10px;">Hong Kong</h3>
-                        <p style="color: #666; margin-top: 10px; font-size: 14px;">Optimized transit proxy layer leveraging Cloudflare Pages and Tunnels.</p>
+                <div class="card-3d-wrap hover-target">
+                    <div class="node-card tilt-card">
+                        <div>
+                            <span class="tag">HK Edge Transit</span>
+                            <h3 style="font-size: 32px; margin-top: 15px;">Hong Kong</h3>
+                            <p style="color: #666; margin-top: 10px;">Optimized transit proxy layer leveraging Cloudflare Pages, Workers, and secure Tunnels.</p>
+                        </div>
+                        <div><span class="tag-dark">CF Tunnels</span><span class="tag-dark">Reverse Proxy</span></div>
                     </div>
-                    <div><span class="tag-dark">CF Tunnels</span></div>
                 </div>
-                <div class="node-card gsap-up">
-                    <div>
-                        <span class="tag">Phoenix Compute</span>
-                        <h3 style="font-size: 32px; margin-top: 10px;">Oracle ARM</h3>
-                        <p style="color: #666; margin-top: 10px; font-size: 14px;">Captured after 178 days of bot attempts. Handling heavy container workloads.</p>
+                <div class="card-3d-wrap hover-target">
+                    <div class="node-card tilt-card">
+                        <div>
+                            <span class="tag">Phoenix Compute</span>
+                            <h3 style="font-size: 32px; margin-top: 15px;">Oracle ARM</h3>
+                            <p style="color: #666; margin-top: 10px;">Captured on Apr 10, 2026, after 178 days of automated attempts. Handling heavy containerized workloads.</p>
+                        </div>
+                        <div><span class="tag-dark">Docker</span><span class="tag-dark">Ubuntu Runtime</span></div>
                     </div>
-                    <div><span class="tag-dark">Docker</span><span class="tag-dark">Ubuntu</span></div>
                 </div>
             </div>
         </section>
 
-        <section class="section-timeline">
+        <section class="section-timeline" id="timeline-sec">
             <div class="h-scroll-container">
-                <div class="timeline-panel gsap-fade">
+                <div class="timeline-panel">
                     <div class="timeline-year">2020</div>
-                    <div class="timeline-content">Started the IDC journey with a single Dell R620 server. Self-taught Linux administration.</div>
-                    <div class="tag" style="margin-top: 20px;">HARDWARE GENESIS</div>
+                    <div class="timeline-content">Started the IDC journey at age 14 with a single Dell R620 server. Self-taught Linux administration.</div>
+                    <div class="tag" style="margin-top: 20px;">GENESIS // HARDWARE</div>
                 </div>
-                <div class="timeline-panel gsap-fade">
+                <div class="timeline-panel">
                     <div class="timeline-year">2023</div>
-                    <div class="timeline-content">Scaled the infrastructure. Successfully managed operations for over 500+ customers.</div>
+                    <div class="timeline-content">Scaled the infrastructure with Supermicro hardware. Managed operations for over 500+ customers.</div>
                     <div class="tag" style="margin-top: 20px;">IDC EXPANSION</div>
                 </div>
-                <div class="timeline-panel gsap-fade">
+                <div class="timeline-panel">
                     <div class="timeline-year">2026</div>
-                    <div class="timeline-content">Admitted to Fujian Chuanzheng Communications College. Planning Fujian Suchen Internet Co., Ltd.</div>
+                    <div class="timeline-content">Vocational graduation. Admitted to Fujian Chuanzheng Communications College. Planning Fujian Suchen Internet.</div>
                     <div class="tag" style="margin-top: 20px;">ACADEMIA & BUSINESS</div>
                 </div>
-                <div class="timeline-panel gsap-fade">
+                <div class="timeline-panel">
                     <div class="timeline-year">2031</div>
-                    <div class="timeline-content">Complete exams by 2029, aiming for graduate school admission and deep network engineering.</div>
+                    <div class="timeline-content">Roadmap: Complete Junior-to-Bachelor exams in 2029, aiming for graduate school and deep network engineering.</div>
                     <div class="tag" style="margin-top: 20px;">FUTURE TARGETS</div>
                 </div>
             </div>
@@ -214,23 +242,27 @@
 
         <section class="section-projects">
             <div class="sticky-left">
-                <h2 style="font-size: clamp(40px, 6vw, 100px); font-weight: 500; line-height: 0.9;" class="scramble" data-text="CUSTOM SYSTEMS.">CUSTOM<br>SYSTEMS.</h2>
+                <h2 style="font-size: clamp(50px, 6vw, 120px); font-weight: 500; line-height: 0.9;" class="scramble" data-text="CUSTOM SYSTEMS.">CUSTOM<br>SYSTEMS.</h2>
             </div>
             <div class="scroll-right">
-                <div class="project-card gsap-up">
-                    <div class="abstract-orb"></div>
-                    <div style="position: relative; z-index: 1;">
-                        <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">nie.net</span>
-                        <h3 style="font-size: clamp(30px, 4vw, 60px); margin: 20px 0;">NIE Blog System</h3>
-                        <p style="font-size: 16px; color: #888; line-height: 1.5;">A completely custom static blog built with Python scripts. Black-and-white geek aesthetic, explicitly rejecting AI styles.</p>
+                <div class="card-3d-wrap hover-target">
+                    <div class="project-card tilt-card">
+                        <div>
+                            <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">nie.net</span>
+                            <h3 style="font-size: clamp(32px, 4vw, 60px); margin: 20px 0;">NIE Blog System</h3>
+                            <p style="font-size: 18px; color: #888; line-height: 1.5;">A purely custom-built static blog system powered by Python build scripts. Absolute minimalist geek aesthetic.</p>
+                        </div>
+                        <div style="font-family: 'JetBrains Mono'; color: var(--accent); margin-top: 30px;">// BUILD.PY DEPLOYED</div>
                     </div>
                 </div>
-                <div class="project-card gsap-up">
-                    <div class="abstract-orb" style="background: #333;"></div>
-                    <div style="position: relative; z-index: 1;">
-                        <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">status.nkx.moe</span>
-                        <h3 style="font-size: clamp(30px, 4vw, 60px); margin: 20px 0;">NIE-NodeGet</h3>
-                        <p style="font-size: 16px; color: #888; line-height: 1.5;">Custom monitoring frontend tracking latency and resources across distributed KVM environments.</p>
+                <div class="card-3d-wrap hover-target">
+                    <div class="project-card tilt-card">
+                        <div>
+                            <span class="tag" style="color: #fff; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">status.nkx.moe</span>
+                            <h3 style="font-size: clamp(32px, 4vw, 60px); margin: 20px 0;">NIE-NodeGet</h3>
+                            <p style="font-size: 18px; color: #888; line-height: 1.5;">Custom monitoring frontend tracking real-time latency and resources across distributed PVE/KVM environments.</p>
+                        </div>
+                        <div style="font-family: 'JetBrains Mono'; color: var(--accent); margin-top: 30px;">// METRICS ONLINE</div>
                     </div>
                 </div>
             </div>
@@ -238,108 +270,152 @@
     </div>
 
     <section class="section-footer">
-        <span class="tag" style="color: var(--accent); margin-bottom: 20px;">ALL ROUTES OPEN</span>
-        <a href="mailto:ME@QQ.SG" class="footer-link">ME@QQ.SG</a>
-        <p style="margin-top: 30px; font-family: 'JetBrains Mono'; color: #666; font-size: 12px;">© 2026 Nie Kaixiang (NKX)</p>
+        <span class="tag" style="color: var(--bg-dark); margin-bottom: 30px;">ALL ROUTES OPEN</span>
+        <div class="magnetic-wrap hover-target">
+            <a href="mailto:ME@QQ.SG" class="footer-link magnetic-btn">ME@QQ.SG</a>
+        </div>
+        <p style="margin-top: 40px; font-family: 'JetBrains Mono'; color: rgba(0,0,0,0.5); font-size: 14px;">
+            © 2026 Nie Kaixiang (NKX) <br>
+            福建省苏晨互联有限公司 (Planning phase)
+        </p>
     </section>
 
     <script>
-        // ==========================================
-        // 1. 互动 Canvas 流体拖尾 (Interactive Mouse Trail)
-        // ==========================================
-        const canvas = document.getElementById('interactive-canvas');
+        // --- 1. 响应式鼠标 & 磁性特效 ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        let mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
+        let outline = { x: window.innerWidth/2, y: window.innerHeight/2 };
+
+        if(window.innerWidth > 768) {
+            const setDotX = gsap.quickSetter(cursorDot, "x", "px");
+            const setDotY = gsap.quickSetter(cursorDot, "y", "px");
+            const setOutX = gsap.quickSetter(cursorOutline, "x", "px");
+            const setOutY = gsap.quickSetter(cursorOutline, "y", "px");
+
+            window.addEventListener("mousemove", e => {
+                mouse.x = e.x; mouse.y = e.y;
+                setDotX(mouse.x); setDotY(mouse.y);
+            });
+
+            gsap.ticker.add(() => {
+                outline.x += (mouse.x - outline.x) * 0.15;
+                outline.y += (mouse.y - outline.y) * 0.15;
+                setOutX(outline.x); setOutY(outline.y);
+            });
+
+            document.querySelectorAll('.hover-target').forEach(el => {
+                el.addEventListener('mouseenter', () => cursorOutline.classList.add('hover-state'));
+                el.addEventListener('mouseleave', () => cursorOutline.classList.remove('hover-state'));
+            });
+
+            // 磁性按钮
+            const magnetBtn = document.querySelector('.magnetic-btn');
+            const magnetWrap = document.querySelector('.magnetic-wrap');
+            magnetWrap.addEventListener('mousemove', (e) => {
+                const rect = magnetWrap.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                gsap.to(magnetBtn, { x: x * 0.4, y: y * 0.4, duration: 0.4, ease: "power2.out" });
+            });
+            magnetWrap.addEventListener('mouseleave', () => {
+                gsap.to(magnetBtn, { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1, 0.3)" });
+            });
+
+            // --- 3D 悬浮倾斜 (Lando Norris 卡片物理感) ---
+            document.querySelectorAll('.card-3d-wrap').forEach(wrap => {
+                const card = wrap.querySelector('.tilt-card');
+                wrap.addEventListener('mousemove', e => {
+                    const rect = wrap.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -10; // 最大倾斜 10 度
+                    const rotateY = ((x - centerX) / centerX) * 10;
+                    
+                    gsap.to(card, {
+                        rotateX: rotateX, rotateY: rotateY, 
+                        transformPerspective: 1000, ease: "power1.out", duration: 0.3
+                    });
+                });
+                wrap.addEventListener('mouseleave', () => {
+                    gsap.to(card, { rotateX: 0, rotateY: 0, ease: "elastic.out(1, 0.3)", duration: 0.8 });
+                });
+            });
+        }
+
+        // --- 2. 交互式连线背景 (Canvas Particle Web) ---
+        const canvas = document.getElementById('canvas-network');
         const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
-        let mouse = { x: -1000, y: -1000 };
-
-        function resizeCanvas() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-            // 每次滑动添加粒子
-            for (let i = 0; i < 3; i++) {
-                particles.push(new Particle(mouse.x, mouse.y));
-            }
-        });
-
-        // 触屏支持
-        window.addEventListener('touchmove', (e) => {
-            mouse.x = e.touches[0].clientX;
-            mouse.y = e.touches[0].clientY;
-            for (let i = 0; i < 2; i++) { particles.push(new Particle(mouse.x, mouse.y)); }
-        });
-
-        class Particle {
-            constructor(x, y) {
-                this.x = x + (Math.random() - 0.5) * 20;
-                this.y = y + (Math.random() - 0.5) * 20;
-                this.size = Math.random() * 4 + 1;
-                this.speedX = (Math.random() - 0.5) * 2;
-                this.speedY = (Math.random() - 0.5) * 2 - 0.5; // 轻微向上浮动
-                this.life = 1; // 寿命衰减
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.life -= 0.02; // 消失速度
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                // 极客绿发光效果
-                ctx.fillStyle = `rgba(21, 184, 90, ${this.life * 0.5})`;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = 'rgba(21, 184, 90, 0.8)';
-                ctx.fill();
+        let width, height, particles = [];
+        
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            const count = window.innerWidth > 768 ? 80 : 30; // 手机上减少粒子
+            for(let i=0; i<count; i++) {
+                particles.push({
+                    x: Math.random() * width, y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5
+                });
             }
         }
+        initCanvas();
+        window.addEventListener('resize', initCanvas);
 
-        function animateCanvas() {
+        function drawCanvas() {
             ctx.clearRect(0, 0, width, height);
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].life <= 0) {
-                    particles.splice(i, 1);
-                    i--;
-                }
-            }
-            requestAnimationFrame(animateCanvas);
-        }
-        animateCanvas();
+            ctx.fillStyle = 'rgba(21, 184, 90, 0.5)';
+            ctx.strokeStyle = 'rgba(21, 184, 90, 0.15)';
+            
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > width) p.vx *= -1;
+                if(p.y < 0 || p.y > height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+                ctx.fill();
 
-        // ==========================================
-        // 2. 解码文本特效
-        // ==========================================
+                // 节点之间的连线
+                particles.forEach(p2 => {
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if(dist < 100) {
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                });
+
+                // 鼠标靠近时的吸附连线
+                if(window.innerWidth > 768) {
+                    const mouseDist = Math.hypot(p.x - mouse.x, p.y - mouse.y);
+                    if(mouseDist < 150) {
+                        ctx.strokeStyle = `rgba(21, 184, 90, ${1 - mouseDist/150})`;
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                        ctx.strokeStyle = 'rgba(21, 184, 90, 0.15)'; // 恢复
+                    }
+                }
+            });
+            requestAnimationFrame(drawCanvas);
+        }
+        drawCanvas();
+
+        // --- 3. 解码文本特效 ---
         class TextScramble {
-            constructor(el) {
-                this.el = el;
-                this.chars = '!<>-_\\/[]{}—=+*^?#________';
-                this.update = this.update.bind(this);
-            }
+            constructor(el) { this.el = el; this.chars = '!<>-_\\/[]{}—=+*^?#________'; this.update = this.update.bind(this); }
             setText(newText) {
                 const oldText = this.el.innerText;
                 const length = Math.max(oldText.length, newText.length);
                 const promise = new Promise((resolve) => this.resolve = resolve);
                 this.queue = [];
                 for (let i = 0; i < length; i++) {
-                    const from = oldText[i] || '';
-                    const to = newText[i] || '';
-                    const start = Math.floor(Math.random() * 40);
-                    const end = start + Math.floor(Math.random() * 40);
+                    const from = oldText[i] || ''; const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40); const end = start + Math.floor(Math.random() * 40);
                     this.queue.push({ from, to, start, end });
                 }
-                cancelAnimationFrame(this.frameRequest);
-                this.frame = 0; this.update(); return promise;
+                cancelAnimationFrame(this.frameRequest); this.frame = 0; this.update();
+                return promise;
             }
             update() {
                 let output = ''; let complete = 0;
@@ -358,9 +434,7 @@
             randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
         }
 
-        // ==========================================
-        // 3. GSAP 滚动引擎与三端自适应 (MatchMedia)
-        // ==========================================
+        // --- 4. 预加载与 GSAP 核心逻辑 (包含响应式 MatchMedia) ---
         const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
         function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
         requestAnimationFrame(raf);
@@ -370,71 +444,64 @@
         gsap.ticker.add((time) => { lenis.raf(time * 1000); });
         gsap.ticker.lagSmoothing(0, 0);
 
-        // 页面加载时的文字解码
-        window.onload = () => {
-            document.querySelectorAll('.section-hero .scramble').forEach(el => {
-                const fx = new TextScramble(el);
-                fx.setText(el.getAttribute('data-text'));
-            });
-        };
-
-        // 滚动触发解码
-        document.querySelectorAll('.scramble:not(.section-hero .scramble)').forEach(el => {
-            const fx = new TextScramble(el);
-            ScrollTrigger.create({
-                trigger: el, start: "top 85%",
-                onEnter: () => fx.setText(el.getAttribute('data-text'))
-            });
+        const tlLoader = gsap.timeline();
+        let counter = { value: 0 };
+        tlLoader.to(counter, {
+            value: 100, duration: 1.5, ease: "power4.inOut",
+            onUpdate: () => document.getElementById("loaderNum").innerText = Math.round(counter.value).toString().padStart(2, '0')
+        })
+        .to(".loader", {
+            yPercent: -100, duration: 1, ease: "power4.inOut",
+            onComplete: () => {
+                const fx = new TextScramble(document.querySelector('.section-hero .scramble'));
+                fx.setText('QQ.SG');
+            }
         });
 
-        // 响应式滚动编排
+        // 往下滚遇到标题时触发解码
+        document.querySelectorAll('.section-nodes .scramble, .section-projects .scramble').forEach(el => {
+            const fx = new TextScramble(el);
+            ScrollTrigger.create({ trigger: el, start: "top 80%", onEnter: () => fx.setText(el.getAttribute('data-text')) });
+        });
+
+        // 背景压暗
+        gsap.to('.section-hero', {
+            scrollTrigger: { trigger: '.main-wrapper', start: "top top", end: "100vh top", scrub: true },
+            scale: 0.8, opacity: 0.2, filter: "blur(10px)", ease: "none"
+        });
+
+        // --- 5. 三端自适应滚动逻辑 (核心机制) ---
         let mm = gsap.matchMedia();
 
         mm.add("(min-width: 769px)", () => {
-            // 桌面端 & 平板端：复杂转场
-            gsap.to('.section-hero', {
-                scrollTrigger: { trigger: '.main-wrapper', start: "top top", end: "100vh top", scrub: true },
-                scale: 0.85, opacity: 0.2, filter: "blur(10px)", ease: "none"
-            });
-
+            // 桌面端 & 平板端：保留高级的横向滚动
             const hContainer = document.querySelector('.h-scroll-container');
             gsap.to(hContainer, {
                 x: () => -(hContainer.scrollWidth - window.innerWidth),
                 ease: "none",
                 scrollTrigger: {
-                    trigger: ".section-timeline", pin: true, scrub: 1, 
-                    end: () => "+=" + hContainer.scrollWidth 
+                    trigger: "#timeline-sec",
+                    pin: true, scrub: 1, end: () => "+=" + hContainer.scrollWidth 
                 }
             });
 
+            // 桌面端粘性卡片视差
             gsap.utils.toArray('.project-card').forEach(card => {
                 gsap.from(card, {
-                    scrollTrigger: { trigger: card, start: "top 90%", end: "top 30%", scrub: true },
-                    y: 100, opacity: 0.3, scale: 0.95
+                    scrollTrigger: { trigger: card, start: "top 95%", end: "top 30%", scrub: true },
+                    y: 100, opacity: 0.5, scale: 0.95, transformOrigin: "center bottom"
                 });
             });
         });
 
         mm.add("(max-width: 768px)", () => {
-            // 手机端：取消强劫持，改为正常的平滑上浮，防止滑动卡死
-            gsap.to('.section-hero', {
-                scrollTrigger: { trigger: '.main-wrapper', start: "top top", end: "50vh top", scrub: true },
-                opacity: 0, ease: "none"
-            });
-            
-            gsap.utils.toArray('.timeline-panel').forEach(panel => {
-                gsap.from(panel, {
-                    scrollTrigger: { trigger: panel, start: "top 85%" },
+            // 手机端：取消横向锁定，恢复顺滑的垂直自然滚动
+            // 卡片使用简单的淡入上浮动画即可，保证性能
+            gsap.utils.toArray('.timeline-panel, .project-card, .node-card').forEach(el => {
+                gsap.from(el, {
+                    scrollTrigger: { trigger: el, start: "top 85%" },
                     y: 50, opacity: 0, duration: 0.8, ease: "power2.out"
                 });
-            });
-        });
-
-        // 通用的卡片上浮动画 (所有端生效)
-        gsap.utils.toArray('.gsap-up').forEach(el => {
-            gsap.from(el, {
-                scrollTrigger: { trigger: el, start: "top 85%" },
-                y: 60, opacity: 0, duration: 1, ease: "power3.out"
             });
         });
     </script>
