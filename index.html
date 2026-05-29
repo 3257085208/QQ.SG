@@ -1,379 +1,546 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>QQ.SG | NKX Infrastructure</title>
-  <script src="https://cdn.staticfile.net/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdn.staticfile.net/gsap/3.12.2/ScrollTrigger.min.js"></script>
-  <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global Network Globe</title>
 
   <style>
-    :root {
-      --bg: #ffffff;
-      --text: #050505;
-      --accent: #15b85a;
-    }
-    
-    body, html {
-      margin: 0; padding: 0; background: var(--bg); color: var(--text);
-      font-family: 'Space Grotesk', sans-serif; overflow-x: hidden;
-      cursor: crosshair; /* 极客风十字光标 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /* =========================================
-       1. 巨型 QQ.SG 与拖影交互区
-       ========================================= */
-    #hero-container {
-      position: fixed; /* 牢牢钉在底层 */
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      display: flex; justify-content: center; align-items: center;
-      z-index: -1; 
-    }
-    
-    .giant-text {
-      font-size: clamp(80px, 22vw, 400px);
-      font-weight: 800; line-height: 0.8; letter-spacing: -0.06em;
-      color: var(--text); text-align: center;
-      user-select: none;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(32, 132, 255, 0.22), transparent 36%),
+        radial-gradient(circle at 20% 80%, rgba(0, 180, 255, 0.12), transparent 32%),
+        #020817;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #fff;
     }
 
-    /* 拖影画布层：盖在文字上，利用差值反色 */
-    #trail-canvas {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; /* 让鼠标穿透画布，不影响下方操作 */
-      mix-blend-mode: difference; /* 灵魂反色机制 */
+    #app {
+      position: fixed;
+      inset: 0;
+    }
+
+    .ui {
+      position: fixed;
+      left: 36px;
+      top: 34px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      color: rgba(150, 210, 255, 0.8);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: clamp(34px, 5vw, 72px);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      font-weight: 760;
+      max-width: 620px;
+    }
+
+    .desc {
+      margin-top: 18px;
+      max-width: 430px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(215, 235, 255, 0.72);
+    }
+
+    .panel {
+      position: fixed;
+      right: 32px;
+      bottom: 28px;
+      width: min(360px, calc(100vw - 48px));
+      padding: 18px 18px 16px;
+      border: 1px solid rgba(120, 200, 255, 0.22);
+      background: rgba(4, 16, 38, 0.48);
+      backdrop-filter: blur(18px);
+      border-radius: 22px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
       z-index: 10;
     }
 
-    /* =========================================
-       页面流动结构
-       ========================================= */
-    .content-wrapper {
-      margin-top: 100vh; /* 把内容推到首屏下面 */
-      background: var(--bg);
-      position: relative; z-index: 2;
+    .panel-title {
+      font-size: 13px;
+      color: rgba(160, 220, 255, 0.88);
+      margin-bottom: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    /* =========================================
-       2. 反向跑马灯 (Marquee)
-       ========================================= */
-    .marquee-section {
-      padding: 40px 0; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text);
-      background: var(--text); color: var(--bg); overflow: hidden;
+    .cities {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 14px;
+      font-size: 13px;
+      color: rgba(235, 248, 255, 0.78);
     }
-    .marquee-row {
-      display: flex; white-space: nowrap; width: max-content;
-      font-family: 'JetBrains Mono', monospace; font-size: clamp(24px, 5vw, 60px); font-weight: 700; text-transform: uppercase;
-    }
-    .marquee-row.left { animation: scrollLeft 20s linear infinite; }
-    .marquee-row.right { animation: scrollRight 25s linear infinite; margin-top: 10px; }
-    .marquee-row span { padding: 0 40px; }
-    
-    @keyframes scrollLeft { to { transform: translateX(-50%); } }
-    @keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-    /* =========================================
-       3. 无极滑动干货区 (监控 & 虚拟化)
-       ========================================= */
-    .data-section {
-      padding: 120px 5vw; border-bottom: 2px solid var(--text);
+    .city {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
     }
-    .section-title {
-      font-size: clamp(40px, 8vw, 120px); font-weight: 800; line-height: 1; letter-spacing: -0.04em; margin-bottom: 60px;
-    }
-    
-    /* 监控列表 */
-    .status-list { list-style: none; padding: 0; margin: 0; }
-    .status-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 30px 0; border-bottom: 1px solid rgba(0,0,0,0.1);
-      font-family: 'JetBrains Mono', monospace; font-size: clamp(14px, 2vw, 24px);
-    }
-    .status-item:hover { background: rgba(0,0,0,0.02); padding-left: 20px; transition: all 0.3s ease; }
-    .status-green { color: var(--accent); font-weight: bold; }
-    .status-amber { color: #f59e0b; font-weight: bold; }
 
-    /* 技能标签网格 */
-    .skills-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px; background: var(--text); border: 2px solid var(--text);
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #60c8ff;
+      box-shadow: 0 0 16px #3fbaff;
     }
-    .skill-card {
-      background: var(--bg); padding: 40px; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;
-    }
-    .skill-card h3 { margin: 0; font-size: 32px; font-weight: 700; }
-    .skill-card p { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #666; margin-top: 20px; }
 
-    /* =========================================
-       4. 滚动合并区 (Works - Scroll Merge)
-       ========================================= */
-    .merge-section {
-      height: 150vh; /* 留出足够的滚动空间来执行合并 */
-      background: var(--text); color: var(--bg); position: relative; overflow: hidden;
+    .hint {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      color: rgba(210, 235, 255, 0.5);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      z-index: 10;
+      pointer-events: none;
     }
-    .merge-sticky {
-      position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;
-    }
-    
-    .panels-container {
-      display: flex; width: 100vw; height: 60vh; justify-content: center; align-items: center; position: relative;
-    }
-    .panel {
-      width: 45vw; height: 100%; padding: 40px; border: 2px solid var(--bg); border-radius: 20px;
-      display: flex; flex-direction: column; justify-content: center; position: absolute; background: var(--text);
-    }
-    /* 初始状态：左面板在屏幕最左外侧，右面板在最右外侧 */
-    .panel.left { left: -50vw; }
-    .panel.right { right: -50vw; text-align: right; }
-    
-    .panel h3 { font-size: clamp(30px, 5vw, 60px); margin: 0; line-height: 1; }
-    .panel p { font-family: 'JetBrains Mono', monospace; color: #aaa; margin-top: 20px; }
 
-    /* =========================================
-       5. 最终联系锚点
-       ========================================= */
-    .contact-section {
-      height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-      background: var(--bg); color: var(--text); text-align: center; scroll-snap-align: start;
+    canvas {
+      display: block;
+      cursor: grab;
     }
-    .email-link {
-      font-size: clamp(40px, 10vw, 150px); font-weight: 800; color: var(--text); text-decoration: none;
-      border-bottom: 8px solid var(--text); transition: color 0.3s, border-color 0.3s;
-    }
-    .email-link:hover { color: var(--accent); border-color: var(--accent); }
-    .domains-list {
-      margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 16px;
-    }
-    .domains-list span { padding: 10px 20px; border: 1px solid var(--text); border-radius: 99px; }
 
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    @media (max-width: 760px) {
+      .ui {
+        left: 22px;
+        top: 26px;
+      }
+
+      .desc {
+        font-size: 13px;
+        max-width: 310px;
+      }
+
+      .panel {
+        left: 16px;
+        right: 16px;
+        bottom: 18px;
+        width: auto;
+        border-radius: 18px;
+      }
+
+      .cities {
+        grid-template-columns: repeat(2, 1fr);
+        font-size: 12px;
+      }
+
+      .hint {
+        display: none;
+      }
+    }
   </style>
 </head>
+
 <body>
+  <div id="app"></div>
 
-  <div id="hero-container">
-    <div class="giant-text">QQ.SG</div>
-    <canvas id="trail-canvas"></canvas>
-  </div>
-
-  <div class="content-wrapper">
-    
-    <div class="marquee-section">
-      <div class="marquee-row left">
-        <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
-        <span>GLOBAL ROUTING</span><span>//</span><span>BGP SESSIONS</span><span>//</span><span>AS NETWORK</span><span>//</span><span>IDENTITY NODE</span><span>//</span>
-      </div>
-      <div class="marquee-row right">
-        <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
-        <span>PROXMOX VE</span><span>**</span><span>DOCKER CONTAINERS</span><span>**</span><span>KVM INFRA</span><span>**</span><span>EDGE TUNNELS</span><span>**</span>
-      </div>
+  <div class="ui">
+    <div class="eyebrow">Global Infrastructure Map</div>
+    <h1>Connected<br />Across Regions</h1>
+    <div class="desc">
+      Hong Kong, Los Angeles, San Jose, Phoenix, Frankfurt, Tokyo, Italy,
+      Singapore and Guangzhou are linked through animated network routes.
     </div>
-
-    <section class="data-section">
-      <h2 class="section-title">STATUS<br>PROBES.</h2>
-      <ul class="status-list">
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">01</span> SG Core Identity (WireGuard)</div>
-          <div class="status-green">ACTIVE / 12MS</div>
-        </li>
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">02</span> HK Edge Transit (CF Tunnels)</div>
-          <div class="status-green">ACTIVE / 34MS</div>
-        </li>
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">03</span> Oracle Phoenix ARM Container</div>
-          <div class="status-green">ACTIVE / 168MS</div>
-        </li>
-        <li class="status-item">
-          <div><span style="color:#aaa; margin-right: 20px;">04</span> Mainland Backup Node</div>
-          <div class="status-amber">LATENCY / 142MS</div>
-        </li>
-      </ul>
-    </section>
-
-    <section class="data-section" style="background: var(--bg);">
-      <h2 class="section-title">INFRA<br>STACK.</h2>
-      <div class="skills-grid">
-        <div class="skill-card">
-          <h3>Proxmox VE</h3>
-          <p>Over 6 years of experience managing virtualized environments, scaling from a single Dell R620 to cluster deployments.</p>
-        </div>
-        <div class="skill-card">
-          <h3>Network Routing</h3>
-          <p>Proficient in IPv6 static routing, BGP session establishment, and P2P mesh networks via WireGuard.</p>
-        </div>
-        <div class="skill-card">
-          <h3>Container Ops</h3>
-          <p>Deep expertise in Docker, LXC, and orchestrating microservices on Debian and Alpine Linux systems.</p>
-        </div>
-        <div class="skill-card">
-          <h3>Edge Delivery</h3>
-          <p>Leveraging Cloudflare Pages, Workers, and Zero Trust ecosystems for secure, serverless frontend delivery.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="merge-section" id="works-section">
-      <div class="merge-sticky">
-        <h2 style="font-size: clamp(40px, 8vw, 100px); margin: 0 0 60px 0; line-height: 1;">CUSTOM SYSTEMS.</h2>
-        <div class="panels-container">
-          <div class="panel left">
-            <h3>NIE-NodeGet</h3>
-            <p>// MONITORING UI<br><br>A highly customized probe frontend tracking real-time latency and resources across distributed PVE/KVM environments. Designed with strict monochromatic precision.</p>
-          </div>
-          <div class="panel right">
-            <h3>NIE Blog System</h3>
-            <p>// SSG ARCHITECTURE<br><br>A purely custom-built static generation engine powered by automated Python build scripts. Rejecting high-saturation generic templates for absolute geek minimalism.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="contact-section">
-      <a href="mailto:ME@QQ.SG" class="email-link">ME@QQ.SG</a>
-      <div class="domains-list">
-        <span>status.nkx.moe</span>
-        <span>niekaixiang.com</span>
-        <span>nie.net</span>
-      </div>
-      <p style="font-family: 'JetBrains Mono', monospace; color: #888; margin-top: 80px; font-size: 14px;">
-        © NKX // IDENTITY ESTABLISHED.
-      </p>
-    </section>
-
   </div>
 
-  <script>
-    // ==========================================
-    // 1. 拖影交互引擎 (Canvas Trail Effect)
-    // ==========================================
-    const canvas = document.getElementById('trail-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
+  <div class="panel">
+    <div class="panel-title">Active Regions</div>
+    <div class="cities" id="cityList"></div>
+  </div>
 
-    function resizeCanvas() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+  <div class="hint">Drag to rotate · Scroll to zoom</div>
 
-    // 存储鼠标/触摸的轨迹点
-    let points = [];
-    let isDrawing = false;
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-    const addPoint = (x, y) => {
-      points.push({ x, y, age: 0 });
-    };
+    const container = document.getElementById("app");
 
-    window.addEventListener('mousemove', e => addPoint(e.clientX, e.clientY));
-    window.addEventListener('touchmove', e => {
-      if(e.touches.length > 0) {
-        addPoint(e.touches[0].clientX, e.touches[0].clientY);
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
+    camera.position.set(0, 0, 4.7);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true
+    });
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.045;
+    controls.rotateSpeed = 0.5;
+    controls.zoomSpeed = 0.5;
+    controls.minDistance = 3.2;
+    controls.maxDistance = 7;
+    controls.enablePan = false;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.35;
+
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    const R = 1.52;
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambient);
+
+    const light = new THREE.DirectionalLight(0x7ccfff, 2.5);
+    light.position.set(4, 3, 5);
+    scene.add(light);
+
+    const backLight = new THREE.DirectionalLight(0x1b74ff, 1.6);
+    backLight.position.set(-4, -2, -3);
+    scene.add(backLight);
+
+    const globeGeometry = new THREE.SphereGeometry(R, 96, 96);
+
+    const globeMaterial = new THREE.MeshPhongMaterial({
+      color: 0x061f4a,
+      emissive: 0x031633,
+      shininess: 36,
+      transparent: true,
+      opacity: 0.96
+    });
+
+    const globe = new THREE.Mesh(globeGeometry, globeMaterial);
+    globeGroup.add(globe);
+
+    const atmosphere = new THREE.Mesh(
+      new THREE.SphereGeometry(R * 1.035, 96, 96),
+      new THREE.MeshBasicMaterial({
+        color: 0x2aa8ff,
+        transparent: true,
+        opacity: 0.09,
+        side: THREE.BackSide
+      })
+    );
+    globeGroup.add(atmosphere);
+
+    const gridMaterial = new THREE.LineBasicMaterial({
+      color: 0x1d8fff,
+      transparent: true,
+      opacity: 0.18
+    });
+
+    function makeLatitude(lat) {
+      const points = [];
+      const phi = THREE.MathUtils.degToRad(90 - lat);
+      for (let i = 0; i <= 240; i++) {
+        const theta = THREE.MathUtils.degToRad(i / 240 * 360);
+        points.push(new THREE.Vector3(
+          R * Math.sin(phi) * Math.cos(theta),
+          R * Math.cos(phi),
+          R * Math.sin(phi) * Math.sin(theta)
+        ));
       }
-    }, {passive: true});
-
-    function drawTrail() {
-      // 用极低的透明度覆盖全图，制造逐渐消失的拖尾感 (Fade out)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'; 
-      ctx.fillRect(0, 0, width, height);
-
-      // 绘制新的轨迹线 (使用纯白色，在 mix-blend-mode: difference 下会让下方的黑字变白)
-      if (points.length > 1) {
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) {
-          // 贝塞尔曲线让拖尾更加圆润顺滑
-          const xc = (points[i].x + points[i - 1].x) / 2;
-          const yc = (points[i].y + points[i - 1].y) / 2;
-          ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, xc, yc);
-        }
-        ctx.strokeStyle = '#ffffff'; 
-        ctx.lineWidth = window.innerWidth > 768 ? 60 : 40; // 粗壮的刷子
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke();
-      }
-
-      // 移除老化节点
-      points.forEach(p => p.age++);
-      points = points.filter(p => p.age < 15); // 只保留最近 15 帧的轨迹
-
-      requestAnimationFrame(drawTrail);
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      return new THREE.Line(geo, gridMaterial);
     }
-    drawTrail();
 
-    // ==========================================
-    // 2. 丝滑滚动引擎 (Lenis) + GSAP 初始化
-    // ==========================================
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      touchMultiplier: 2
-    });
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    gsap.registerPlugin(ScrollTrigger);
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => { lenis.raf(time * 1000); });
-    gsap.ticker.lagSmoothing(0, 0);
-
-    // ==========================================
-    // 3. 滚动动画逻辑
-    // ==========================================
-
-    // A. 向下滚一点时，巨大的 QQ.SG 不要完全淡出，保留 10% 透明度作为水印
-    gsap.to('.giant-text', {
-      scrollTrigger: {
-        trigger: '.content-wrapper',
-        start: 'top bottom',
-        end: 'top top',
-        scrub: true
-      },
-      opacity: 0.08,
-      scale: 0.95
-    });
-
-    // B. 第四页：左右面板合并进场 (Merge Animation)
-    // 随着 merge-section 钉在屏幕上，左右面板向中间移动，直到完成合并
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: '.merge-section',
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 1 // 1秒阻尼滑动
+    function makeLongitude(lon) {
+      const points = [];
+      const theta = THREE.MathUtils.degToRad(lon);
+      for (let i = 0; i <= 240; i++) {
+        const phi = THREE.MathUtils.degToRad(i / 240 * 180);
+        points.push(new THREE.Vector3(
+          R * Math.sin(phi) * Math.cos(theta),
+          R * Math.cos(phi),
+          R * Math.sin(phi) * Math.sin(theta)
+        ));
       }
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      return new THREE.Line(geo, gridMaterial);
+    }
+
+    for (let lat = -60; lat <= 60; lat += 20) {
+      globeGroup.add(makeLatitude(lat));
+    }
+
+    for (let lon = -180; lon < 180; lon += 30) {
+      globeGroup.add(makeLongitude(lon));
+    }
+
+    function latLngToVec3(lat, lng, radius = R) {
+      const phi = THREE.MathUtils.degToRad(90 - lat);
+      const theta = THREE.MathUtils.degToRad(lng + 180);
+
+      return new THREE.Vector3(
+        -radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.cos(phi),
+        radius * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    const cities = [
+      { name: "Hong Kong", cn: "香港", lat: 22.3193, lng: 114.1694 },
+      { name: "Los Angeles", cn: "洛杉矶", lat: 34.0522, lng: -118.2437 },
+      { name: "San Jose", cn: "圣何塞", lat: 37.3382, lng: -121.8863 },
+      { name: "Phoenix", cn: "凤凰城", lat: 33.4484, lng: -112.0740 },
+      { name: "Frankfurt", cn: "法兰克福", lat: 50.1109, lng: 8.6821 },
+      { name: "Tokyo", cn: "东京", lat: 35.6762, lng: 139.6503 },
+      { name: "Italy", cn: "意大利", lat: 41.9028, lng: 12.4964 },
+      { name: "Singapore", cn: "新加坡", lat: 1.3521, lng: 103.8198 },
+      { name: "Guangzhou", cn: "广州", lat: 23.1291, lng: 113.2644 }
+    ];
+
+    const cityList = document.getElementById("cityList");
+
+    cities.forEach(city => {
+      const item = document.createElement("div");
+      item.className = "city";
+      item.innerHTML = `<span class="dot"></span><span>${city.cn} / ${city.name}</span>`;
+      cityList.appendChild(item);
     });
 
-    // 左面板从 -50vw 移入，最终定位在中心偏左 (例如 left: 2vw)
-    tl.to('.panel.left', {
-      left: window.innerWidth > 768 ? '4vw' : '0',
-      ease: 'none'
-    }, 0);
+    const pointGroup = new THREE.Group();
+    globeGroup.add(pointGroup);
 
-    // 右面板从 -50vw 移入，最终定位在中心偏右
-    tl.to('.panel.right', {
-      right: window.innerWidth > 768 ? '4vw' : '0',
-      ease: 'none'
-    }, 0);
+    const labelGroup = new THREE.Group();
+    globeGroup.add(labelGroup);
 
-    // ==========================================
-    // 4. 强制第五页磁性吸附 (Snap)
-    // ==========================================
-    // 虽然 Lenis 是全局丝滑滚动，我们可以利用 ScrollTrigger 让滚到最后一页时自动吸附对齐
-    ScrollTrigger.create({
-      trigger: '.contact-section',
-      start: 'top top',
-      end: 'bottom bottom',
-      snap: 1 
+    function makeCityPoint(city) {
+      const position = latLngToVec3(city.lat, city.lng, R * 1.012);
+
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.018, 18, 18),
+        new THREE.MeshBasicMaterial({
+          color: 0x86dcff
+        })
+      );
+
+      dot.position.copy(position);
+
+      const halo = new THREE.Mesh(
+        new THREE.SphereGeometry(0.045, 24, 24),
+        new THREE.MeshBasicMaterial({
+          color: 0x28aaff,
+          transparent: true,
+          opacity: 0.28
+        })
+      );
+
+      halo.position.copy(position);
+
+      pointGroup.add(dot);
+      pointGroup.add(halo);
+
+      city.dot = dot;
+      city.halo = halo;
+      city.position = position;
+    }
+
+    cities.forEach(makeCityPoint);
+
+    function createArc(start, end, height = 0.55) {
+      const mid = start.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(R + height);
+
+      const curve = new THREE.QuadraticBezierCurve3(
+        start.clone().multiplyScalar(1.015),
+        mid,
+        end.clone().multiplyScalar(1.015)
+      );
+
+      const points = curve.getPoints(96);
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+
+      const mat = new THREE.LineDashedMaterial({
+        color: 0x67d7ff,
+        transparent: true,
+        opacity: 0,
+        dashSize: 0.05,
+        gapSize: 0.035,
+        linewidth: 1
+      });
+
+      const line = new THREE.Line(geo, mat);
+      line.computeLineDistances();
+
+      line.userData = {
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.7 + Math.random() * 0.6,
+        life: Math.random(),
+        targetOpacity: 0.25 + Math.random() * 0.65
+      };
+
+      globeGroup.add(line);
+      return line;
+    }
+
+    const routePairs = [
+      ["Hong Kong", "Los Angeles"],
+      ["Hong Kong", "San Jose"],
+      ["Hong Kong", "Singapore"],
+      ["Hong Kong", "Tokyo"],
+      ["Guangzhou", "Hong Kong"],
+      ["Guangzhou", "Singapore"],
+      ["Tokyo", "Los Angeles"],
+      ["Tokyo", "San Jose"],
+      ["Los Angeles", "Phoenix"],
+      ["San Jose", "Phoenix"],
+      ["Los Angeles", "Frankfurt"],
+      ["Frankfurt", "Italy"],
+      ["Frankfurt", "Singapore"],
+      ["Singapore", "Tokyo"],
+      ["Singapore", "Italy"],
+      ["San Jose", "Frankfurt"]
+    ];
+
+    const cityMap = Object.fromEntries(cities.map(c => [c.name, c]));
+    const routes = [];
+
+    routePairs.forEach(([a, b]) => {
+      const start = cityMap[a].position;
+      const end = cityMap[b].position;
+      routes.push(createArc(start, end, 0.36 + Math.random() * 0.34));
     });
 
+    // 粗略国家轮廓线：使用 Three.js 官方示例用过的 world geojson 数据
+    async function loadCountryBorders() {
+      try {
+        const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
+        const topology = await res.json();
+
+        const topojson = await import("https://cdn.jsdelivr.net/npm/topojson-client@3/+esm");
+        const countries = topojson.feature(topology, topology.objects.countries);
+
+        const borderMat = new THREE.LineBasicMaterial({
+          color: 0x78ccff,
+          transparent: true,
+          opacity: 0.48
+        });
+
+        countries.features.forEach(feature => {
+          const coords = feature.geometry.coordinates;
+          const type = feature.geometry.type;
+
+          const drawPolygon = polygon => {
+            polygon.forEach(ring => {
+              const points = ring.map(([lng, lat]) => latLngToVec3(lat, lng, R * 1.006));
+
+              if (points.length > 1) {
+                const geo = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(geo, borderMat);
+                globeGroup.add(line);
+              }
+            });
+          };
+
+          if (type === "Polygon") {
+            drawPolygon(coords);
+          }
+
+          if (type === "MultiPolygon") {
+            coords.forEach(drawPolygon);
+          }
+        });
+      } catch (err) {
+        console.warn("Country border data failed to load:", err);
+      }
+    }
+
+    loadCountryBorders();
+
+    // 星点背景
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = 900;
+    const starPositions = [];
+
+    for (let i = 0; i < starCount; i++) {
+      const x = (Math.random() - 0.5) * 12;
+      const y = (Math.random() - 0.5) * 12;
+      const z = (Math.random() - 0.5) * 12;
+      starPositions.push(x, y, z);
+    }
+
+    starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starPositions, 3));
+
+    const stars = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({
+        size: 0.008,
+        color: 0x9edcff,
+        transparent: true,
+        opacity: 0.5
+      })
+    );
+
+    scene.add(stars);
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      const t = clock.getElapsedTime();
+
+      controls.update();
+
+      routes.forEach((route, index) => {
+        const pulse = Math.sin(t * route.userData.speed + route.userData.phase);
+        const visible = Math.max(0, pulse);
+        route.material.opacity = visible * route.userData.targetOpacity;
+
+        route.material.dashOffset = -t * 0.22 - index * 0.02;
+      });
+
+      cities.forEach((city, index) => {
+        const s = 1 + Math.sin(t * 2.6 + index) * 0.18;
+        city.halo.scale.setScalar(s);
+        city.halo.material.opacity = 0.18 + Math.max(0, Math.sin(t * 2 + index)) * 0.22;
+      });
+
+      stars.rotation.y += 0.00025;
+      stars.rotation.x += 0.00008;
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
   </script>
 </body>
 </html>
