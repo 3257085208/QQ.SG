@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Global Network Globe</title>
 
   <style>
@@ -10,37 +10,54 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
+    html,
+    body {
       width: 100%;
       height: 100%;
       overflow: hidden;
       background:
-        radial-gradient(circle at 50% 40%, rgba(32, 132, 255, 0.22), transparent 36%),
-        radial-gradient(circle at 20% 80%, rgba(0, 180, 255, 0.12), transparent 32%),
+        radial-gradient(circle at 50% 38%, rgba(34, 132, 255, 0.24), transparent 34%),
+        radial-gradient(circle at 18% 78%, rgba(0, 188, 255, 0.14), transparent 30%),
+        radial-gradient(circle at 82% 18%, rgba(54, 108, 255, 0.16), transparent 26%),
         #020817;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
       color: #fff;
+      touch-action: none;
     }
 
     #app {
       position: fixed;
       inset: 0;
+      z-index: 1;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    canvas:active {
+      cursor: grabbing;
     }
 
     .ui {
       position: fixed;
       left: 36px;
       top: 34px;
-      z-index: 10;
+      z-index: 5;
       pointer-events: none;
     }
 
     .eyebrow {
       font-size: 12px;
       letter-spacing: 0.22em;
-      color: rgba(150, 210, 255, 0.8);
+      color: rgba(150, 210, 255, 0.84);
       text-transform: uppercase;
       margin-bottom: 14px;
     }
@@ -49,13 +66,14 @@
       font-size: clamp(34px, 5vw, 72px);
       line-height: 0.95;
       letter-spacing: -0.06em;
-      font-weight: 760;
-      max-width: 620px;
+      font-weight: 780;
+      max-width: 640px;
+      text-shadow: 0 18px 80px rgba(0, 112, 255, 0.35);
     }
 
     .desc {
       margin-top: 18px;
-      max-width: 430px;
+      max-width: 460px;
       font-size: 15px;
       line-height: 1.7;
       color: rgba(215, 235, 255, 0.72);
@@ -65,14 +83,16 @@
       position: fixed;
       right: 32px;
       bottom: 28px;
-      width: min(360px, calc(100vw - 48px));
+      width: min(370px, calc(100vw - 48px));
       padding: 18px 18px 16px;
       border: 1px solid rgba(120, 200, 255, 0.22);
-      background: rgba(4, 16, 38, 0.48);
+      background: rgba(4, 16, 38, 0.44);
       backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border-radius: 22px;
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-      z-index: 10;
+      z-index: 6;
+      pointer-events: none;
     }
 
     .panel-title {
@@ -102,8 +122,9 @@
       width: 7px;
       height: 7px;
       border-radius: 999px;
-      background: #60c8ff;
+      background: #66d3ff;
       box-shadow: 0 0 16px #3fbaff;
+      flex: 0 0 auto;
     }
 
     .hint {
@@ -114,51 +135,94 @@
       color: rgba(210, 235, 255, 0.5);
       font-size: 13px;
       letter-spacing: 0.04em;
-      z-index: 10;
+      z-index: 5;
       pointer-events: none;
     }
 
-    canvas {
-      display: block;
-      cursor: grab;
+    .loading {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: #020817;
+      color: rgba(200, 230, 255, 0.74);
+      font-size: 14px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      pointer-events: none;
     }
 
-    canvas:active {
-      cursor: grabbing;
+    .loading.hide {
+      opacity: 0;
+      visibility: hidden;
     }
 
     @media (max-width: 760px) {
       .ui {
-        left: 22px;
-        top: 26px;
+        left: 20px;
+        top: 24px;
+      }
+
+      .eyebrow {
+        font-size: 10px;
+        margin-bottom: 10px;
+      }
+
+      h1 {
+        font-size: 40px;
       }
 
       .desc {
-        font-size: 13px;
-        max-width: 310px;
+        font-size: 12px;
+        max-width: 300px;
+        line-height: 1.6;
       }
 
       .panel {
-        left: 16px;
-        right: 16px;
-        bottom: 18px;
+        left: 14px;
+        right: 14px;
+        bottom: 16px;
         width: auto;
+        padding: 14px;
         border-radius: 18px;
       }
 
       .cities {
         grid-template-columns: repeat(2, 1fr);
-        font-size: 12px;
+        font-size: 11px;
+        gap: 7px 10px;
       }
 
       .hint {
         display: none;
       }
     }
+
+    @media (max-width: 380px) {
+      .panel {
+        display: none;
+      }
+
+      h1 {
+        font-size: 36px;
+      }
+    }
   </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
 </head>
 
 <body>
+  <div class="loading" id="loading">Loading Globe</div>
+
   <div id="app"></div>
 
   <div class="ui">
@@ -178,9 +242,9 @@
   <div class="hint">Drag to rotate · Scroll to zoom</div>
 
   <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+    import * as THREE from "three";
 
+    const loading = document.getElementById("loading");
     const container = document.getElementById("app");
 
     const scene = new THREE.Scene();
@@ -192,111 +256,70 @@
       1000
     );
 
-    camera.position.set(0, 0, 4.7);
+    camera.position.set(0, 0, 4.8);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: true
+      alpha: true,
+      powerPreference: "high-performance"
     });
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.045;
-    controls.rotateSpeed = 0.5;
-    controls.zoomSpeed = 0.5;
-    controls.minDistance = 3.2;
-    controls.maxDistance = 7;
-    controls.enablePan = false;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.35;
 
     const globeGroup = new THREE.Group();
     scene.add(globeGroup);
 
     const R = 1.52;
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.86);
     scene.add(ambient);
 
-    const light = new THREE.DirectionalLight(0x7ccfff, 2.5);
+    const light = new THREE.DirectionalLight(0x7ccfff, 2.6);
     light.position.set(4, 3, 5);
     scene.add(light);
 
-    const backLight = new THREE.DirectionalLight(0x1b74ff, 1.6);
+    const backLight = new THREE.DirectionalLight(0x1d70ff, 1.8);
     backLight.position.set(-4, -2, -3);
     scene.add(backLight);
 
-    const globeGeometry = new THREE.SphereGeometry(R, 96, 96);
+    const globe = new THREE.Mesh(
+      new THREE.SphereGeometry(R, 96, 96),
+      new THREE.MeshPhongMaterial({
+        color: 0x061f4a,
+        emissive: 0x031633,
+        shininess: 36,
+        transparent: true,
+        opacity: 0.96
+      })
+    );
 
-    const globeMaterial = new THREE.MeshPhongMaterial({
-      color: 0x061f4a,
-      emissive: 0x031633,
-      shininess: 36,
-      transparent: true,
-      opacity: 0.96
-    });
-
-    const globe = new THREE.Mesh(globeGeometry, globeMaterial);
     globeGroup.add(globe);
 
     const atmosphere = new THREE.Mesh(
-      new THREE.SphereGeometry(R * 1.035, 96, 96),
+      new THREE.SphereGeometry(R * 1.04, 96, 96),
       new THREE.MeshBasicMaterial({
         color: 0x2aa8ff,
         transparent: true,
-        opacity: 0.09,
+        opacity: 0.1,
         side: THREE.BackSide
       })
     );
+
     globeGroup.add(atmosphere);
 
-    const gridMaterial = new THREE.LineBasicMaterial({
-      color: 0x1d8fff,
-      transparent: true,
-      opacity: 0.18
-    });
+    const outerGlow = new THREE.Mesh(
+      new THREE.SphereGeometry(R * 1.075, 96, 96),
+      new THREE.MeshBasicMaterial({
+        color: 0x177cff,
+        transparent: true,
+        opacity: 0.055,
+        side: THREE.BackSide
+      })
+    );
 
-    function makeLatitude(lat) {
-      const points = [];
-      const phi = THREE.MathUtils.degToRad(90 - lat);
-      for (let i = 0; i <= 240; i++) {
-        const theta = THREE.MathUtils.degToRad(i / 240 * 360);
-        points.push(new THREE.Vector3(
-          R * Math.sin(phi) * Math.cos(theta),
-          R * Math.cos(phi),
-          R * Math.sin(phi) * Math.sin(theta)
-        ));
-      }
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      return new THREE.Line(geo, gridMaterial);
-    }
-
-    function makeLongitude(lon) {
-      const points = [];
-      const theta = THREE.MathUtils.degToRad(lon);
-      for (let i = 0; i <= 240; i++) {
-        const phi = THREE.MathUtils.degToRad(i / 240 * 180);
-        points.push(new THREE.Vector3(
-          R * Math.sin(phi) * Math.cos(theta),
-          R * Math.cos(phi),
-          R * Math.sin(phi) * Math.sin(theta)
-        ));
-      }
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      return new THREE.Line(geo, gridMaterial);
-    }
-
-    for (let lat = -60; lat <= 60; lat += 20) {
-      globeGroup.add(makeLatitude(lat));
-    }
-
-    for (let lon = -180; lon < 180; lon += 30) {
-      globeGroup.add(makeLongitude(lon));
-    }
+    globeGroup.add(outerGlow);
 
     function latLngToVec3(lat, lng, radius = R) {
       const phi = THREE.MathUtils.degToRad(90 - lat);
@@ -307,6 +330,64 @@
         radius * Math.cos(phi),
         radius * Math.sin(phi) * Math.sin(theta)
       );
+    }
+
+    const gridMaterial = new THREE.LineBasicMaterial({
+      color: 0x1d8fff,
+      transparent: true,
+      opacity: 0.18
+    });
+
+    function makeLatitude(lat) {
+      const points = [];
+      const phi = THREE.MathUtils.degToRad(90 - lat);
+
+      for (let i = 0; i <= 240; i++) {
+        const theta = THREE.MathUtils.degToRad((i / 240) * 360);
+
+        points.push(
+          new THREE.Vector3(
+            R * Math.sin(phi) * Math.cos(theta),
+            R * Math.cos(phi),
+            R * Math.sin(phi) * Math.sin(theta)
+          )
+        );
+      }
+
+      return new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        gridMaterial
+      );
+    }
+
+    function makeLongitude(lon) {
+      const points = [];
+      const theta = THREE.MathUtils.degToRad(lon);
+
+      for (let i = 0; i <= 240; i++) {
+        const phi = THREE.MathUtils.degToRad((i / 240) * 180);
+
+        points.push(
+          new THREE.Vector3(
+            R * Math.sin(phi) * Math.cos(theta),
+            R * Math.cos(phi),
+            R * Math.sin(phi) * Math.sin(theta)
+          )
+        );
+      }
+
+      return new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        gridMaterial
+      );
+    }
+
+    for (let lat = -60; lat <= 60; lat += 20) {
+      globeGroup.add(makeLatitude(lat));
+    }
+
+    for (let lon = -180; lon < 180; lon += 30) {
+      globeGroup.add(makeLongitude(lon));
     }
 
     const cities = [
@@ -333,23 +414,20 @@
     const pointGroup = new THREE.Group();
     globeGroup.add(pointGroup);
 
-    const labelGroup = new THREE.Group();
-    globeGroup.add(labelGroup);
-
     function makeCityPoint(city) {
-      const position = latLngToVec3(city.lat, city.lng, R * 1.012);
+      const position = latLngToVec3(city.lat, city.lng, R * 1.014);
 
       const dot = new THREE.Mesh(
-        new THREE.SphereGeometry(0.018, 18, 18),
+        new THREE.SphereGeometry(0.018, 20, 20),
         new THREE.MeshBasicMaterial({
-          color: 0x86dcff
+          color: 0x8ce5ff
         })
       );
 
       dot.position.copy(position);
 
       const halo = new THREE.Mesh(
-        new THREE.SphereGeometry(0.045, 24, 24),
+        new THREE.SphereGeometry(0.052, 28, 28),
         new THREE.MeshBasicMaterial({
           color: 0x28aaff,
           transparent: true,
@@ -362,32 +440,36 @@
       pointGroup.add(dot);
       pointGroup.add(halo);
 
+      city.position = position;
       city.dot = dot;
       city.halo = halo;
-      city.position = position;
     }
 
     cities.forEach(makeCityPoint);
 
     function createArc(start, end, height = 0.55) {
-      const mid = start.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(R + height);
+      const mid = start
+        .clone()
+        .add(end)
+        .multiplyScalar(0.5)
+        .normalize()
+        .multiplyScalar(R + height);
 
       const curve = new THREE.QuadraticBezierCurve3(
-        start.clone().multiplyScalar(1.015),
+        start.clone().multiplyScalar(1.018),
         mid,
-        end.clone().multiplyScalar(1.015)
+        end.clone().multiplyScalar(1.018)
       );
 
-      const points = curve.getPoints(96);
+      const points = curve.getPoints(120);
       const geo = new THREE.BufferGeometry().setFromPoints(points);
 
       const mat = new THREE.LineDashedMaterial({
         color: 0x67d7ff,
         transparent: true,
         opacity: 0,
-        dashSize: 0.05,
-        gapSize: 0.035,
-        linewidth: 1
+        dashSize: 0.045,
+        gapSize: 0.035
       });
 
       const line = new THREE.Line(geo, mat);
@@ -395,14 +477,16 @@
 
       line.userData = {
         phase: Math.random() * Math.PI * 2,
-        speed: 0.7 + Math.random() * 0.6,
-        life: Math.random(),
-        targetOpacity: 0.25 + Math.random() * 0.65
+        speed: 0.65 + Math.random() * 0.7,
+        targetOpacity: 0.32 + Math.random() * 0.6
       };
 
       globeGroup.add(line);
+
       return line;
     }
+
+    const cityMap = Object.fromEntries(cities.map(city => [city.name, city]));
 
     const routePairs = [
       ["Hong Kong", "Los Angeles"],
@@ -420,40 +504,44 @@
       ["Frankfurt", "Singapore"],
       ["Singapore", "Tokyo"],
       ["Singapore", "Italy"],
-      ["San Jose", "Frankfurt"]
+      ["San Jose", "Frankfurt"],
+      ["Tokyo", "Frankfurt"]
     ];
 
-    const cityMap = Object.fromEntries(cities.map(c => [c.name, c]));
     const routes = [];
 
     routePairs.forEach(([a, b]) => {
-      const start = cityMap[a].position;
-      const end = cityMap[b].position;
-      routes.push(createArc(start, end, 0.36 + Math.random() * 0.34));
+      routes.push(
+        createArc(
+          cityMap[a].position,
+          cityMap[b].position,
+          0.36 + Math.random() * 0.34
+        )
+      );
     });
 
-    // 粗略国家轮廓线：使用 Three.js 官方示例用过的 world geojson 数据
     async function loadCountryBorders() {
       try {
+        const topojson = await import("https://cdn.jsdelivr.net/npm/topojson-client@3/+esm");
         const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
         const topology = await res.json();
-
-        const topojson = await import("https://cdn.jsdelivr.net/npm/topojson-client@3/+esm");
         const countries = topojson.feature(topology, topology.objects.countries);
 
         const borderMat = new THREE.LineBasicMaterial({
-          color: 0x78ccff,
+          color: 0x79d4ff,
           transparent: true,
           opacity: 0.48
         });
 
         countries.features.forEach(feature => {
-          const coords = feature.geometry.coordinates;
           const type = feature.geometry.type;
+          const coords = feature.geometry.coordinates;
 
           const drawPolygon = polygon => {
             polygon.forEach(ring => {
-              const points = ring.map(([lng, lat]) => latLngToVec3(lat, lng, R * 1.006));
+              const points = ring.map(([lng, lat]) => {
+                return latLngToVec3(lat, lng, R * 1.007);
+              });
 
               if (points.length > 1) {
                 const geo = new THREE.BufferGeometry().setFromPoints(points);
@@ -471,26 +559,29 @@
             coords.forEach(drawPolygon);
           }
         });
-      } catch (err) {
-        console.warn("Country border data failed to load:", err);
+      } catch (error) {
+        console.warn("Country borders failed to load:", error);
       }
     }
 
     loadCountryBorders();
 
-    // 星点背景
     const starGeo = new THREE.BufferGeometry();
-    const starCount = 900;
+    const starCount = window.innerWidth < 760 ? 450 : 900;
     const starPositions = [];
 
     for (let i = 0; i < starCount; i++) {
-      const x = (Math.random() - 0.5) * 12;
-      const y = (Math.random() - 0.5) * 12;
-      const z = (Math.random() - 0.5) * 12;
-      starPositions.push(x, y, z);
+      starPositions.push(
+        (Math.random() - 0.5) * 12,
+        (Math.random() - 0.5) * 12,
+        (Math.random() - 0.5) * 12
+      );
     }
 
-    starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starPositions, 3));
+    starGeo.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(starPositions, 3)
+    );
 
     const stars = new THREE.Points(
       starGeo,
@@ -504,25 +595,117 @@
 
     scene.add(stars);
 
+    let isDragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let velocityX = 0;
+    let velocityY = 0;
+    let targetScale = 1;
+    let currentScale = 1;
+
+    function getPointer(event) {
+      if (event.touches && event.touches.length > 0) {
+        return {
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY
+        };
+      }
+
+      return {
+        x: event.clientX,
+        y: event.clientY
+      };
+    }
+
+    function pointerDown(event) {
+      isDragging = true;
+
+      const p = getPointer(event);
+      lastX = p.x;
+      lastY = p.y;
+
+      velocityX = 0;
+      velocityY = 0;
+    }
+
+    function pointerMove(event) {
+      if (!isDragging) return;
+
+      event.preventDefault();
+
+      const p = getPointer(event);
+
+      const dx = p.x - lastX;
+      const dy = p.y - lastY;
+
+      velocityX = dx * 0.0045;
+      velocityY = dy * 0.0045;
+
+      globeGroup.rotation.y += velocityX;
+      globeGroup.rotation.x += velocityY;
+
+      globeGroup.rotation.x = Math.max(
+        -Math.PI / 2,
+        Math.min(Math.PI / 2, globeGroup.rotation.x)
+      );
+
+      lastX = p.x;
+      lastY = p.y;
+    }
+
+    function pointerUp() {
+      isDragging = false;
+    }
+
+    renderer.domElement.addEventListener("mousedown", pointerDown);
+    window.addEventListener("mousemove", pointerMove);
+    window.addEventListener("mouseup", pointerUp);
+
+    renderer.domElement.addEventListener("touchstart", pointerDown, { passive: false });
+    window.addEventListener("touchmove", pointerMove, { passive: false });
+    window.addEventListener("touchend", pointerUp);
+
+    window.addEventListener("wheel", event => {
+      const delta = event.deltaY > 0 ? -0.08 : 0.08;
+      targetScale = Math.max(0.78, Math.min(1.35, targetScale + delta));
+    }, { passive: true });
+
+    if (window.innerWidth < 760) {
+      globeGroup.position.y = -0.05;
+      targetScale = 0.9;
+      currentScale = 0.9;
+    }
+
     const clock = new THREE.Clock();
 
     function animate() {
       const t = clock.getElapsedTime();
 
-      controls.update();
+      if (!isDragging) {
+        globeGroup.rotation.y += 0.0013;
+        globeGroup.rotation.y += velocityX * 0.94;
+        globeGroup.rotation.x += velocityY * 0.94;
+
+        velocityX *= 0.92;
+        velocityY *= 0.92;
+      }
+
+      currentScale += (targetScale - currentScale) * 0.08;
+      globeGroup.scale.setScalar(currentScale);
 
       routes.forEach((route, index) => {
         const pulse = Math.sin(t * route.userData.speed + route.userData.phase);
         const visible = Math.max(0, pulse);
-        route.material.opacity = visible * route.userData.targetOpacity;
 
+        route.material.opacity = visible * route.userData.targetOpacity;
         route.material.dashOffset = -t * 0.22 - index * 0.02;
       });
 
       cities.forEach((city, index) => {
-        const s = 1 + Math.sin(t * 2.6 + index) * 0.18;
+        const s = 1 + Math.sin(t * 2.4 + index) * 0.2;
         city.halo.scale.setScalar(s);
-        city.halo.material.opacity = 0.18 + Math.max(0, Math.sin(t * 2 + index)) * 0.22;
+        city.halo.material.opacity =
+          0.16 + Math.max(0, Math.sin(t * 2 + index)) * 0.26;
       });
 
       stars.rotation.y += 0.00025;
@@ -534,12 +717,22 @@
 
     animate();
 
+    setTimeout(() => {
+      loading.classList.add("hide");
+    }, 500);
+
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
 
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      if (window.innerWidth < 760) {
+        globeGroup.position.y = -0.05;
+      } else {
+        globeGroup.position.y = 0;
+      }
     });
   </script>
 </body>
