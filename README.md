@@ -1,13 +1,13 @@
-# QQ.SG 星图导航
+# QQ.SG 信号导航
 
-一个以“星图导航台”为概念的创意导航页，聚合 QQ.SG Group 的公开服务、监控面板与开源项目。纯静态实现，无构建步骤，可直接部署到 Cloudflare Pages。
+一个以“信号台 / 技术索引”为概念的创意导航页，聚合 QQ.SG Group 的公开服务、监控面板与开源项目。纯静态实现，无构建步骤，可直接部署到 Cloudflare Pages。
 
 ## 特性
 
-- 可旋转星盘与动态星空画布
-- 中央头像入口 + 四个快捷航点
-- 项目卡片搜索与分类筛选
-- GitHub 资料实时读取（失败时自动使用本地兜底数据）
+- 深色信号台视觉，全屏网格纹理背景与扫描线动效
+- 实时 GitHub 资料读取（失败时自动使用本地兜底数据）
+- CST / UTC 双时钟与状态条
+- 项目列表搜索、分类筛选与快捷入口
 - 桌面 / 移动端自适应
 - 支持 `prefers-reduced-motion` 减弱动画
 
@@ -40,8 +40,8 @@ public/
   index.html     页面入口
   styles.css     视觉与布局
   links.js       导航数据
-  app.js         交互、搜索、星空与 GitHub 数据
-  assets/        本地头像资源
+  app.js         交互、搜索、GitHub 数据
+  assets/        背景纹理与本地头像
   favicon.svg    站点图标
   _headers       Cloudflare Pages 响应头
 ```

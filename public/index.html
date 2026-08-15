@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QQ.SG 星图导航</title>
-  <meta name="description" content="DaFuHao / QQ.SG Group 的星图导航台">
+  <title>QQ.SG 信号导航</title>
+  <meta name="description" content="DaFuHao 的自托管信号导航台与开源索引">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
@@ -12,84 +12,93 @@
   <script defer src="/app.js"></script>
 </head>
 <body>
-  <canvas id="starfield" aria-hidden="true"></canvas>
-  <div class="page-frame">
-    <header class="topbar">
-      <a class="brand" href="https://github.com/3257085208" target="_blank" rel="noreferrer">
-        <span class="brand-glyph" aria-hidden="true">Q</span>
-        <span>
+  <div class="scanline" aria-hidden="true"></div>
+  <div class="page">
+    <header class="mast">
+      <a class="brand" href="https://github.com/3257085208" target="_blank" rel="noreferrer" aria-label="GitHub 主页">
+        <span class="brand-mark" aria-hidden="true"><span>Q</span><i></i><span>SG</span></span>
+        <span class="brand-copy">
           <strong>QQ.SG</strong>
-          <small>NAVIGATION DECK</small>
+          <small>DAFUHAO / SIGNAL DECK</small>
         </span>
       </a>
-      <div class="telemetry">
-        <span class="tick"><i data-lucide="radio" data-glyph="R"></i><b id="repoCount">36</b> REPOS</span>
-        <span class="tick"><i data-lucide="users" data-glyph="U"></i><b id="followersCount">04</b> FOLLOWERS</span>
-        <span class="clock" id="clock">--:--:--</span>
+      <div class="mast-identity">
+        <span class="handle">@3257085208</span>
+        <span class="online"><i></i>INDEX ONLINE</span>
+      </div>
+      <div class="mast-stats">
+        <div class="stat"><b id="repoCount">36</b><span>REPOS</span></div>
+        <div class="stat"><b id="followersCount">04</b><span>FOLLOWERS</span></div>
+      </div>
+      <div class="mast-clock">
+        <span class="clock-label">CST</span>
+        <b id="clock">--:--:--</b>
+        <span class="clock-label">UTC</span>
+        <b id="utcClock">--:--:--</b>
       </div>
     </header>
 
-    <main class="atlas">
-      <section class="console-panel" aria-label="导航中心">
-        <div class="dial">
-          <div class="dial-rings" aria-hidden="true">
-            <span class="ring ring-a"></span>
-            <span class="ring ring-b"></span>
-            <span class="ring ring-c"></span>
-          </div>
-          <a class="core" href="https://github.com/3257085208" target="_blank" rel="noreferrer">
-            <img class="avatar" src="/assets/avatar.png" alt="DaFuHao">
-            <span class="core-copy">
-              <strong>DaFuHao</strong>
-              <small>QQ.SG / CHAIRMAN</small>
-            </span>
-          </a>
-          <a class="waypoint waypoint--n" style="--wp:#0e7c86" href="https://status.qq.sg" target="_blank" rel="noreferrer">
-            <i data-lucide="activity" data-glyph="S"></i>STATUS
-          </a>
-          <a class="waypoint waypoint--e" style="--wp:#c62f3e" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">
-            <i data-lucide="book-open" data-glyph="B"></i>BLOG
-          </a>
-          <a class="waypoint waypoint--s" style="--wp:#5f4b8b" href="https://github.com/3257085208" target="_blank" rel="noreferrer">
-            <i data-lucide="github" data-glyph="G"></i>GITHUB
-          </a>
-          <a class="waypoint waypoint--w" style="--wp:#d88a24" href="https://sink.cool" target="_blank" rel="noreferrer">
-            <i data-lucide="link-2" data-glyph="L"></i>SINK
-          </a>
-        </div>
-        <div class="console-meta">
-          <div>
-            <span class="meta-label">NAV SIGNAL</span>
-            <strong>ALL NODES ONLINE</strong>
-          </div>
-          <div>
-            <span class="meta-label">UTC</span>
-            <strong id="utcClock">--:--:--</strong>
-          </div>
-        </div>
-      </section>
+    <section class="ticker" aria-label="状态">
+      <span class="ticker-item ticker-item--live"><i></i>ALL SYSTEMS ONLINE</span>
+      <span class="ticker-item">SELF-HOSTED EDGE</span>
+      <span class="ticker-item">36 PUBLIC REPOS</span>
+      <span class="ticker-item">CLOUDFLARE PAGES</span>
+      <div class="meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </section>
 
-      <section class="directory-panel" aria-label="项目导航">
-        <div class="panel-head">
-          <div>
-            <span class="eyebrow">SIGNAL CATALOG</span>
-            <h1>导航星图</h1>
+    <main class="workspace">
+      <aside class="profile" aria-label="个人资料">
+        <div class="profile-top">
+          <img class="avatar" src="/assets/avatar.png" alt="DaFuHao">
+          <div class="profile-name">
+            <strong>DaFuHao</strong>
+            <span>@3257085208</span>
           </div>
-          <span class="scan-count"><b id="visibleCount">0</b> / <span id="totalCount">0</span></span>
         </div>
-        <div class="search-bar">
-          <i data-lucide="scan-search" data-glyph="S"></i>
-          <input id="searchInput" type="search" placeholder="搜索站点、项目、标签" autocomplete="off">
-          <button id="clearButton" class="icon-button" aria-label="清空搜索" hidden><i data-lucide="x" data-glyph="X"></i></button>
+        <p class="profile-bio">开源、自托管与 Cloudflare 边缘服务的个人索引。</p>
+        <div class="profile-stats">
+          <div><b id="profileRepos">36</b><span>仓库</span></div>
+          <div><b id="profileFollowers">04</b><span>关注者</span></div>
+          <div><b>GMT+8</b><span>时区</span></div>
         </div>
-        <div class="filters" id="filters" role="tablist" aria-label="分类筛选"></div>
-        <div class="card-grid" id="cardGrid"></div>
+        <div class="quick-grid" id="quickGrid"></div>
+        <div class="profile-sig" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </aside>
+
+      <section class="index" aria-label="导航索引">
+        <div class="index-head">
+          <div>
+            <span class="eyebrow">SIGNAL INDEX / 01</span>
+            <h1>导航索引</h1>
+            <p>项目、服务与工具箱的一站式信号目录。</p>
+          </div>
+          <div class="index-count">
+            <b id="visibleCount">0</b>
+            <span>/</span>
+            <span id="totalCount">0</span>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <label class="search">
+            <i data-lucide="scan-search" data-glyph="S"></i>
+            <input id="searchInput" type="search" placeholder="搜索站点、项目、标签" autocomplete="off">
+            <button id="clearButton" class="icon-button" aria-label="清空搜索" hidden><i data-lucide="x" data-glyph="X"></i></button>
+          </label>
+          <div class="filters" id="filters" role="tablist" aria-label="分类筛选"></div>
+        </div>
+
+        <div class="signal-list" id="cardGrid"></div>
+        <div class="empty-state" id="emptyState" hidden>NO SIGNAL // 没有找到匹配项</div>
       </section>
     </main>
 
-    <footer class="footbar">
-      <span>QQ.SG / OPEN-SOURCE ORBITAL INDEX</span>
-      <a href="https://status.qq.sg" target="_blank" rel="noreferrer">SERVER STATUS <i data-lucide="arrow-up-right" data-glyph="->"></i></a>
+    <footer class="footer">
+      <span>QQ.SG / SIGNAL DECK</span>
+      <a href="https://status.qq.sg" target="_blank" rel="noreferrer"><i data-lucide="activity" data-glyph="S"></i>STATUS</a>
     </footer>
   </div>
 </body>

@@ -8,6 +8,8 @@
   const clearEl = document.getElementById("clearButton");
   const visibleCountEl = document.getElementById("visibleCount");
   const totalCountEl = document.getElementById("totalCount");
+  const emptyEl = document.getElementById("emptyState");
+  const quickEl = document.getElementById("quickGrid");
 
   const escapeHtml = (value) =>
     String(value)
@@ -29,11 +31,25 @@
   function refreshIcons() {
     if (window.lucide) {
       window.lucide.createIcons();
-      return;
     }
     document.querySelectorAll("i[data-lucide][data-glyph]").forEach((el) => {
-      el.textContent = el.dataset.glyph;
+      if (!el.querySelector("svg")) {
+        el.textContent = el.dataset.glyph;
+      }
     });
+  }
+
+  function renderQuick() {
+    quickEl.innerHTML = data.quick
+      .map((item) => {
+        const glyph = String(item.title || "Q").charAt(0).toUpperCase();
+        return `<a class="quick-btn" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer" style="--accent:${escapeHtml(item.color)};--accent-soft:${hexToRgba(item.color, 0.1)}">
+          <i data-lucide="${escapeHtml(item.icon)}" data-glyph="${escapeHtml(glyph)}"></i>
+          <span>${escapeHtml(item.title)}</span>
+        </a>`;
+      })
+      .join("");
+    refreshIcons();
   }
 
   function renderFilters() {
@@ -68,10 +84,10 @@
     const links = filteredLinks();
     totalCountEl.textContent = data.links.length;
     visibleCountEl.textContent = links.length;
+    emptyEl.hidden = links.length > 0;
 
     if (!links.length) {
-      gridEl.innerHTML = `<div class="empty-state">NO SIGNAL // 没有找到匹配项</div>`;
-      refreshIcons();
+      gridEl.innerHTML = "";
       return;
     }
 
@@ -80,7 +96,7 @@
         const tags = link.tags
           .map((tag) => `<span>${escapeHtml(tag)}</span>`)
           .join("");
-        return `<a class="card" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer" style="--accent:${escapeHtml(link.color)};--accent-soft:${hexToRgba(link.color, 0.12)}">
+        return `<a class="card" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer" style="--accent:${escapeHtml(link.color)};--accent-soft:${hexToRgba(link.color, 0.1)}">
           <span class="card-icon"><i data-lucide="${escapeHtml(link.icon)}" data-glyph="${escapeHtml(link.glyph)}"></i></span>
           <span class="card-copy">
             <strong>${escapeHtml(link.title)}</strong>
@@ -121,14 +137,14 @@
 
   function updateClock() {
     const now = new Date();
-    const timeFormatter = new Intl.DateTimeFormat("zh-CN", {
+    const timeFormatter = new Intl.DateTimeFormat("en-GB", {
       hour12: false,
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       timeZone: "Asia/Shanghai"
     });
-    document.getElementById("clock").textContent = `CST ${timeFormatter.format(now)}`;
+    document.getElementById("clock").textContent = timeFormatter.format(now);
     document.getElementById("utcClock").textContent = now.toISOString().slice(11, 19);
   }
 
@@ -137,11 +153,14 @@
       const response = await fetch(`https://api.github.com/users/${data.handle}`);
       if (!response.ok) return;
       const profile = await response.json();
-      if (profile.public_repos) {
+      if (profile.public_repos !== undefined) {
         document.getElementById("repoCount").textContent = profile.public_repos;
+        document.getElementById("profileRepos").textContent = profile.public_repos;
       }
       if (profile.followers !== undefined) {
-        document.getElementById("followersCount").textContent = String(profile.followers).padStart(2, "0");
+        const padded = String(profile.followers).padStart(2, "0");
+        document.getElementById("followersCount").textContent = padded;
+        document.getElementById("profileFollowers").textContent = padded;
       }
       if (profile.avatar_url) {
         const avatar = document.querySelector(".avatar");
@@ -152,79 +171,7 @@
     }
   }
 
-  const canvas = document.getElementById("starfield");
-  const ctx = canvas.getContext("2d");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let stars = [];
-  let constellation = [];
-
-  function buildField() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const count = Math.min(170, Math.floor((width * height) / 11000));
-    stars = Array.from({ length: count }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: Math.random() * 1.35 + 0.35,
-      speed: Math.random() * 1.6 + 0.3,
-      phase: Math.random() * Math.PI * 2,
-      tint: ["#201b16", "#0e7c86", "#c62f3e", "#d88a24", "#5f4b8b"][Math.floor(Math.random() * 5)]
-    }));
-    constellation = [
-      { x: width * 0.1, y: height * 0.16 },
-      { x: width * 0.24, y: height * 0.12 },
-      { x: width * 0.18, y: height * 0.34 },
-      { x: width * 0.82, y: height * 0.18 },
-      { x: width * 0.9, y: height * 0.42 },
-      { x: width * 0.72, y: height * 0.5 }
-    ];
-  }
-
-  function resizeCanvas() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    canvas.width = Math.floor(width * dpr);
-    canvas.height = Math.floor(height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    buildField();
-  }
-
-  function drawField(time) {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    ctx.clearRect(0, 0, width, height);
-
-    ctx.save();
-    ctx.strokeStyle = "rgba(32, 27, 22, 0.1)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 0; i < constellation.length - 1; i += 1) {
-      ctx.moveTo(constellation[i].x, constellation[i].y);
-      ctx.lineTo(constellation[i + 1].x, constellation[i + 1].y);
-    }
-    ctx.stroke();
-    ctx.restore();
-
-    for (const star of stars) {
-      const pulse = reducedMotion ? 0.8 : Math.sin(time * 0.001 * star.speed + star.phase) * 0.45 + 0.55;
-      ctx.globalAlpha = 0.35 + pulse * 0.45;
-      ctx.fillStyle = star.tint;
-      ctx.beginPath();
-      ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-
-    if (!reducedMotion) {
-      requestAnimationFrame(drawField);
-    }
-  }
-
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-  drawField(reducedMotion ? 0 : performance.now());
-
+  renderQuick();
   renderFilters();
   renderCards();
   updateClock();
