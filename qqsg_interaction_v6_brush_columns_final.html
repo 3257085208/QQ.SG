@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>QQ.SG — NKX Interaction Draft</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@500;600;700&family=Inter+Tight:wght@400;500;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --sky: #4ecbff;
+      --sky-deep: #1db5f5;
+      --sky-soft: rgba(78, 203, 255, 0.16);
+
+      --ink: #10160f;
+      --olive: #192116;
+      --cream: #f5f6ec;
+      --cream-2: #e9eee1;
+
+      --card: rgba(255, 255, 246, 0.72);
+      --line: rgba(16, 22, 15, 0.13);
+      --muted: rgba(16, 22, 15, 0.58);
+      --shadow: 0 28px 80px rgba(24, 33, 22, 0.14);
+      --ease: cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--cream);
+      scroll-behavior: auto;
+      overscroll-behavior-y: contain;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 78% 10%, rgba(78, 203, 255, 0.15), transparent 26%),
+        radial-gradient(circle at 10% 74%, rgba(25, 33, 22, 0.07), transparent 30%),
+        linear-gradient(180deg, #fafbf4, var(--cream));
+      font-family: "Space Grotesk", "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-rendering: geometricPrecision;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    ::selection {
+      color: var(--ink);
+      background: #aeeaff;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.035;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.74' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.88'/%3E%3C/svg%3E");
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 120;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(18px, 4vw, 56px);
+      pointer-events: none;
+      color: rgba(16, 22, 15, 0.72);
+    }
+
+    .topbar span {
+      font-family: "Bebas Neue", "Inter Tight", sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .topbar .mid {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+    }
+
+    .section {
+      position: relative;
+      min-height: 100svh;
+      overflow: clip;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 44px));
+      margin: 0 auto;
+    }
+
+    .kicker {
+      margin: 0 0 16px;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .title {
+      margin: 0;
+      max-width: 980px;
+      font-family: "DM Serif Display", "Inter Tight", serif;
+      font-size: clamp(44px, 8vw, 124px);
+      font-weight: 900;
+      line-height: 0.86;
+      letter-spacing: -0.045em;
+    }
+
+    .lead {
+      margin: 22px 0 0;
+      max-width: 660px;
+      color: var(--muted);
+      font-family: "Space Grotesk", "Inter Tight", sans-serif;
+      font-size: clamp(15px, 1.35vw, 20px);
+      font-weight: 500;
+      line-height: 1.9;
+      letter-spacing: 0.01em;
+    }
+
+    /* =========================================================
+       Hero
+       ========================================================= */
+
+    .hero {
+      height: 194svh;
+      background:
+        radial-gradient(circle at 78% 22%, rgba(78, 203, 255, 0.13), transparent 30%),
+        linear-gradient(180deg, #fbfcf4 0%, #eef2e5 100%);
+    }
+
+    .hero-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(16, 22, 15, 0.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 22, 15, 0.032) 1px, transparent 1px);
+      background-size: 42px 42px;
+    }
+
+    .hero-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: pan-y;
+    }
+
+    .hero-pill {
+      position: absolute;
+      left: clamp(18px, 4vw, 54px);
+      top: 92px;
+      z-index: 8;
+      height: 56px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      border-radius: 18px;
+      background: var(--sky);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      font-family: "Bebas Neue", "Inter Tight", sans-serif;
+      font-size: 24px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transform: translateY(calc(var(--hero-progress, 0) * -10px));
+    }
+
+    .hero-pill svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .hero-button {
+      position: absolute;
+      right: clamp(18px, 4vw, 54px);
+      top: 92px;
+      z-index: 8;
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 18px;
+      background: var(--ink);
+      color: var(--cream);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-button::before {
+      content: "";
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      box-shadow: 12px -8px 0 currentColor;
+    }
+
+    .hero-note {
+      position: absolute;
+      left: clamp(18px, 4vw, 54px);
+      right: clamp(18px, 4vw, 54px);
+      bottom: 34px;
+      z-index: 8;
+      max-width: 520px;
+      color: rgba(16, 22, 15, 0.58);
+      font-family: "Space Grotesk", "Inter Tight", sans-serif;
+      font-size: 14px;
+      line-height: 1.85;
+      opacity: calc(0.28 + var(--hero-progress, 0) * 0.72);
+      transform: translateY(calc((1 - var(--hero-progress, 0)) * 10px));
+    }
+
+    .hero-marquee {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 16vh;
+      z-index: 7;
+      display: grid;
+      gap: 4px;
+      opacity: var(--marquee, 0);
+      transform: translateY(calc((1 - var(--marquee, 0)) * 48px));
+      transition:
+        opacity 0.12s linear,
+        transform 0.12s linear;
+    }
+
+    .marquee-line {
+      overflow: hidden;
+      white-space: nowrap;
+      text-transform: uppercase;
+      line-height: 0.82;
+      pointer-events: none;
+    }
+
+    .marquee-line span {
+      display: inline-block;
+      padding-right: 0.35em;
+      will-change: transform;
+    }
+
+    .marquee-line.one {
+      color: var(--olive);
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(52px, 11.5vw, 172px);
+      letter-spacing: -0.01em;
+    }
+
+    .marquee-line.two {
+      color: rgba(16, 22, 15, 0.78);
+      font-family: "Archivo Black", "Arial Black", sans-serif;
+      font-size: clamp(34px, 7.6vw, 116px);
+      letter-spacing: -0.075em;
+    }
+
+    .marquee-line.one span {
+      animation: marqueeLeft 20s linear infinite;
+    }
+
+    .marquee-line.two span {
+      animation: marqueeRight 23s linear infinite;
+    }
+
+    @keyframes marqueeLeft {
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes marqueeRight {
+      from {
+        transform: translateX(-50%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    /* =========================================================
+       Flow zone
+       ========================================================= */
+
+    .flow {
+      min-height: 220svh;
+      padding: 110px 0;
+      background:
+        radial-gradient(circle at 88% 24%, rgba(78, 203, 255, 0.08), transparent 28%),
+        linear-gradient(180deg, #eef2e5, #fafbf4);
+    }
+
+    .flow-block {
+      min-height: 94svh;
+      display: grid;
+      align-items: center;
+      padding: 48px 0;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr);
+      gap: clamp(28px, 6vw, 88px);
+      align-items: start;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .panel-head {
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head b {
+      font-family: "Space Grotesk", "Inter Tight", sans-serif;
+      font-size: 18px;
+      letter-spacing: -0.04em;
+    }
+
+    .panel-head span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .panel-head span::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sky);
+      box-shadow: 0 0 16px rgba(78, 203, 255, 0.64);
+    }
+
+    .monitor-row {
+      min-height: 78px;
+      display: grid;
+      grid-template-columns: 148px 1fr 72px;
+      gap: 18px;
+      align-items: center;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      transition:
+        background 0.36s var(--ease),
+        padding 0.36s var(--ease);
+    }
+
+    .monitor-row:last-child {
+      border-bottom: 0;
+    }
+
+    .monitor-row:hover {
+      padding-left: 32px;
+      background: var(--sky-soft);
+    }
+
+    .monitor-name {
+      display: grid;
+      gap: 7px;
+    }
+
+    .monitor-name b {
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .monitor-name span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .uptime {
+      height: 30px;
+      display: grid;
+      grid-template-columns: repeat(30, minmax(3px, 1fr));
+      gap: 3px;
+      align-items: end;
+    }
+
+    .uptime i {
+      height: 100%;
+      display: block;
+      border-radius: 5px;
+      background: #8ecf94;
+      transform-origin: bottom;
+      animation: barIn 0.72s var(--ease) both;
+      animation-delay: calc(var(--row) * 0.08s + var(--i) * 0.018s);
+    }
+
+    .uptime i.mid {
+      background: #d6c777;
+    }
+
+    .uptime i.bad {
+      background: #d98572;
+    }
+
+    @keyframes barIn {
+      from {
+        opacity: 0;
+        transform: scaleY(0.12);
+      }
+
+      to {
+        opacity: 1;
+        transform: scaleY(1);
+      }
+    }
+
+    .percent {
+      justify-self: end;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .tech-wall {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .tech-card {
+      min-height: 188px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--card);
+      box-shadow: 0 16px 42px rgba(24, 33, 22, 0.08);
+      transition:
+        transform 0.42s var(--ease),
+        background 0.42s var(--ease),
+        box-shadow 0.42s var(--ease);
+    }
+
+    .tech-card:hover {
+      transform: translateY(-10px);
+      background: rgba(255, 255, 246, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .tech-card small {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .tech-card h3 {
+      margin: 34px 0 12px;
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(46px, 6vw, 82px);
+      line-height: 0.82;
+      letter-spacing: -0.01em;
+    }
+
+    .tech-card p {
+      margin: 0;
+      color: var(--muted);
+      font-family: "Space Grotesk", "Inter Tight", sans-serif;
+      font-size: 14px;
+      line-height: 1.78;
+    }
+
+    /* =========================================================
+       Works merge
+       Fourth page: two symmetric columns move from left/right into center.
+       Final state is still a two-column grid, not a single list.
+       ========================================================= */
+
+    .works {
+      height: 188svh;
+      background:
+        radial-gradient(circle at 22% 18%, rgba(78, 203, 255, 0.14), transparent 26%),
+        linear-gradient(180deg, #fafbf4, #eef2e5);
+    }
+
+    .works-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .bg-word {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      color: transparent;
+      font-family: "Archivo Black", sans-serif;
+      font-size: clamp(100px, 28vw, 460px);
+      line-height: 0.75;
+      letter-spacing: -0.12em;
+      -webkit-text-stroke: 1px rgba(16, 22, 15, 0.08);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .works-result {
+      position: relative;
+      z-index: 4;
+      width: min(1140px, calc(100% - 44px));
+      opacity: clamp(0, calc(var(--merge, 0) * 1.65), 1);
+      transform: scale(calc(0.94 + var(--merge, 0) * 0.06));
+      transition:
+        opacity 0.08s linear,
+        transform 0.08s linear;
+    }
+
+    .works-titlebar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      gap: 18px;
+      margin-bottom: 22px;
+      opacity: clamp(0.15, var(--merge, 0), 1);
+    }
+
+    .works-titlebar span {
+      color: var(--muted);
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .works-titlebar span:last-child {
+      justify-self: end;
+    }
+
+    .works-titlebar h2 {
+      margin: 0;
+      font-family: "DM Serif Display", Georgia, serif;
+      font-size: clamp(44px, 6.4vw, 92px);
+      line-height: 0.82;
+      letter-spacing: -0.055em;
+      white-space: nowrap;
+    }
+
+    .works-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(16px, 3.6vw, 42px);
+      align-items: stretch;
+    }
+
+    .work-column {
+      display: grid;
+      gap: 16px;
+      transform: translateX(calc(var(--from) * (1 - var(--merge, 0)))) rotate(calc(var(--tilt) * (1 - var(--merge, 0))));
+      opacity: clamp(0.18, calc(var(--merge, 0) * 1.45), 1);
+      transition:
+        transform 0.08s linear,
+        opacity 0.08s linear;
+    }
+
+    .work-column.left {
+      --from: -54vw;
+      --tilt: -7deg;
+    }
+
+    .work-column.right {
+      --from: 54vw;
+      --tilt: 7deg;
+      padding-top: clamp(42px, 7vh, 84px);
+    }
+
+    .project-card {
+      position: relative;
+      min-height: 188px;
+      display: grid;
+      align-content: space-between;
+      padding: clamp(20px, 3vw, 30px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: rgba(255, 255, 246, 0.78);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      transition:
+        transform 0.45s var(--ease),
+        background 0.45s var(--ease),
+        box-shadow 0.45s var(--ease);
+    }
+
+    .project-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, var(--sky-soft), transparent 54%);
+      opacity: 0;
+      transform: translateX(-18%);
+      transition:
+        opacity 0.45s var(--ease),
+        transform 0.45s var(--ease);
+      pointer-events: none;
+    }
+
+    .project-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255, 255, 246, 0.92);
+      box-shadow: 0 34px 90px rgba(24, 33, 22, 0.18);
+    }
+
+    .project-card:hover::before {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .project-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .project-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .project-card h3 {
+      margin: 28px 0 12px;
+      font-family: "DM Serif Display", Georgia, serif;
+      font-size: clamp(34px, 4.6vw, 62px);
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.072em;
+    }
+
+    .project-card p {
+      margin: 0;
+      max-width: 520px;
+      color: var(--muted);
+      font-family: "Space Grotesk", "Inter Tight", sans-serif;
+      font-size: 14px;
+      line-height: 1.72;
+    }
+
+    /* =========================================================
+       Contact
+       ========================================================= */
+
+    .contact {
+      min-height: 100svh;
+      display: grid;
+      align-items: center;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(78, 203, 255, 0.15), transparent 24%),
+        linear-gradient(180deg, #eef2e5, #fafbf4);
+    }
+
+    .contact-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+      gap: clamp(28px, 6vw, 90px);
+      align-items: end;
+    }
+
+    .contact-title {
+      margin: 0;
+      font-family: "DM Serif Display", serif;
+      font-style: italic;
+      max-width: 850px;
+      font-size: clamp(58px, 12vw, 168px);
+      line-height: 0.78;
+      letter-spacing: -0.1em;
+      font-weight: 900;
+    }
+
+    .contact-panel {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .contact-panel p {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-family: "Space Grotesk", "Inter Tight", sans-serif;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .contact-link {
+      min-height: 58px;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 20px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 246, 0.62);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition:
+        transform 0.42s var(--ease),
+        background 0.42s var(--ease);
+    }
+
+    .contact-link + .contact-link {
+      margin-top: 10px;
+    }
+
+    .contact-link:hover {
+      transform: translateX(8px);
+      background: var(--sky);
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        height: 62px;
+        padding: 0 18px;
+      }
+
+      .topbar span {
+        font-size: 16px;
+      }
+
+      .topbar .mid {
+        display: none;
+      }
+
+      .wrap {
+        width: min(100% - 32px, 1180px);
+      }
+
+      .hero {
+        height: 190svh;
+      }
+
+      .hero-pill,
+      .hero-button {
+        top: 80px;
+      }
+
+      .hero-pill {
+        height: 50px;
+        padding: 0 17px;
+        border-radius: 16px;
+        font-size: 22px;
+      }
+
+      .hero-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+      }
+
+      .hero-marquee {
+        bottom: 18vh;
+      }
+
+      .marquee-line.one {
+        font-size: clamp(46px, 16vw, 92px);
+      }
+
+      .marquee-line.two {
+        font-size: clamp(31px, 10.6vw, 64px);
+        letter-spacing: -0.06em;
+      }
+
+      .hero-note {
+        right: 18px;
+        bottom: 28px;
+        max-width: none;
+        font-size: 13px;
+        line-height: 1.75;
+      }
+
+      .flow {
+        padding: 78px 0;
+      }
+
+      .flow-grid,
+      .contact-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .title {
+        font-size: clamp(42px, 13vw, 72px);
+        letter-spacing: -0.082em;
+      }
+
+      .lead {
+        font-size: 14px;
+        line-height: 1.82;
+      }
+
+      .panel-head {
+        min-height: 68px;
+        padding: 0 18px;
+      }
+
+      .monitor-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        min-height: auto;
+        padding: 18px;
+      }
+
+      .monitor-row:hover {
+        padding-left: 18px;
+      }
+
+      .percent {
+        justify-self: start;
+      }
+
+      .tech-wall {
+        grid-template-columns: 1fr;
+      }
+
+      .tech-card {
+        min-height: 158px;
+      }
+
+      .tech-card h3 {
+        margin-top: 26px;
+        font-size: 58px;
+      }
+
+      .works {
+        height: 188svh;
+      }
+
+      .works-result {
+        width: calc(100% - 28px);
+      }
+
+
+      .works-titlebar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 14px;
+        text-align: center;
+      }
+
+      .works-titlebar span,
+      .works-titlebar span:last-child {
+        justify-self: center;
+      }
+
+      .works-titlebar h2 {
+        font-size: clamp(42px, 13vw, 68px);
+      }
+
+      .works-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .work-column {
+        gap: 12px;
+      }
+
+      .work-column.left {
+        --from: -72vw;
+      }
+
+      .work-column.right {
+        --from: 72vw;
+        padding-top: 34px;
+      }
+
+      .project-card {
+        min-height: 174px;
+        padding: 17px;
+        border-radius: 24px;
+      }
+
+      .project-card h3 {
+        margin-top: 22px;
+        font-size: clamp(28px, 8.8vw, 42px);
+        letter-spacing: -0.06em;
+      }
+
+      .project-card p {
+        font-size: 12px;
+        line-height: 1.58;
+      }
+
+      .project-meta {
+        display: grid;
+        gap: 5px;
+        font-size: 9px;
+      }
+
+      .contact {
+        padding: 90px 0 54px;
+      }
+
+      .contact-title {
+        font-size: clamp(64px, 18vw, 112px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="noise"></div>
+
+  <header class="topbar">
+    <span>QQ.SG</span>
+    <span class="mid">NKX / Infrastructure</span>
+    <span id="clock">TPE +08</span>
+  </header>
+
+  <main>
+    <section class="section hero" id="hero" data-snap="true">
+      <div class="hero-sticky">
+        <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+
+        <a class="hero-pill" href="#works">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 8h12l-1 12H7L6 8Z"></path>
+            <path d="M9 8a3 3 0 0 1 6 0"></path>
+          </svg>
+          Works
+        </a>
+
+        <div class="hero-button" aria-hidden="true"></div>
+
+        <div class="hero-marquee">
+          <div class="marquee-line one">
+            <span>WE DID IT AT HOME · ROUTES ACROSS THE SEA · OLD SERVERS STILL GLOW · </span>
+            <span>WE DID IT AT HOME · ROUTES ACROSS THE SEA · OLD SERVERS STILL GLOW · </span>
+          </div>
+          <div class="marquee-line two">
+            <span>NEVER JUST A TEMPLATE · ALWAYS A SMALL LIGHT IN TERMINAL · </span>
+            <span>NEVER JUST A TEMPLATE · ALWAYS A SMALL LIGHT IN TERMINAL · </span>
+          </div>
+        </div>
+
+        <p class="hero-note">
+          This version uses a large liquid-mask reveal. When you pass over QQ.SG, an irregular area opens up and the letter surface turns sky blue.
+        </p>
+      </div>
+    </section>
+
+    <section class="section flow" id="flow">
+      <div class="flow-block">
+        <div class="wrap flow-grid">
+          <div>
+            <p class="kicker">Availability</p>
+            <h2 class="title">First, see whether the sites are still awake.</h2>
+            <p class="lead">
+              Pages two and three keep a continuous flow instead of hard snapping. This area shows uptime, reachability, and service health — clear like a status page, but not like a generic admin dashboard.
+            </p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <b>Service availability</b>
+              <span>last 30 days</span>
+            </div>
+            <div id="monitorList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-block">
+        <div class="wrap flow-grid">
+          <div>
+            <p class="kicker">Virtualization</p>
+            <h2 class="title">Machines I have touched leave their own marks.</h2>
+            <p class="lead">
+              Instead of calling everything “expert level,” this section keeps it honest: tools I have deployed, tested, broken, fixed, and learned from.
+            </p>
+          </div>
+
+          <div class="tech-wall">
+            <article class="tech-card">
+              <small>Hypervisor</small>
+              <h3>PVE</h3>
+              <p>KVM, LXC, storage, internal networks, snapshots, and backups — turning one server into many rooms for experiments.</p>
+            </article>
+            <article class="tech-card">
+              <small>Enterprise</small>
+              <h3>ESXi</h3>
+              <p>A more enterprise-style virtualization stack for understanding hosts, datastores, and virtual switching.</p>
+            </article>
+            <article class="tech-card">
+              <small>Windows</small>
+              <h3>Hyper-V</h3>
+              <p>Virtualization inside Windows Server environments, often paired with domain labs, internal networks, and service deployment.</p>
+            </article>
+            <article class="tech-card">
+              <small>Storage</small>
+              <h3>Ceph</h3>
+              <p>Connecting multiple machines into one system, where stability, network quality, and disks all shape its temperament.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section works" id="works" data-snap="true">
+      <div class="works-sticky">
+        <div class="bg-word">WORKS</div>
+
+        <div class="works-result">
+          <div class="works-titlebar">
+            <span>from left</span>
+            <h2>Selected Works</h2>
+            <span>from right</span>
+          </div>
+
+          <div class="works-columns">
+            <div class="work-column left">
+              <a class="project-card" href="https://status.nkx.moe" target="_blank" rel="noreferrer">
+                <div class="project-meta">
+                  <span>01</span>
+                  <span>Status UI</span>
+                </div>
+                <div>
+                  <h3>Probe Frontend Theme</h3>
+                  <p>Status pages, latency grids, node details, and uptime history — turning server monitoring into a visual work.</p>
+                </div>
+              </a>
+
+              <div class="project-card">
+                <div class="project-meta">
+                  <span>03</span>
+                  <span>Edge</span>
+                </div>
+                <div>
+                  <h3>Cloudflare Utilities</h3>
+                  <p>Pages, Workers, DNS, KV, and D1 — small experiments that run at the edge without a traditional server.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="work-column right">
+              <a class="project-card" href="https://niekaixiang.com" target="_blank" rel="noreferrer">
+                <div class="project-meta">
+                  <span>02</span>
+                  <span>Blog</span>
+                </div>
+                <div>
+                  <h3>Personal Blog</h3>
+                  <p>A place for systems, networks, deployments, and old notes. Lightweight pages, but enough room for a long road.</p>
+                </div>
+              </a>
+
+              <div class="project-card">
+                <div class="project-meta">
+                  <span>04</span>
+                  <span>Tools</span>
+                </div>
+                <div>
+                  <h3>VPS Toolkit</h3>
+                  <p>Remaining-value calculators, expiry reminders, and HTTP/S reachability checks — small tools grown from daily needs.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section contact" id="contact" data-snap="true">
+      <div class="wrap contact-layout">
+        <div>
+          <p class="kicker">Contact</p>
+          <h2 class="contact-title">Still<br />on the road.</h2>
+          <p class="lead">
+            If these nodes move somewhere else one day, this page will still remember how a small terminal light led me toward a wider network.
+          </p>
+        </div>
+
+        <div class="contact-panel">
+          <p>Email, status page, blog, and a few domains live here for now. Telegram, GitHub, or more links can be added later.</p>
+
+          <a class="contact-link" href="mailto:me@niekaixiang.com">me@niekaixiang.com <span>↗</span></a>
+          <a class="contact-link" href="https://status.nkx.moe" target="_blank" rel="noreferrer">status.nkx.moe <span>↗</span></a>
+          <a class="contact-link" href="https://niekaixiang.com" target="_blank" rel="noreferrer">niekaixiang.com <span>↗</span></a>
+          <a class="contact-link" href="https://qq.sg" target="_blank" rel="noreferrer">qq.sg <span>↗</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const clock = document.getElementById("clock");
+
+      function updateClock() {
+        clock.textContent =
+          new Date().toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "Asia/Taipei"
+          }) + " / TPE";
+      }
+
+      updateClock();
+      setInterval(updateClock, 15000);
+
+      const mainCanvas = document.getElementById("heroCanvas");
+      const mainCtx = mainCanvas.getContext("2d", { alpha: true });
+
+      const textCanvas = document.createElement("canvas");
+      const textCtx = textCanvas.getContext("2d", { alpha: true });
+
+      const revealCanvas = document.createElement("canvas");
+      const revealCtx = revealCanvas.getContext("2d", { alpha: true });
+
+      const maskCanvas = document.createElement("canvas");
+      const maskCtx = maskCanvas.getContext("2d", { alpha: true });
+
+      const hero = document.getElementById("hero");
+      const flow = document.getElementById("flow");
+      const works = document.getElementById("works");
+      const contact = document.getElementById("contact");
+
+      let dpr = 1;
+      let width = 0;
+      let height = 0;
+      let heroProgress = 0;
+      let brushes = [];
+      let randomTick = 0;
+      let lastPoint = null;
+      let loopStarted = false;
+
+      const TEXT = "QQ.SG";
+      const SKY = "#4ecbff";
+
+      function resizeCanvas() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        for (const canvas of [mainCanvas, textCanvas, revealCanvas, maskCanvas]) {
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+          canvas.style.width = width + "px";
+          canvas.style.height = height + "px";
+        }
+
+        for (const ctx of [mainCtx, textCtx, revealCtx, maskCtx]) {
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+      }
+
+      function getTextLayout() {
+        const isMobile = width < 720;
+        const size = Math.max(
+          70,
+          Math.min(
+            width * (isMobile ? 0.285 : 0.255),
+            height * (isMobile ? 0.205 : 0.31)
+          ) - heroProgress * (isMobile ? 8 : 18)
+        );
+
+        return {
+          x: width / 2,
+          y: height * (isMobile ? 0.475 - heroProgress * 0.08 : 0.47 - heroProgress * 0.13),
+          size
+        };
+      }
+
+      function setFont(ctx) {
+        const layout = getTextLayout();
+        ctx.font = `900 ${layout.size}px "Archivo Black", "Arial Black", Impact, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        return layout;
+      }
+
+      function drawText(ctx, color) {
+        const layout = setFont(ctx);
+        ctx.fillStyle = color;
+        ctx.fillText(TEXT, layout.x, layout.y);
+      }
+
+      function getTextBounds() {
+        const layout = setFont(mainCtx);
+        const metrics = mainCtx.measureText(TEXT);
+
+        return {
+          left: layout.x - metrics.width / 2,
+          right: layout.x + metrics.width / 2,
+          top: layout.y - layout.size * 0.45,
+          bottom: layout.y + layout.size * 0.45,
+          width: metrics.width,
+          height: layout.size * 0.9
+        };
+      }
+
+      function makeBrush(x1, y1, x2, y2, source = "pointer") {
+        const fast = source === "pointer";
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const angle = Math.atan2(dy, dx);
+        const base = Math.min(width, height);
+        const wide = base * (fast ? 0.115 : 0.16);
+
+        const bristles = Array.from({ length: fast ? 18 : 26 }, (_, index) => {
+          const offset = (index / (fast ? 17 : 25) - 0.5) * 1.18;
+          return {
+            offset,
+            width: 0.025 + Math.random() * 0.055,
+            alpha: 0.36 + Math.random() * 0.5,
+            start: Math.random() * 0.16,
+            end: 0.82 + Math.random() * 0.18,
+            jitter: (Math.random() - 0.5) * wide * 0.72,
+            bow: (Math.random() - 0.5) * wide * 0.9
+          };
+        });
+
+        return {
+          x1,
+          y1,
+          x2,
+          y2,
+          age: 0,
+          life: fast ? 0.82 : 1.28,
+          angle,
+          distance,
+          width: wide,
+          bristles,
+          seed: Math.random() * 999,
+          drift: (Math.random() - 0.5) * 22
+        };
+      }
+
+      function addBrush(x1, y1, x2, y2, source = "pointer") {
+        brushes.push(makeBrush(x1, y1, x2, y2, source));
+
+        if (brushes.length > 52) {
+          brushes.splice(0, brushes.length - 52);
+        }
+      }
+
+      function addRandomBrush() {
+        const bounds = getTextBounds();
+        const centerX = bounds.left + Math.random() * bounds.width;
+        const centerY = bounds.top + Math.random() * bounds.height;
+        const length = bounds.width * (0.42 + Math.random() * 0.34);
+        const angle = -0.38 + (Math.random() - 0.5) * 0.42;
+
+        const x1 = centerX - Math.cos(angle) * length * 0.5;
+        const y1 = centerY - Math.sin(angle) * length * 0.5;
+        const x2 = centerX + Math.cos(angle) * length * 0.5;
+        const y2 = centerY + Math.sin(angle) * length * 0.5;
+
+        addBrush(x1, y1, x2, y2, "random");
+      }
+
+      function drawBrushToMask(ctx, brush) {
+        const t = clamp(brush.age / brush.life);
+        const alpha = Math.sin(t * Math.PI);
+        const grow = easeOutCubic(clamp(t * 1.35));
+
+        const nx = -Math.sin(brush.angle);
+        const ny = Math.cos(brush.angle);
+        const drift = brush.drift * t;
+
+        const sx = brush.x1 + nx * drift;
+        const sy = brush.y1 + ny * drift;
+        const ex = brush.x1 + (brush.x2 - brush.x1) * grow + nx * drift;
+        const ey = brush.y1 + (brush.y2 - brush.y1) * grow + ny * drift;
+        const mx = (sx + ex) / 2 + nx * (brush.width * 0.52 + Math.sin(brush.seed + t * 4) * brush.width * 0.18);
+        const my = (sy + ey) / 2 + ny * (brush.width * 0.52 + Math.cos(brush.seed + t * 3) * brush.width * 0.18);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // Main body of the brush: wide, not a thin line.
+        ctx.strokeStyle = "rgba(255,255,255,0.96)";
+        ctx.lineWidth = brush.width;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.quadraticCurveTo(mx, my, ex, ey);
+        ctx.stroke();
+
+        // Dense bristles make it feel like a real brush stroke.
+        brush.bristles.forEach((b) => {
+          const ox = nx * brush.width * b.offset;
+          const oy = ny * brush.width * b.offset;
+          const bx1 = sx + (ex - sx) * b.start + ox;
+          const by1 = sy + (ey - sy) * b.start + oy;
+          const bx2 = sx + (ex - sx) * b.end + ox;
+          const by2 = sy + (ey - sy) * b.end + oy;
+          const cx = (bx1 + bx2) / 2 + nx * (b.bow + b.jitter * Math.sin(t * 6 + brush.seed));
+          const cy = (by1 + by2) / 2 + ny * (b.bow + b.jitter * Math.cos(t * 5 + brush.seed));
+
+          ctx.strokeStyle = `rgba(255,255,255,${b.alpha})`;
+          ctx.lineWidth = Math.max(2, brush.width * b.width);
+          ctx.beginPath();
+          ctx.moveTo(bx1, by1);
+          ctx.quadraticCurveTo(cx, cy, bx2, by2);
+          ctx.stroke();
+        });
+
+        // Dry-brush gaps: erase small streaks from the mask.
+        ctx.globalCompositeOperation = "destination-out";
+        for (let i = 0; i < 16; i++) {
+          const off = (i / 15 - 0.5) * brush.width * 1.05;
+          const start = 0.08 + Math.random() * 0.18;
+          const end = 0.58 + Math.random() * 0.36;
+          const bx1 = sx + (ex - sx) * start + nx * off;
+          const by1 = sy + (ey - sy) * start + ny * off;
+          const bx2 = sx + (ex - sx) * end + nx * (off + (Math.random() - 0.5) * brush.width * 0.18);
+          const by2 = sy + (ey - sy) * end + ny * (off + (Math.random() - 0.5) * brush.width * 0.18);
+
+          ctx.strokeStyle = "rgba(0,0,0,0.22)";
+          ctx.lineWidth = 1 + Math.random() * brush.width * 0.035;
+          ctx.beginPath();
+          ctx.moveTo(bx1, by1);
+          ctx.lineTo(bx2, by2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+
+        brush.age += 0.015;
+      }
+      function renderHero() {
+        mainCtx.clearRect(0, 0, width, height);
+        textCtx.clearRect(0, 0, width, height);
+        revealCtx.clearRect(0, 0, width, height);
+        maskCtx.clearRect(0, 0, width, height);
+
+        // 1. Draw the base black text.
+        drawText(mainCtx, "#10160f");
+
+        // 2. Draw the text mask.
+        drawText(textCtx, "#000");
+
+        // 3. Draw the brush-stroke mask.
+        brushes.forEach((brush) => drawBrushToMask(maskCtx, brush));
+        brushes = brushes.filter((brush) => brush.age < brush.life);
+
+        // 4. Keep only the intersection of liquid mask and text mask.
+        revealCtx.fillStyle = SKY;
+        revealCtx.fillRect(0, 0, width, height);
+        revealCtx.globalCompositeOperation = "destination-in";
+        revealCtx.drawImage(maskCanvas, 0, 0, width, height);
+        revealCtx.globalCompositeOperation = "destination-in";
+        revealCtx.drawImage(textCanvas, 0, 0, width, height);
+        revealCtx.globalCompositeOperation = "source-over";
+
+        // 5. Draw the sky-blue replacement area back onto the main canvas.
+        mainCtx.drawImage(revealCanvas, 0, 0, width, height);
+
+        randomTick += 1;
+        if (randomTick > 52 + Math.random() * 78) {
+          randomTick = 0;
+          addRandomBrush();
+        }
+
+        requestAnimationFrame(renderHero);
+      }
+
+      function handlePointerMove(event) {
+        const rect = mainCanvas.getBoundingClientRect();
+        const point = event.touches && event.touches[0]
+          ? {
+              x: event.touches[0].clientX - rect.left,
+              y: event.touches[0].clientY - rect.top
+            }
+          : {
+              x: event.clientX - rect.left,
+              y: event.clientY - rect.top
+            };
+
+        if (lastPoint) {
+          const dx = point.x - lastPoint.x;
+          const dy = point.y - lastPoint.y;
+          const distance = Math.hypot(dx, dy);
+
+          if (distance > 8) {
+            const steps = Math.max(1, Math.min(4, Math.floor(distance / 64)));
+
+            for (let i = 0; i < steps; i++) {
+              const a = i / steps;
+              const b = (i + 1) / steps;
+              addBrush(
+                lastPoint.x + dx * a,
+                lastPoint.y + dy * a,
+                lastPoint.x + dx * b,
+                lastPoint.y + dy * b,
+                "pointer"
+              );
+            }
+          }
+        } else {
+          const size = Math.min(width, height) * 0.28;
+          addBrush(point.x - size * 0.4, point.y + size * 0.12, point.x + size * 0.4, point.y - size * 0.12, "pointer");
+        }
+
+        lastPoint = point;
+
+        clearTimeout(handlePointerMove.timer);
+        handlePointerMove.timer = setTimeout(() => {
+          lastPoint = null;
+        }, 120);
+      }
+
+      mainCanvas.addEventListener("mousemove", handlePointerMove, { passive: true });
+      mainCanvas.addEventListener("touchmove", handlePointerMove, { passive: true });
+      window.addEventListener("resize", resizeCanvas);
+
+      resizeCanvas();
+
+      document.fonts.ready.then(() => {
+        resizeCanvas();
+        if (!loopStarted) {
+          loopStarted = true;
+          renderHero();
+        }
+      });
+
+      if (!loopStarted) {
+        loopStarted = true;
+        renderHero();
+      }
+
+      function updateVisualProgress() {
+        const heroRect = hero.getBoundingClientRect();
+        const heroDistance = Math.max(1, hero.offsetHeight - window.innerHeight);
+        heroProgress = clamp(-heroRect.top / heroDistance);
+
+        document.documentElement.style.setProperty("--hero-progress", heroProgress.toFixed(3));
+        document.documentElement.style.setProperty("--marquee", clamp((heroProgress - 0.24) / 0.34).toFixed(3));
+
+        const worksRect = works.getBoundingClientRect();
+        const worksDistance = Math.max(1, works.offsetHeight - window.innerHeight);
+        const merge = clamp(-worksRect.top / worksDistance);
+        works.style.setProperty("--merge", merge.toFixed(3));
+
+        requestAnimationFrame(updateVisualProgress);
+      }
+
+      updateVisualProgress();
+
+      const snapTargets = [hero, flow, works, contact];
+
+      let scrollTimer = 0;
+      let animatingSnap = false;
+      let lastScrollY = window.scrollY;
+      let lastDirection = 0;
+
+      function sectionTop(section) {
+        return section.getBoundingClientRect().top + window.scrollY;
+      }
+
+      function isInsideFreeZone() {
+        const y = window.scrollY;
+        const vh = window.innerHeight;
+
+        const heroTop = sectionTop(hero);
+        const heroBottom = heroTop + hero.offsetHeight;
+
+        const flowTop = sectionTop(flow);
+        const flowBottom = flowTop + flow.offsetHeight;
+
+        const worksTop = sectionTop(works);
+        const worksBottom = worksTop + works.offsetHeight;
+
+        if (y > heroTop + vh * 0.12 && y < heroBottom - vh * 1.05) return true;
+        if (y > flowTop + vh * 0.12 && y < flowBottom - vh * 0.95) return true;
+        if (y > worksTop + vh * 0.1 && y < worksBottom - vh * 1.05) return true;
+
+        return false;
+      }
+
+      function smoothScrollTo(targetY, duration = 1050) {
+        if (prefersReducedMotion) {
+          window.scrollTo(0, targetY);
+          return;
+        }
+
+        animatingSnap = true;
+
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+        const start = performance.now();
+
+        function frame(now) {
+          const t = clamp((now - start) / duration);
+          const eased = easeOutCubic(t);
+
+          window.scrollTo(0, startY + distance * eased);
+
+          if (t < 1) {
+            requestAnimationFrame(frame);
+          } else {
+            animatingSnap = false;
+          }
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      function settleSnap() {
+        if (animatingSnap || isInsideFreeZone()) return;
+
+        const y = window.scrollY;
+        const vh = window.innerHeight;
+        const projectedY = y + lastDirection * vh * 0.22;
+
+        let bestTarget = null;
+        let bestDistance = Infinity;
+
+        snapTargets.forEach((section) => {
+          const top = sectionTop(section);
+          const distance = Math.abs(top - projectedY);
+
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            bestTarget = section;
+          }
+        });
+
+        if (!bestTarget) return;
+
+        const targetTop = sectionTop(bestTarget);
+        const realDistance = Math.abs(targetTop - y);
+
+        if (realDistance < vh * 0.62) {
+          const duration = Math.min(1350, Math.max(880, realDistance * 0.95));
+          smoothScrollTo(targetTop, duration);
+        }
+      }
+
+      window.addEventListener(
+        "wheel",
+        (event) => {
+          lastDirection = Math.sign(event.deltaY) || lastDirection;
+        },
+        { passive: true }
+      );
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          const y = window.scrollY;
+          const delta = y - lastScrollY;
+
+          if (Math.abs(delta) > 1) {
+            lastDirection = Math.sign(delta);
+          }
+
+          lastScrollY = y;
+
+          clearTimeout(scrollTimer);
+          scrollTimer = setTimeout(settleSnap, 310);
+        },
+        { passive: true }
+      );
+
+      const monitorList = document.getElementById("monitorList");
+
+      const monitorRows = [
+        ["status.nkx.moe", "Probe panel", "99.98%", [9]],
+        ["niekaixiang.com", "Blog", "100%", []],
+        ["waline.nkx.moe", "Comment", "99.86%", [3, 19]],
+        ["qq.sg", "Domain", "100%", []],
+        ["Cloudflare Worker", "Edge check", "99.72%", [5, 6, 22]]
+      ];
+
+      monitorList.innerHTML = monitorRows.map(([name, desc, percent, issues], row) => {
+        const bars = Array.from({ length: 30 }, (_, index) => {
+          let cls = "";
+          if (issues.includes(index)) cls = issues.length > 2 ? "bad" : "mid";
+          return `<i class="${cls}" style="--i:${index};--row:${row}"></i>`;
+        }).join("");
+
+        return `
+          <div class="monitor-row">
+            <div class="monitor-name">
+              <b>${name}</b>
+              <span>${desc}</span>
+            </div>
+            <div class="uptime">${bars}</div>
+            <div class="percent">${percent}</div>
+          </div>
+        `;
+      }).join("");
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>QQ.SG — NKX Interaction Draft</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bebas+Neue&family=Inter+Tight:wght@400;500;700;800;900&family=Noto+Serif+SC:wght@500;700;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --sky: #54c9ff;
+      --sky-2: #a8e8ff;
+      --sky-soft: rgba(84, 201, 255, 0.16);
+
+      --ink: #11170f;
+      --olive: #192116;
+      --olive-2: #25311f;
+
+      --cream: #f4f6ec;
+      --cream-2: #e9eee1;
+      --card: rgba(255, 255, 246, 0.72);
+
+      --line: rgba(17, 23, 15, 0.13);
+      --muted: rgba(17, 23, 15, 0.58);
+
+      --shadow: 0 28px 80px rgba(24, 33, 22, 0.14);
+      --ease: cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--cream);
+      scroll-behavior: auto;
+      overscroll-behavior-y: contain;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 78% 10%, rgba(84, 201, 255, 0.16), transparent 26%),
+        radial-gradient(circle at 10% 74%, rgba(25, 33, 22, 0.07), transparent 30%),
+        linear-gradient(180deg, #fafbf4, var(--cream));
+      font-family: "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      text-rendering: geometricPrecision;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    ::selection {
+      color: var(--ink);
+      background: var(--sky-2);
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.035;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.74' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.88'/%3E%3C/svg%3E");
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 120;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(18px, 4vw, 56px);
+      pointer-events: none;
+      color: rgba(17, 23, 15, 0.72);
+    }
+
+    .topbar span {
+      font-family: "Bebas Neue", "Inter Tight", sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .topbar .mid {
+      font-family: "Inter Tight", sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+    }
+
+    .section {
+      position: relative;
+      min-height: 100svh;
+      overflow: clip;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 44px));
+      margin: 0 auto;
+    }
+
+    .kicker {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .title {
+      margin: 0;
+      max-width: 980px;
+      font-family: "Inter Tight", system-ui, sans-serif;
+      font-size: clamp(44px, 8vw, 124px);
+      font-weight: 900;
+      line-height: 0.86;
+      letter-spacing: -0.095em;
+    }
+
+    .lead {
+      margin: 22px 0 0;
+      max-width: 660px;
+      color: var(--muted);
+      font-family: "Noto Serif SC", serif;
+      font-size: clamp(15px, 1.35vw, 20px);
+      font-weight: 500;
+      line-height: 1.9;
+      letter-spacing: 0.01em;
+    }
+
+    /* =========================================================
+       Hero
+       ========================================================= */
+
+    .hero {
+      height: 194svh;
+      background:
+        radial-gradient(circle at 78% 22%, rgba(84, 201, 255, 0.13), transparent 30%),
+        linear-gradient(180deg, #fbfcf4 0%, #eef2e5 100%);
+    }
+
+    .hero-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(17, 23, 15, 0.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17, 23, 15, 0.032) 1px, transparent 1px);
+      background-size: 42px 42px;
+    }
+
+    .hero-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: pan-y;
+    }
+
+    .hero-pill {
+      position: absolute;
+      left: clamp(18px, 4vw, 54px);
+      top: 92px;
+      z-index: 8;
+      height: 56px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      border-radius: 18px;
+      background: var(--sky);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      font-family: "Bebas Neue", "Inter Tight", sans-serif;
+      font-size: 24px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transform: translateY(calc(var(--hero-progress, 0) * -10px));
+    }
+
+    .hero-pill svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .hero-button {
+      position: absolute;
+      right: clamp(18px, 4vw, 54px);
+      top: 92px;
+      z-index: 8;
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 18px;
+      background: var(--ink);
+      color: var(--cream);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-button::before {
+      content: "";
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      box-shadow: 12px -8px 0 currentColor;
+    }
+
+    .hero-note {
+      position: absolute;
+      left: clamp(18px, 4vw, 54px);
+      right: clamp(18px, 4vw, 54px);
+      bottom: 34px;
+      z-index: 8;
+      max-width: 500px;
+      color: rgba(17, 23, 15, 0.58);
+      font-family: "Noto Serif SC", serif;
+      font-size: 14px;
+      line-height: 1.85;
+      opacity: calc(0.28 + var(--hero-progress, 0) * 0.72);
+      transform: translateY(calc((1 - var(--hero-progress, 0)) * 10px));
+    }
+
+    .hero-marquee {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 16vh;
+      z-index: 7;
+      display: grid;
+      gap: 4px;
+      opacity: var(--marquee, 0);
+      transform: translateY(calc((1 - var(--marquee, 0)) * 48px));
+      transition:
+        opacity 0.12s linear,
+        transform 0.12s linear;
+    }
+
+    .marquee-line {
+      overflow: hidden;
+      white-space: nowrap;
+      text-transform: uppercase;
+      line-height: 0.82;
+      pointer-events: none;
+    }
+
+    .marquee-line span {
+      display: inline-block;
+      padding-right: 0.35em;
+      will-change: transform;
+    }
+
+    .marquee-line.one {
+      color: var(--olive);
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(52px, 11.5vw, 172px);
+      letter-spacing: -0.01em;
+    }
+
+    .marquee-line.two {
+      color: rgba(17, 23, 15, 0.78);
+      font-family: "Archivo Black", "Arial Black", sans-serif;
+      font-size: clamp(34px, 7.6vw, 116px);
+      letter-spacing: -0.075em;
+    }
+
+    .marquee-line.one span {
+      animation: marqueeLeft 20s linear infinite;
+    }
+
+    .marquee-line.two span {
+      animation: marqueeRight 23s linear infinite;
+    }
+
+    @keyframes marqueeLeft {
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes marqueeRight {
+      from {
+        transform: translateX(-50%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    /* =========================================================
+       Flow zone
+       这里故意不强吸附，第二页到第三页连续滚动
+       ========================================================= */
+
+    .flow {
+      min-height: 220svh;
+      padding: 110px 0;
+      background:
+        radial-gradient(circle at 88% 24%, rgba(84, 201, 255, 0.08), transparent 28%),
+        linear-gradient(180deg, #eef2e5, #fafbf4);
+    }
+
+    .flow-block {
+      min-height: 94svh;
+      display: grid;
+      align-items: center;
+      padding: 48px 0;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr);
+      gap: clamp(28px, 6vw, 88px);
+      align-items: start;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .panel-head {
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head b {
+      font-size: 18px;
+      letter-spacing: -0.04em;
+    }
+
+    .panel-head span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .panel-head span::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sky);
+      box-shadow: 0 0 16px rgba(84, 201, 255, 0.64);
+    }
+
+    .monitor-row {
+      min-height: 78px;
+      display: grid;
+      grid-template-columns: 148px 1fr 72px;
+      gap: 18px;
+      align-items: center;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      transition:
+        background 0.36s var(--ease),
+        padding 0.36s var(--ease);
+    }
+
+    .monitor-row:last-child {
+      border-bottom: 0;
+    }
+
+    .monitor-row:hover {
+      padding-left: 32px;
+      background: var(--sky-soft);
+    }
+
+    .monitor-name {
+      display: grid;
+      gap: 7px;
+    }
+
+    .monitor-name b {
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .monitor-name span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .uptime {
+      height: 30px;
+      display: grid;
+      grid-template-columns: repeat(30, minmax(3px, 1fr));
+      gap: 3px;
+      align-items: end;
+    }
+
+    .uptime i {
+      height: 100%;
+      display: block;
+      border-radius: 5px;
+      background: #8ecf94;
+      transform-origin: bottom;
+      animation: barIn 0.72s var(--ease) both;
+      animation-delay: calc(var(--row) * 0.08s + var(--i) * 0.018s);
+    }
+
+    .uptime i.mid {
+      background: #d6c777;
+    }
+
+    .uptime i.bad {
+      background: #d98572;
+    }
+
+    @keyframes barIn {
+      from {
+        opacity: 0;
+        transform: scaleY(0.12);
+      }
+
+      to {
+        opacity: 1;
+        transform: scaleY(1);
+      }
+    }
+
+    .percent {
+      justify-self: end;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .tech-wall {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .tech-card {
+      min-height: 188px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--card);
+      box-shadow: 0 16px 42px rgba(24, 33, 22, 0.08);
+      transition:
+        transform 0.42s var(--ease),
+        background 0.42s var(--ease),
+        box-shadow 0.42s var(--ease);
+    }
+
+    .tech-card:hover {
+      transform: translateY(-10px);
+      background: rgba(255, 255, 246, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .tech-card small {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .tech-card h3 {
+      margin: 34px 0 12px;
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(46px, 6vw, 82px);
+      line-height: 0.82;
+      letter-spacing: -0.01em;
+    }
+
+    .tech-card p {
+      margin: 0;
+      color: var(--muted);
+      font-family: "Noto Serif SC", serif;
+      font-size: 14px;
+      line-height: 1.78;
+    }
+
+    /* =========================================================
+       Works merge
+       ========================================================= */
+
+    .works {
+      height: 188svh;
+      background:
+        radial-gradient(circle at 22% 18%, rgba(84, 201, 255, 0.14), transparent 26%),
+        linear-gradient(180deg, #fafbf4, #eef2e5);
+    }
+
+    .works-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .bg-word {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      color: transparent;
+      font-family: "Archivo Black", sans-serif;
+      font-size: clamp(100px, 28vw, 460px);
+      line-height: 0.75;
+      letter-spacing: -0.12em;
+      -webkit-text-stroke: 1px rgba(17, 23, 15, 0.08);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .merge-card {
+      position: absolute;
+      top: 50%;
+      width: min(520px, 42vw);
+      min-height: 60vh;
+      display: grid;
+      align-content: center;
+      padding: clamp(24px, 4vw, 54px);
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      transform:
+        translateY(-50%)
+        translateX(calc(var(--side) * (39vw - var(--merge, 0) * 33vw)))
+        rotate(calc(var(--side) * (7deg - var(--merge, 0) * 7deg)));
+      transition: transform 0.08s linear;
+    }
+
+    .merge-card.left {
+      --side: -1;
+      left: 50%;
+    }
+
+    .merge-card.right {
+      --side: 1;
+      right: 50%;
+    }
+
+    .merge-card small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .merge-card h2 {
+      margin: 20px 0 0;
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(72px, 9vw, 132px);
+      line-height: 0.78;
+      letter-spacing: -0.02em;
+    }
+
+    .works-result {
+      position: relative;
+      z-index: 4;
+      width: min(1080px, calc(100% - 44px));
+      opacity: clamp(0, calc((var(--merge, 0) - 0.56) * 3.2), 1);
+      transform: scale(calc(0.93 + var(--merge, 0) * 0.07));
+      transition:
+        opacity 0.08s linear,
+        transform 0.08s linear;
+    }
+
+    .works-board {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background: rgba(255, 255, 246, 0.78);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .works-head {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 26px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .works-head b {
+      font-size: 20px;
+      letter-spacing: -0.04em;
+    }
+
+    .works-head span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .work-item {
+      min-height: 120px;
+      display: grid;
+      grid-template-columns: 80px 1fr 150px;
+      gap: 18px;
+      align-items: center;
+      padding: 22px 26px;
+      border-bottom: 1px solid var(--line);
+      transition:
+        min-height 0.42s var(--ease),
+        padding 0.42s var(--ease),
+        background 0.42s var(--ease);
+    }
+
+    .work-item:last-child {
+      border-bottom: 0;
+    }
+
+    .work-item:hover {
+      min-height: 150px;
+      padding-left: 36px;
+      background: var(--sky-soft);
+    }
+
+    .work-item .num {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .work-item h3 {
+      margin: 0;
+      font-family: "Inter Tight", sans-serif;
+      font-size: clamp(30px, 4.2vw, 58px);
+      line-height: 0.88;
+      letter-spacing: -0.08em;
+      font-weight: 900;
+    }
+
+    .work-item p {
+      margin: 10px 0 0;
+      max-width: 640px;
+      color: var(--muted);
+      font-family: "Noto Serif SC", serif;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .work-item .tag {
+      justify-self: end;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* =========================================================
+       Contact
+       ========================================================= */
+
+    .contact {
+      min-height: 100svh;
+      display: grid;
+      align-items: center;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(84, 201, 255, 0.15), transparent 24%),
+        linear-gradient(180deg, #eef2e5, #fafbf4);
+    }
+
+    .contact-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+      gap: clamp(28px, 6vw, 90px);
+      align-items: end;
+    }
+
+    .contact-title {
+      margin: 0;
+      max-width: 850px;
+      font-size: clamp(58px, 12vw, 168px);
+      line-height: 0.78;
+      letter-spacing: -0.1em;
+      font-weight: 900;
+    }
+
+    .contact-panel {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .contact-panel p {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-family: "Noto Serif SC", serif;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .contact-link {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 20px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 246, 0.62);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition:
+        transform 0.42s var(--ease),
+        background 0.42s var(--ease);
+    }
+
+    .contact-link + .contact-link {
+      margin-top: 10px;
+    }
+
+    .contact-link:hover {
+      transform: translateX(8px);
+      background: var(--sky);
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        height: 62px;
+        padding: 0 18px;
+      }
+
+      .topbar span {
+        font-size: 16px;
+      }
+
+      .topbar .mid {
+        display: none;
+      }
+
+      .wrap {
+        width: min(100% - 32px, 1180px);
+      }
+
+      .hero {
+        height: 190svh;
+      }
+
+      .hero-pill,
+      .hero-button {
+        top: 80px;
+      }
+
+      .hero-pill {
+        height: 50px;
+        padding: 0 17px;
+        border-radius: 16px;
+        font-size: 22px;
+      }
+
+      .hero-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+      }
+
+      .hero-marquee {
+        bottom: 18vh;
+      }
+
+      .marquee-line.one {
+        font-size: clamp(46px, 16vw, 92px);
+      }
+
+      .marquee-line.two {
+        font-size: clamp(31px, 10.6vw, 64px);
+        letter-spacing: -0.06em;
+      }
+
+      .hero-note {
+        right: 18px;
+        bottom: 28px;
+        max-width: none;
+        font-size: 13px;
+        line-height: 1.75;
+      }
+
+      .flow {
+        padding: 78px 0;
+      }
+
+      .flow-grid,
+      .contact-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .title {
+        font-size: clamp(42px, 13vw, 72px);
+        letter-spacing: -0.082em;
+      }
+
+      .lead {
+        font-size: 14px;
+        line-height: 1.82;
+      }
+
+      .panel-head {
+        min-height: 68px;
+        padding: 0 18px;
+      }
+
+      .monitor-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        min-height: auto;
+        padding: 18px;
+      }
+
+      .monitor-row:hover {
+        padding-left: 18px;
+      }
+
+      .percent {
+        justify-self: start;
+      }
+
+      .tech-wall {
+        grid-template-columns: 1fr;
+      }
+
+      .tech-card {
+        min-height: 158px;
+      }
+
+      .tech-card h3 {
+        margin-top: 26px;
+        font-size: 58px;
+      }
+
+      .works {
+        height: 188svh;
+      }
+
+      .merge-card {
+        width: min(78vw, 420px);
+        min-height: 42vh;
+        padding: 24px;
+      }
+
+      .merge-card.left {
+        left: 43%;
+      }
+
+      .merge-card.right {
+        right: 43%;
+      }
+
+      .merge-card h2 {
+        font-size: clamp(58px, 18vw, 92px);
+      }
+
+      .works-result {
+        width: calc(100% - 28px);
+      }
+
+      .works-head {
+        min-height: 70px;
+        padding: 0 18px;
+      }
+
+      .work-item {
+        grid-template-columns: 1fr;
+        padding: 20px 18px;
+      }
+
+      .work-item .tag {
+        justify-self: start;
+      }
+
+      .contact {
+        padding: 90px 0 54px;
+      }
+
+      .contact-title {
+        font-size: clamp(64px, 18vw, 112px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="noise"></div>
+
+  <header class="topbar">
+    <span>QQ.SG</span>
+    <span class="mid">NKX / Infrastructure</span>
+    <span id="clock">TPE +08</span>
+  </header>
+
+  <main>
+    <section class="section hero" id="hero" data-snap="true">
+      <div class="hero-sticky">
+        <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+
+        <a class="hero-pill" href="#works">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 8h12l-1 12H7L6 8Z"></path>
+            <path d="M9 8a3 3 0 0 1 6 0"></path>
+          </svg>
+          Works
+        </a>
+
+        <div class="hero-button" aria-hidden="true"></div>
+
+        <div class="hero-marquee">
+          <div class="marquee-line one">
+            <span>WE DID IT AT HOME · ROUTES ACROSS THE SEA · OLD SERVERS STILL GLOW · </span>
+            <span>WE DID IT AT HOME · ROUTES ACROSS THE SEA · OLD SERVERS STILL GLOW · </span>
+          </div>
+          <div class="marquee-line two">
+            <span>NEVER JUST A TEMPLATE · ALWAYS A SMALL LIGHT IN TERMINAL · </span>
+            <span>NEVER JUST A TEMPLATE · ALWAYS A SMALL LIGHT IN TERMINAL · </span>
+          </div>
+        </div>
+
+        <p class="hero-note">
+          这次拖影只用天空蓝。划过 QQ.SG 时，不是把颜色盖在上面，而是把被划过的字面区域临时替换成蓝色。
+        </p>
+      </div>
+    </section>
+
+    <section class="section flow" id="flow">
+      <div class="flow-block">
+        <div class="wrap flow-grid">
+          <div>
+            <p class="kicker">Availability</p>
+            <h2 class="title">先看站点是否还醒着。</h2>
+            <p class="lead">
+              第二页和第三页不做强吸附，让内容可以连续往下看。这里放网站可用性、节点连通性，
+              像状态页一样清楚，但不要堆成模板后台。
+            </p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <b>Service availability</b>
+              <span>last 30 days</span>
+            </div>
+            <div id="monitorList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-block">
+        <div class="wrap flow-grid">
+          <div>
+            <p class="kicker">Virtualization</p>
+            <h2 class="title">摸过的机器，会留下自己的痕迹。</h2>
+            <p class="lead">
+              不写成夸张的“精通”，而是写成真实接触过、部署过、排查过的技术栈。
+              这样更像个人经历，不像模板简历。
+            </p>
+          </div>
+
+          <div class="tech-wall">
+            <article class="tech-card">
+              <small>Hypervisor</small>
+              <h3>PVE</h3>
+              <p>KVM、LXC、存储、内网、快照、备份，把一台服务器拆成很多个可实验的房间。</p>
+            </article>
+            <article class="tech-card">
+              <small>Enterprise</small>
+              <h3>ESXi</h3>
+              <p>更偏企业虚拟化的体验，适合理解宿主机、数据存储和虚拟交换机之间的关系。</p>
+            </article>
+            <article class="tech-card">
+              <small>Windows</small>
+              <h3>Hyper-V</h3>
+              <p>Windows Server 场景下的虚拟化环境，和域控、内网实验、服务部署一起使用。</p>
+            </article>
+            <article class="tech-card">
+              <small>Storage</small>
+              <h3>Ceph</h3>
+              <p>把多台机器连成整体；稳定、网络和磁盘都会影响它的脾气。</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section works" id="works" data-snap="true">
+      <div class="works-sticky">
+        <div class="bg-word">WORKS</div>
+
+        <div class="merge-card left">
+          <small>left side</small>
+          <h2>Projects</h2>
+        </div>
+
+        <div class="merge-card right">
+          <small>right side</small>
+          <h2>Memory</h2>
+        </div>
+
+        <div class="works-result">
+          <div class="works-board">
+            <div class="works-head">
+              <b>Selected works</b>
+              <span>merged by scroll</span>
+            </div>
+
+            <a class="work-item" href="https://status.nkx.moe" target="_blank" rel="noreferrer">
+              <span class="num">01</span>
+              <div>
+                <h3>探针前端主题</h3>
+                <p>状态页、延迟小格子、节点详情、可用性历史，把服务器的状态展示得更像一个作品。</p>
+              </div>
+              <span class="tag">Status UI</span>
+            </a>
+
+            <a class="work-item" href="https://niekaixiang.com" target="_blank" rel="noreferrer">
+              <span class="num">02</span>
+              <div>
+                <h3>个人博客</h3>
+                <p>记录折腾过的系统、网络、部署方式和一些旧日笔记。页面轻，但能放下很长的路。</p>
+              </div>
+              <span class="tag">Blog</span>
+            </a>
+
+            <div class="work-item">
+              <span class="num">03</span>
+              <div>
+                <h3>Cloudflare 小工具</h3>
+                <p>Pages、Workers、DNS、KV、D1，尝试把一些轻量服务放到边缘上运行。</p>
+              </div>
+              <span class="tag">Edge</span>
+            </div>
+
+            <div class="work-item">
+              <span class="num">04</span>
+              <div>
+                <h3>VPS 工具集</h3>
+                <p>剩余价值计算、到期提醒、HTTP/S 连通性检测，都是日常需求长出来的枝叶。</p>
+              </div>
+              <span class="tag">Tools</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section contact" id="contact" data-snap="true">
+      <div class="wrap contact-layout">
+        <div>
+          <p class="kicker">Contact</p>
+          <h2 class="contact-title">仍在<br />路上。</h2>
+          <p class="lead">
+            若这些节点以后迁往别处，至少这里还会记得：我曾怎样从一盏小小的终端灯，
+            望向更远的网络。
+          </p>
+        </div>
+
+        <div class="contact-panel">
+          <p>邮箱、状态页、博客和几个域名先放在这里。以后要加 Telegram、GitHub 或更多入口，也可以继续扩展。</p>
+
+          <a class="contact-link" href="mailto:me@niekaixiang.com">me@niekaixiang.com <span>↗</span></a>
+          <a class="contact-link" href="https://status.nkx.moe" target="_blank" rel="noreferrer">status.nkx.moe <span>↗</span></a>
+          <a class="contact-link" href="https://niekaixiang.com" target="_blank" rel="noreferrer">niekaixiang.com <span>↗</span></a>
+          <a class="contact-link" href="https://qq.sg" target="_blank" rel="noreferrer">qq.sg <span>↗</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      /* =========================================================
+         Clock
+         ========================================================= */
+
+      const clock = document.getElementById("clock");
+
+      function updateClock() {
+        clock.textContent =
+          new Date().toLocaleTimeString("zh-CN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "Asia/Taipei"
+          }) + " / TPE";
+      }
+
+      updateClock();
+      setInterval(updateClock, 15000);
+
+      /* =========================================================
+         QQ.SG canvas
+         重点：
+         1. 黑色底字先画出来
+         2. 拖影画到 effectCanvas
+         3. effectCanvas 用文字 mask 裁剪
+         4. 再把天空蓝区域画回主 canvas
+         这样视觉上就是“被划过的字面区域直接替换成蓝色”
+         ========================================================= */
+
+      const mainCanvas = document.getElementById("heroCanvas");
+      const mainCtx = mainCanvas.getContext("2d", { alpha: true });
+
+      const effectCanvas = document.createElement("canvas");
+      const effectCtx = effectCanvas.getContext("2d", { alpha: true });
+
+      const hero = document.getElementById("hero");
+      const flow = document.getElementById("flow");
+      const works = document.getElementById("works");
+      const contact = document.getElementById("contact");
+
+      let dpr = 1;
+      let width = 0;
+      let height = 0;
+      let heroProgress = 0;
+      let strokes = [];
+      let randomTick = 0;
+      let lastPoint = null;
+      let loopStarted = false;
+
+      const TEXT = "QQ.SG";
+      const SKY = "#54c9ff";
+
+      function resizeCanvas() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        for (const canvas of [mainCanvas, effectCanvas]) {
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+        }
+
+        mainCanvas.style.width = width + "px";
+        mainCanvas.style.height = height + "px";
+
+        mainCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        effectCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function getTextLayout() {
+        const isMobile = width < 720;
+        const size = Math.max(
+          70,
+          Math.min(
+            width * (isMobile ? 0.285 : 0.255),
+            height * (isMobile ? 0.205 : 0.31)
+          ) - heroProgress * (isMobile ? 8 : 18)
+        );
+
+        return {
+          x: width / 2,
+          y: height * (isMobile ? 0.475 - heroProgress * 0.08 : 0.47 - heroProgress * 0.13),
+          size
+        };
+      }
+
+      function setFont(ctx) {
+        const layout = getTextLayout();
+        ctx.font = `900 ${layout.size}px "Archivo Black", "Arial Black", Impact, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        return layout;
+      }
+
+      function drawText(ctx, color) {
+        const layout = setFont(ctx);
+        ctx.fillStyle = color;
+        ctx.fillText(TEXT, layout.x, layout.y);
+      }
+
+      function getTextBounds() {
+        const layout = setFont(mainCtx);
+        const metrics = mainCtx.measureText(TEXT);
+
+        return {
+          left: layout.x - metrics.width / 2,
+          right: layout.x + metrics.width / 2,
+          top: layout.y - layout.size * 0.45,
+          bottom: layout.y + layout.size * 0.45,
+          width: metrics.width,
+          height: layout.size * 0.9
+        };
+      }
+
+      function addSlash(x, y, source = "pointer") {
+        const fast = source === "pointer";
+        const angle = -0.82 + (Math.random() - 0.5) * 0.72;
+        const length = Math.min(width, height) * (fast ? 0.24 : 0.42);
+
+        strokes.push({
+          x,
+          y,
+          angle,
+          length,
+          age: 0,
+          life: fast ? 0.78 : 1.15,
+          width: fast ? 38 + Math.random() * 26 : 48 + Math.random() * 34,
+          curve: (Math.random() - 0.5) * 0.32
+        });
+
+        if (strokes.length > 90) {
+          strokes.splice(0, strokes.length - 90);
+        }
+      }
+
+      function addRandomSlash() {
+        const bounds = getTextBounds();
+        const x = bounds.left + Math.random() * bounds.width;
+        const y = bounds.top + Math.random() * bounds.height;
+        addSlash(x, y, "random");
+      }
+
+      function drawStrokeToEffect(stroke) {
+        const progress = clamp(stroke.age / stroke.life);
+        const alpha = Math.sin(progress * Math.PI);
+        const dx = Math.cos(stroke.angle) * stroke.length;
+        const dy = Math.sin(stroke.angle) * stroke.length;
+        const cx = stroke.x + Math.cos(stroke.angle + Math.PI / 2) * stroke.length * stroke.curve;
+        const cy = stroke.y + Math.sin(stroke.angle + Math.PI / 2) * stroke.length * stroke.curve;
+
+        const gradient = effectCtx.createLinearGradient(
+          stroke.x - dx * 0.55,
+          stroke.y - dy * 0.55,
+          stroke.x + dx * 0.55,
+          stroke.y + dy * 0.55
+        );
+
+        gradient.addColorStop(0, "rgba(84,201,255,0)");
+        gradient.addColorStop(0.22, `rgba(84,201,255,${0.98 * alpha})`);
+        gradient.addColorStop(0.5, `rgba(168,232,255,${1 * alpha})`);
+        gradient.addColorStop(0.78, `rgba(84,201,255,${0.98 * alpha})`);
+        gradient.addColorStop(1, "rgba(84,201,255,0)");
+
+        effectCtx.save();
+        effectCtx.lineCap = "round";
+        effectCtx.lineJoin = "round";
+        effectCtx.strokeStyle = gradient;
+        effectCtx.lineWidth = stroke.width;
+
+        effectCtx.beginPath();
+        effectCtx.moveTo(stroke.x - dx * 0.5, stroke.y - dy * 0.5);
+        effectCtx.quadraticCurveTo(cx, cy, stroke.x + dx * 0.5, stroke.y + dy * 0.5);
+        effectCtx.stroke();
+        effectCtx.restore();
+
+        stroke.age += 0.018;
+      }
+
+      function renderHero() {
+        mainCtx.clearRect(0, 0, width, height);
+        effectCtx.clearRect(0, 0, width, height);
+
+        drawText(mainCtx, "#11170f");
+
+        strokes.forEach(drawStrokeToEffect);
+        strokes = strokes.filter((stroke) => stroke.age < stroke.life);
+
+        effectCtx.save();
+        effectCtx.globalCompositeOperation = "destination-in";
+        drawText(effectCtx, "#000");
+        effectCtx.restore();
+
+        mainCtx.drawImage(effectCanvas, 0, 0, width, height);
+
+        randomTick += 1;
+        if (randomTick > 58 + Math.random() * 86) {
+          randomTick = 0;
+          addRandomSlash();
+        }
+
+        requestAnimationFrame(renderHero);
+      }
+
+      function handlePointerMove(event) {
+        const rect = mainCanvas.getBoundingClientRect();
+        const point = event.touches && event.touches[0]
+          ? {
+              x: event.touches[0].clientX - rect.left,
+              y: event.touches[0].clientY - rect.top
+            }
+          : {
+              x: event.clientX - rect.left,
+              y: event.clientY - rect.top
+            };
+
+        if (lastPoint) {
+          const dx = point.x - lastPoint.x;
+          const dy = point.y - lastPoint.y;
+          const distance = Math.hypot(dx, dy);
+          const steps = Math.max(1, Math.min(9, Math.floor(distance / 24)));
+
+          for (let i = 0; i < steps; i++) {
+            const p = i / steps;
+            addSlash(
+              lastPoint.x + dx * p + (Math.random() - 0.5) * 8,
+              lastPoint.y + dy * p + (Math.random() - 0.5) * 8,
+              "pointer"
+            );
+          }
+        } else {
+          addSlash(point.x, point.y, "pointer");
+        }
+
+        lastPoint = point;
+
+        clearTimeout(handlePointerMove.timer);
+        handlePointerMove.timer = setTimeout(() => {
+          lastPoint = null;
+        }, 90);
+      }
+
+      mainCanvas.addEventListener("mousemove", handlePointerMove, { passive: true });
+      mainCanvas.addEventListener("touchmove", handlePointerMove, { passive: true });
+      window.addEventListener("resize", resizeCanvas);
+
+      resizeCanvas();
+
+      document.fonts.ready.then(() => {
+        resizeCanvas();
+        if (!loopStarted) {
+          loopStarted = true;
+          renderHero();
+        }
+      });
+
+      if (!loopStarted) {
+        loopStarted = true;
+        renderHero();
+      }
+
+      /* =========================================================
+         Scroll progress + slow magnetic settle
+         不是 0.1 秒固定，而是等滚动停止后，用 1 秒左右慢慢吸附。
+         flow 区域不强吸附，保留连续滚动。
+         ========================================================= */
+
+      function updateVisualProgress() {
+        const heroRect = hero.getBoundingClientRect();
+        const heroDistance = Math.max(1, hero.offsetHeight - window.innerHeight);
+        heroProgress = clamp(-heroRect.top / heroDistance);
+
+        document.documentElement.style.setProperty("--hero-progress", heroProgress.toFixed(3));
+        document.documentElement.style.setProperty("--marquee", clamp((heroProgress - 0.24) / 0.34).toFixed(3));
+
+        const worksRect = works.getBoundingClientRect();
+        const worksDistance = Math.max(1, works.offsetHeight - window.innerHeight);
+        const merge = clamp(-worksRect.top / worksDistance);
+        works.style.setProperty("--merge", merge.toFixed(3));
+
+        requestAnimationFrame(updateVisualProgress);
+      }
+
+      updateVisualProgress();
+
+      const snapTargets = [hero, flow, works, contact];
+
+      let scrollTimer = 0;
+      let animatingSnap = false;
+      let lastScrollY = window.scrollY;
+      let lastDirection = 0;
+      let lastInputAt = 0;
+
+      function sectionTop(section) {
+        return section.getBoundingClientRect().top + window.scrollY;
+      }
+
+      function isInsideFreeZone() {
+        const y = window.scrollY;
+        const vh = window.innerHeight;
+
+        const heroTop = sectionTop(hero);
+        const heroBottom = heroTop + hero.offsetHeight;
+
+        const flowTop = sectionTop(flow);
+        const flowBottom = flowTop + flow.offsetHeight;
+
+        const worksTop = sectionTop(works);
+        const worksBottom = worksTop + works.offsetHeight;
+
+        // Hero 内部要允许 QQ.SG 缩小、跑马灯出现，不强行拉回顶部。
+        if (y > heroTop + vh * 0.12 && y < heroBottom - vh * 1.05) return true;
+
+        // 第二页到第三页连续滚动，不强磁吸。
+        if (y > flowTop + vh * 0.12 && y < flowBottom - vh * 0.95) return true;
+
+        // 第四页内部要允许合并动画按进度完成。
+        if (y > worksTop + vh * 0.1 && y < worksBottom - vh * 1.05) return true;
+
+        return false;
+      }
+
+      function smoothScrollTo(targetY, duration = 1050) {
+        if (prefersReducedMotion) {
+          window.scrollTo(0, targetY);
+          return;
+        }
+
+        animatingSnap = true;
+
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+        const start = performance.now();
+
+        function frame(now) {
+          const t = clamp((now - start) / duration);
+          const eased = easeOutCubic(t);
+
+          window.scrollTo(0, startY + distance * eased);
+
+          if (t < 1) {
+            requestAnimationFrame(frame);
+          } else {
+            animatingSnap = false;
+          }
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      function settleSnap() {
+        if (animatingSnap || isInsideFreeZone()) return;
+
+        const y = window.scrollY;
+        const vh = window.innerHeight;
+
+        const projectedY = y + lastDirection * vh * 0.22;
+
+        let bestTarget = null;
+        let bestDistance = Infinity;
+
+        snapTargets.forEach((section) => {
+          const top = sectionTop(section);
+          const distance = Math.abs(top - projectedY);
+
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            bestTarget = section;
+          }
+        });
+
+        if (!bestTarget) return;
+
+        const targetTop = sectionTop(bestTarget);
+        const realDistance = Math.abs(targetTop - y);
+
+        // 吸附范围较大，但动画时间较长，所以感觉是“强吸附、慢落位”。
+        if (realDistance < vh * 0.62) {
+          const duration = Math.min(1350, Math.max(880, realDistance * 0.95));
+          smoothScrollTo(targetTop, duration);
+        }
+      }
+
+      window.addEventListener(
+        "wheel",
+        (event) => {
+          lastInputAt = performance.now();
+          lastDirection = Math.sign(event.deltaY) || lastDirection;
+        },
+        { passive: true }
+      );
+
+      window.addEventListener(
+        "touchstart",
+        () => {
+          lastInputAt = performance.now();
+        },
+        { passive: true }
+      );
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          const y = window.scrollY;
+          const delta = y - lastScrollY;
+
+          if (Math.abs(delta) > 1) {
+            lastDirection = Math.sign(delta);
+          }
+
+          lastScrollY = y;
+
+          clearTimeout(scrollTimer);
+
+          scrollTimer = setTimeout(() => {
+            // 等用户真的停下来再慢慢吸过去，不抢手。
+            settleSnap();
+          }, 310);
+        },
+        { passive: true }
+      );
+
+      /* =========================================================
+         Monitor list
+         ========================================================= */
+
+      const monitorList = document.getElementById("monitorList");
+
+      const monitorRows = [
+        ["status.nkx.moe", "Probe panel", "99.98%", [9]],
+        ["niekaixiang.com", "Blog", "100%", []],
+        ["waline.nkx.moe", "Comment", "99.86%", [3, 19]],
+        ["qq.sg", "Domain", "100%", []],
+        ["Cloudflare Worker", "Edge check", "99.72%", [5, 6, 22]]
+      ];
+
+      monitorList.innerHTML = monitorRows.map(([name, desc, percent, issues], row) => {
+        const bars = Array.from({ length: 30 }, (_, index) => {
+          let cls = "";
+          if (issues.includes(index)) cls = issues.length > 2 ? "bad" : "mid";
+          return `<i class="${cls}" style="--i:${index};--row:${row}"></i>`;
+        }).join("");
+
+        return `
+          <div class="monitor-row">
+            <div class="monitor-name">
+              <b>${name}</b>
+              <span>${desc}</span>
+            </div>
+            <div class="uptime">${bars}</div>
+            <div class="percent">${percent}</div>
+          </div>
+        `;
+      }).join("");
+    })();
+  </script>
+</body>
+</html>

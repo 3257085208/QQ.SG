@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Global Network Globe</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(34, 132, 255, 0.24), transparent 34%),
+        radial-gradient(circle at 18% 78%, rgba(0, 188, 255, 0.14), transparent 30%),
+        radial-gradient(circle at 82% 18%, rgba(54, 108, 255, 0.16), transparent 26%),
+        #020817;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+      color: #fff;
+      touch-action: none;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    .ui {
+      position: fixed;
+      left: 36px;
+      top: 34px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      color: rgba(150, 210, 255, 0.84);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: clamp(34px, 5vw, 72px);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      font-weight: 780;
+      max-width: 640px;
+      text-shadow: 0 18px 80px rgba(0, 112, 255, 0.35);
+    }
+
+    .desc {
+      margin-top: 18px;
+      max-width: 460px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(215, 235, 255, 0.72);
+    }
+
+    .panel {
+      position: fixed;
+      right: 32px;
+      bottom: 28px;
+      width: min(370px, calc(100vw - 48px));
+      padding: 18px 18px 16px;
+      border: 1px solid rgba(120, 200, 255, 0.22);
+      background: rgba(4, 16, 38, 0.44);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 22px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      color: rgba(160, 220, 255, 0.88);
+      margin-bottom: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .cities {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 14px;
+      font-size: 13px;
+      color: rgba(235, 248, 255, 0.78);
+    }
+
+    .city {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #66d3ff;
+      box-shadow: 0 0 16px #3fbaff;
+      flex: 0 0 auto;
+    }
+
+    .hint {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      color: rgba(210, 235, 255, 0.5);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: #020817;
+      color: rgba(200, 230, 255, 0.74);
+      font-size: 14px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      pointer-events: none;
+    }
+
+    .loading.hide {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    @media (max-width: 760px) {
+      .ui {
+        left: 20px;
+        top: 24px;
+      }
+
+      .eyebrow {
+        font-size: 10px;
+        margin-bottom: 10px;
+      }
+
+      h1 {
+        font-size: 40px;
+      }
+
+      .desc {
+        font-size: 12px;
+        max-width: 300px;
+        line-height: 1.6;
+      }
+
+      .panel {
+        left: 14px;
+        right: 14px;
+        bottom: 16px;
+        width: auto;
+        padding: 14px;
+        border-radius: 18px;
+      }
+
+      .cities {
+        grid-template-columns: repeat(2, 1fr);
+        font-size: 11px;
+        gap: 7px 10px;
+      }
+
+      .hint {
+        display: none;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .panel {
+        display: none;
+      }
+
+      h1 {
+        font-size: 36px;
+      }
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div class="loading" id="loading">Loading Globe</div>
+
+  <div id="app"></div>
+
+  <div class="ui">
+    <div class="eyebrow">Global Infrastructure Map</div>
+    <h1>Connected<br />Across Regions</h1>
+    <div class="desc">
+      Hong Kong, Los Angeles, San Jose, Phoenix, Frankfurt, Tokyo, Italy,
+      Singapore and Guangzhou are linked through animated network routes.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Active Regions</div>
+    <div class="cities" id="cityList"></div>
+  </div>
+
+  <div class="hint">Drag to rotate · Scroll to zoom</div>
+
+  <script type="module">
+    import * as THREE from "three";
+
+    const loading = document.getElementById("loading");
+    const container = document.getElementById("app");
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
+    camera.position.set(0, 0, 4.8);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance"
+    });
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    const R = 1.52;
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.86);
+    scene.add(ambient);
+
+    const light = new THREE.DirectionalLight(0x7ccfff, 2.6);
+    light.position.set(4, 3, 5);
+    scene.add(light);
+
+    const backLight = new THREE.DirectionalLight(0x1d70ff, 1.8);
+    backLight.position.set(-4, -2, -3);
+    scene.add(backLight);
+
+    const globe = new THREE.Mesh(
+      new THREE.SphereGeometry(R, 96, 96),
+      new THREE.MeshPhongMaterial({
+        color: 0x061f4a,
+        emissive: 0x031633,
+        shininess: 36,
+        transparent: true,
+        opacity: 0.96
+      })
+    );
+
+    globeGroup.add(globe);
+
+    const atmosphere = new THREE.Mesh(
+      new THREE.SphereGeometry(R * 1.04, 96, 96),
+      new THREE.MeshBasicMaterial({
+        color: 0x2aa8ff,
+        transparent: true,
+        opacity: 0.1,
+        side: THREE.BackSide
+      })
+    );
+
+    globeGroup.add(atmosphere);
+
+    const outerGlow = new THREE.Mesh(
+      new THREE.SphereGeometry(R * 1.075, 96, 96),
+      new THREE.MeshBasicMaterial({
+        color: 0x177cff,
+        transparent: true,
+        opacity: 0.055,
+        side: THREE.BackSide
+      })
+    );
+
+    globeGroup.add(outerGlow);
+
+    function latLngToVec3(lat, lng, radius = R) {
+      const phi = THREE.MathUtils.degToRad(90 - lat);
+      const theta = THREE.MathUtils.degToRad(lng + 180);
+
+      return new THREE.Vector3(
+        -radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.cos(phi),
+        radius * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    const gridMaterial = new THREE.LineBasicMaterial({
+      color: 0x1d8fff,
+      transparent: true,
+      opacity: 0.18
+    });
+
+    function makeLatitude(lat) {
+      const points = [];
+      const phi = THREE.MathUtils.degToRad(90 - lat);
+
+      for (let i = 0; i <= 240; i++) {
+        const theta = THREE.MathUtils.degToRad((i / 240) * 360);
+
+        points.push(
+          new THREE.Vector3(
+            R * Math.sin(phi) * Math.cos(theta),
+            R * Math.cos(phi),
+            R * Math.sin(phi) * Math.sin(theta)
+          )
+        );
+      }
+
+      return new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        gridMaterial
+      );
+    }
+
+    function makeLongitude(lon) {
+      const points = [];
+      const theta = THREE.MathUtils.degToRad(lon);
+
+      for (let i = 0; i <= 240; i++) {
+        const phi = THREE.MathUtils.degToRad((i / 240) * 180);
+
+        points.push(
+          new THREE.Vector3(
+            R * Math.sin(phi) * Math.cos(theta),
+            R * Math.cos(phi),
+            R * Math.sin(phi) * Math.sin(theta)
+          )
+        );
+      }
+
+      return new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        gridMaterial
+      );
+    }
+
+    for (let lat = -60; lat <= 60; lat += 20) {
+      globeGroup.add(makeLatitude(lat));
+    }
+
+    for (let lon = -180; lon < 180; lon += 30) {
+      globeGroup.add(makeLongitude(lon));
+    }
+
+    const cities = [
+      { name: "Hong Kong", cn: "香港", lat: 22.3193, lng: 114.1694 },
+      { name: "Los Angeles", cn: "洛杉矶", lat: 34.0522, lng: -118.2437 },
+      { name: "San Jose", cn: "圣何塞", lat: 37.3382, lng: -121.8863 },
+      { name: "Phoenix", cn: "凤凰城", lat: 33.4484, lng: -112.0740 },
+      { name: "Frankfurt", cn: "法兰克福", lat: 50.1109, lng: 8.6821 },
+      { name: "Tokyo", cn: "东京", lat: 35.6762, lng: 139.6503 },
+      { name: "Italy", cn: "意大利", lat: 41.9028, lng: 12.4964 },
+      { name: "Singapore", cn: "新加坡", lat: 1.3521, lng: 103.8198 },
+      { name: "Guangzhou", cn: "广州", lat: 23.1291, lng: 113.2644 }
+    ];
+
+    const cityList = document.getElementById("cityList");
+
+    cities.forEach(city => {
+      const item = document.createElement("div");
+      item.className = "city";
+      item.innerHTML = `<span class="dot"></span><span>${city.cn} / ${city.name}</span>`;
+      cityList.appendChild(item);
+    });
+
+    const pointGroup = new THREE.Group();
+    globeGroup.add(pointGroup);
+
+    function makeCityPoint(city) {
+      const position = latLngToVec3(city.lat, city.lng, R * 1.014);
+
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.018, 20, 20),
+        new THREE.MeshBasicMaterial({
+          color: 0x8ce5ff
+        })
+      );
+
+      dot.position.copy(position);
+
+      const halo = new THREE.Mesh(
+        new THREE.SphereGeometry(0.052, 28, 28),
+        new THREE.MeshBasicMaterial({
+          color: 0x28aaff,
+          transparent: true,
+          opacity: 0.28
+        })
+      );
+
+      halo.position.copy(position);
+
+      pointGroup.add(dot);
+      pointGroup.add(halo);
+
+      city.position = position;
+      city.dot = dot;
+      city.halo = halo;
+    }
+
+    cities.forEach(makeCityPoint);
+
+    function createArc(start, end, height = 0.55) {
+      const mid = start
+        .clone()
+        .add(end)
+        .multiplyScalar(0.5)
+        .normalize()
+        .multiplyScalar(R + height);
+
+      const curve = new THREE.QuadraticBezierCurve3(
+        start.clone().multiplyScalar(1.018),
+        mid,
+        end.clone().multiplyScalar(1.018)
+      );
+
+      const points = curve.getPoints(120);
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+
+      const mat = new THREE.LineDashedMaterial({
+        color: 0x67d7ff,
+        transparent: true,
+        opacity: 0,
+        dashSize: 0.045,
+        gapSize: 0.035
+      });
+
+      const line = new THREE.Line(geo, mat);
+      line.computeLineDistances();
+
+      line.userData = {
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.65 + Math.random() * 0.7,
+        targetOpacity: 0.32 + Math.random() * 0.6
+      };
+
+      globeGroup.add(line);
+
+      return line;
+    }
+
+    const cityMap = Object.fromEntries(cities.map(city => [city.name, city]));
+
+    const routePairs = [
+      ["Hong Kong", "Los Angeles"],
+      ["Hong Kong", "San Jose"],
+      ["Hong Kong", "Singapore"],
+      ["Hong Kong", "Tokyo"],
+      ["Guangzhou", "Hong Kong"],
+      ["Guangzhou", "Singapore"],
+      ["Tokyo", "Los Angeles"],
+      ["Tokyo", "San Jose"],
+      ["Los Angeles", "Phoenix"],
+      ["San Jose", "Phoenix"],
+      ["Los Angeles", "Frankfurt"],
+      ["Frankfurt", "Italy"],
+      ["Frankfurt", "Singapore"],
+      ["Singapore", "Tokyo"],
+      ["Singapore", "Italy"],
+      ["San Jose", "Frankfurt"],
+      ["Tokyo", "Frankfurt"]
+    ];
+
+    const routes = [];
+
+    routePairs.forEach(([a, b]) => {
+      routes.push(
+        createArc(
+          cityMap[a].position,
+          cityMap[b].position,
+          0.36 + Math.random() * 0.34
+        )
+      );
+    });
+
+    async function loadCountryBorders() {
+      try {
+        const topojson = await import("https://cdn.jsdelivr.net/npm/topojson-client@3/+esm");
+        const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
+        const topology = await res.json();
+        const countries = topojson.feature(topology, topology.objects.countries);
+
+        const borderMat = new THREE.LineBasicMaterial({
+          color: 0x79d4ff,
+          transparent: true,
+          opacity: 0.48
+        });
+
+        countries.features.forEach(feature => {
+          const type = feature.geometry.type;
+          const coords = feature.geometry.coordinates;
+
+          const drawPolygon = polygon => {
+            polygon.forEach(ring => {
+              const points = ring.map(([lng, lat]) => {
+                return latLngToVec3(lat, lng, R * 1.007);
+              });
+
+              if (points.length > 1) {
+                const geo = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(geo, borderMat);
+                globeGroup.add(line);
+              }
+            });
+          };
+
+          if (type === "Polygon") {
+            drawPolygon(coords);
+          }
+
+          if (type === "MultiPolygon") {
+            coords.forEach(drawPolygon);
+          }
+        });
+      } catch (error) {
+        console.warn("Country borders failed to load:", error);
+      }
+    }
+
+    loadCountryBorders();
+
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = window.innerWidth < 760 ? 450 : 900;
+    const starPositions = [];
+
+    for (let i = 0; i < starCount; i++) {
+      starPositions.push(
+        (Math.random() - 0.5) * 12,
+        (Math.random() - 0.5) * 12,
+        (Math.random() - 0.5) * 12
+      );
+    }
+
+    starGeo.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(starPositions, 3)
+    );
+
+    const stars = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({
+        size: 0.008,
+        color: 0x9edcff,
+        transparent: true,
+        opacity: 0.5
+      })
+    );
+
+    scene.add(stars);
+
+    let isDragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let velocityX = 0;
+    let velocityY = 0;
+    let targetScale = 1;
+    let currentScale = 1;
+
+    function getPointer(event) {
+      if (event.touches && event.touches.length > 0) {
+        return {
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY
+        };
+      }
+
+      return {
+        x: event.clientX,
+        y: event.clientY
+      };
+    }
+
+    function pointerDown(event) {
+      isDragging = true;
+
+      const p = getPointer(event);
+      lastX = p.x;
+      lastY = p.y;
+
+      velocityX = 0;
+      velocityY = 0;
+    }
+
+    function pointerMove(event) {
+      if (!isDragging) return;
+
+      event.preventDefault();
+
+      const p = getPointer(event);
+
+      const dx = p.x - lastX;
+      const dy = p.y - lastY;
+
+      velocityX = dx * 0.0045;
+      velocityY = dy * 0.0045;
+
+      globeGroup.rotation.y += velocityX;
+      globeGroup.rotation.x += velocityY;
+
+      globeGroup.rotation.x = Math.max(
+        -Math.PI / 2,
+        Math.min(Math.PI / 2, globeGroup.rotation.x)
+      );
+
+      lastX = p.x;
+      lastY = p.y;
+    }
+
+    function pointerUp() {
+      isDragging = false;
+    }
+
+    renderer.domElement.addEventListener("mousedown", pointerDown);
+    window.addEventListener("mousemove", pointerMove);
+    window.addEventListener("mouseup", pointerUp);
+
+    renderer.domElement.addEventListener("touchstart", pointerDown, { passive: false });
+    window.addEventListener("touchmove", pointerMove, { passive: false });
+    window.addEventListener("touchend", pointerUp);
+
+    window.addEventListener("wheel", event => {
+      const delta = event.deltaY > 0 ? -0.08 : 0.08;
+      targetScale = Math.max(0.78, Math.min(1.35, targetScale + delta));
+    }, { passive: true });
+
+    if (window.innerWidth < 760) {
+      globeGroup.position.y = -0.05;
+      targetScale = 0.9;
+      currentScale = 0.9;
+    }
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      const t = clock.getElapsedTime();
+
+      if (!isDragging) {
+        globeGroup.rotation.y += 0.0013;
+        globeGroup.rotation.y += velocityX * 0.94;
+        globeGroup.rotation.x += velocityY * 0.94;
+
+        velocityX *= 0.92;
+        velocityY *= 0.92;
+      }
+
+      currentScale += (targetScale - currentScale) * 0.08;
+      globeGroup.scale.setScalar(currentScale);
+
+      routes.forEach((route, index) => {
+        const pulse = Math.sin(t * route.userData.speed + route.userData.phase);
+        const visible = Math.max(0, pulse);
+
+        route.material.opacity = visible * route.userData.targetOpacity;
+        route.material.dashOffset = -t * 0.22 - index * 0.02;
+      });
+
+      cities.forEach((city, index) => {
+        const s = 1 + Math.sin(t * 2.4 + index) * 0.2;
+        city.halo.scale.setScalar(s);
+        city.halo.material.opacity =
+          0.16 + Math.max(0, Math.sin(t * 2 + index)) * 0.26;
+      });
+
+      stars.rotation.y += 0.00025;
+      stars.rotation.x += 0.00008;
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    setTimeout(() => {
+      loading.classList.add("hide");
+    }, 500);
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      if (window.innerWidth < 760) {
+        globeGroup.position.y = -0.05;
+      } else {
+        globeGroup.position.y = 0;
+      }
+    });
+  </script>
+</body>
+</html>
