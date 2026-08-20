@@ -65,7 +65,7 @@ export function NetworkScene() {
     const target = new THREE.Vector2();
     let frame = 0;
     let visible = true;
-    const clock = new THREE.Clock();
+    const startedAt = performance.now();
 
     function resize() {
       const rect = surface.getBoundingClientRect();
@@ -88,7 +88,7 @@ export function NetworkScene() {
     function animate() {
       if (!visible) return;
       frame = window.requestAnimationFrame(animate);
-      const time = clock.getElapsedTime();
+      const time = (performance.now() - startedAt) / 1000;
       pointer.lerp(target, 0.045);
       graph.rotation.y = pointer.x * 0.04;
       graph.rotation.x = pointer.y * 0.025;

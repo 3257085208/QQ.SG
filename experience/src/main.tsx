@@ -2,8 +2,34 @@ import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { capabilities, selectedWorks, timeline } from "./data";
 import { mountScrollExperience } from "./engine/scroll";
-import { NetworkScene } from "./components/NetworkScene";
 import "./styles.css";
+
+type NetworkSceneComponent = typeof import("./components/NetworkScene").NetworkScene;
+
+function DeferredNetworkScene() {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [Scene, setScene] = useState<NetworkSceneComponent | null>(null);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      void import("./components/NetworkScene").then(({ NetworkScene }) => setScene(() => NetworkScene));
+    }, { rootMargin: "280px 0px" });
+
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="network-loader" ref={hostRef}>
+      {Scene ? <Scene /> : <span className="network-fallback mono">LOAD / SYSTEM MAP</span>}
+    </div>
+  );
+}
 
 function lines(value: string) {
   return value.split("\n").map((line) => <span key={line}>{line}</span>);
@@ -97,7 +123,7 @@ function App() {
 
         <section className="system section-paper" aria-labelledby="system-title">
           <div className="section-kicker mono" id="system-title">04 / SYSTEM <span>ONE QUIET NETWORK</span></div>
-          <div className="system-grid grid-12"><div className="system-map"><NetworkScene /></div><div className="system-copy"><h2>MAKE THE<br /><em>INVISIBLE</em><br />USEFUL.</h2><p>状态、连接、依赖关系。好的工具不会把自己放在内容前面，它让内容更容易被看见。</p></div></div>
+          <div className="system-grid grid-12"><div className="system-map"><DeferredNetworkScene /></div><div className="system-copy"><h2>MAKE THE<br /><em>INVISIBLE</em><br />USEFUL.</h2><p>状态、连接、依赖关系。好的工具不会把自己放在内容前面，它让内容更容易被看见。</p></div></div>
         </section>
 
         <section className="contact section-dark" id="contact">
