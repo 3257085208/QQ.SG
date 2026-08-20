@@ -140,20 +140,20 @@ button { color: inherit; font: inherit; }
 .work-visual { position: relative; align-self: center; min-height: 44vw; overflow: hidden; border: 1px solid rgba(10,10,10,.3); background: var(--background-raised); color: var(--foreground); transition: transform .45s cubic-bezier(.2,.8,.2,1); }
 .work-visual--status { background: #151815; }
 .work-visual--systems { background: #1d201c; }
-.work-visual--notes { background: #d2d2c8; color: var(--paper-ink); }
+.work-visual--fieldnotes { background: #d2d2c8; color: var(--paper-ink); }
 .work-visual__top, .work-visual__foot { position: absolute; right: 20px; left: 20px; z-index: 2; display: flex; justify-content: space-between; gap: 18px; color: rgba(241,240,235,.62); }
 .work-visual__top { top: 18px; }
 .work-visual__foot { bottom: 17px; }
-.work-visual--notes .work-visual__top, .work-visual--notes .work-visual__foot { color: rgba(23,25,22,.58); }
+.work-visual--fieldnotes .work-visual__top, .work-visual--fieldnotes .work-visual__foot { color: rgba(23,25,22,.58); }
 .work-metric-strip { position: absolute; right: 20px; bottom: 52px; left: 20px; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(241,240,235,.24); }
 .work-metric { display: grid; gap: 7px; padding: 11px 10px 0 0; border-right: 1px solid rgba(241,240,235,.18); }
 .work-metric:not(:first-child) { padding-left: 10px; }
 .work-metric:last-child { border-right: 0; }
 .work-metric .mono { color: rgba(241,240,235,.55); }
 .work-metric strong { font: 600 clamp(13px, 1.15vw, 18px)/1 var(--display); letter-spacing: -.025em; }
-.work-visual--notes .work-metric-strip { border-top-color: rgba(23,25,22,.28); }
-.work-visual--notes .work-metric { border-right-color: rgba(23,25,22,.2); }
-.work-visual--notes .work-metric .mono { color: rgba(23,25,22,.55); }
+.work-visual--fieldnotes .work-metric-strip { border-top-color: rgba(23,25,22,.28); }
+.work-visual--fieldnotes .work-metric { border-right-color: rgba(23,25,22,.2); }
+.work-visual--fieldnotes .work-metric .mono { color: rgba(23,25,22,.55); }
 .work-status__map { position: absolute; top: 18%; right: 8%; bottom: 29%; left: 8%; }
 .work-status__map svg { width: 100%; height: 100%; overflow: visible; }
 .work-status__map path { fill: none; stroke: rgba(241,240,235,.52); stroke-dasharray: 1 9; stroke-linecap: round; stroke-width: 1.6; }

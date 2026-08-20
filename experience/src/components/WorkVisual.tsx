@@ -46,7 +46,7 @@ function SystemsVisual({ item }: { item: Work }) {
 
 function NotesVisual({ item }: { item: Work }) {
   return (
-    <div className="work-visual work-visual--notes">
+    <div className="work-visual work-visual--fieldnotes">
       <div className="work-visual__top mono"><span>聶.NET / ARCHIVE</span><span>03—03</span></div>
       <div className="work-notes__mast"><span>RECENT NOTES</span><strong>2026</strong></div>
       <ol className="work-notes__list">
