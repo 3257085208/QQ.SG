@@ -6,8 +6,16 @@ gsap.registerPlugin(ScrollTrigger);
 
 const motion = {
   ease: "power2.out",
+  easeSoft: "power1.inOut",
   scrub: 0.85,
-  duration: 0.8
+  fast: 0.45,
+  normal: 0.8,
+  slow: 1.2,
+  distance: {
+    small: 18,
+    medium: 40,
+    large: 64
+  }
 };
 
 function mountHeroMotion(root: HTMLElement) {
@@ -28,13 +36,13 @@ function mountHeroMotion(root: HTMLElement) {
   heroTimeline
     .to(".hero-title span:first-child", { x: "-9vw", y: "-3vh", scale: .9, ease: "none" }, 0)
     .to(".hero-title span:last-child", { x: "7vw", y: "4vh", scale: .9, ease: "none" }, 0)
-    .to(".hero-aside", { x: 90, opacity: 0, ease: "none" }, 0)
+    .to(".hero-aside", { x: motion.distance.large, opacity: 0, ease: "none" }, 0)
     .to(".hero-topline, .hero-bottomline, .hero-rule", { opacity: 0, ease: "none" }, 0.08)
-    .to(".hero-window", { width: "min(100vw, 1220px)", height: "calc(100svh - var(--header-height))", ease: motion.ease }, 0.08)
+    .to(".hero-window", { width: "min(100vw, 1220px)", height: "calc(100svh - var(--header-height))", ease: motion.easeSoft }, 0.08)
     .to(".infrastructure-field", { scale: 1.04, ease: "none" }, 0.42)
     .to(".hero-title", { opacity: 0.08, ease: "none" }, 0.47)
-    .to(".hero-statement", { y: -18, opacity: 1, ease: motion.ease }, 0.52)
-    .to(".hero-statement", { y: -54, opacity: 0, ease: motion.ease }, 0.82)
+    .to(".hero-statement", { y: -motion.distance.small, opacity: 1, ease: motion.ease }, 0.52)
+    .to(".hero-statement", { y: -motion.distance.medium, opacity: 0, ease: motion.easeSoft }, 0.82)
     .to(".hero-window", { y: -26, scale: 1.04, opacity: 0.35, ease: "none" }, 0.78);
 }
 
@@ -62,10 +70,10 @@ function mountTimelineMotion(root: HTMLElement) {
 
   timelineEntries.forEach((entry, index) => {
     if (index === 0) return;
-    timelineSequence.to(timelineEntries[index - 1], { y: -52, opacity: 0, duration: .42, ease: motion.ease }, index);
-    timelineSequence.to(timelineYears[index - 1], { opacity: .14, scale: .98, duration: .28, ease: motion.ease }, index);
-    timelineSequence.to(entry, { y: 0, opacity: 1, duration: .58, ease: motion.ease }, index + .08);
-    timelineSequence.to(timelineYears[index], { opacity: .78, scale: 1, duration: .4, ease: motion.ease }, index + .08);
+    timelineSequence.to(timelineEntries[index - 1], { y: -motion.distance.medium, opacity: 0, duration: motion.fast, ease: motion.ease }, index);
+    timelineSequence.to(timelineYears[index - 1], { opacity: .14, scale: .98, duration: motion.fast, ease: motion.ease }, index);
+    timelineSequence.to(entry, { y: 0, opacity: 1, duration: motion.normal, ease: motion.ease }, index + .08);
+    timelineSequence.to(timelineYears[index], { opacity: .78, scale: 1, duration: motion.fast, ease: motion.ease }, index + .08);
   });
 }
 
@@ -101,14 +109,14 @@ function mountWorkMotion(root: HTMLElement) {
     if (!visual) return;
 
     if (index === 0) {
-      sequence.fromTo(visual, { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: .65, ease: motion.ease }, 0);
+      sequence.fromTo(visual, { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: motion.normal, ease: motion.ease }, 0);
       return;
     }
 
     const previousVisual = rows[index - 1].querySelector<HTMLElement>(".work-visual");
-    if (previousVisual) sequence.to(previousVisual, { x: -18, scale: .96, opacity: .58, duration: .5, ease: motion.ease }, index - .12);
-    sequence.fromTo(visual, { clipPath: "inset(0 0 0 100%)", x: 55, opacity: .45 }, { clipPath: "inset(0 0 0 0%)", x: 0, opacity: 1, duration: .6, ease: motion.ease }, index);
-    if (copy) sequence.fromTo(copy, { x: 30, opacity: .42 }, { x: 0, opacity: 1, duration: .52, ease: motion.ease }, index + .08);
+    if (previousVisual) sequence.to(previousVisual, { x: -motion.distance.small, scale: .96, opacity: .58, duration: motion.fast, ease: motion.ease }, index - .12);
+    sequence.fromTo(visual, { clipPath: "inset(0 0 0 100%)", x: motion.distance.medium, opacity: .45 }, { clipPath: "inset(0 0 0 0%)", x: 0, opacity: 1, duration: motion.normal, ease: motion.easeSoft }, index);
+    if (copy) sequence.fromTo(copy, { x: motion.distance.small, opacity: .42 }, { x: 0, opacity: 1, duration: motion.fast, ease: motion.ease }, index + .08);
   });
 }
 
@@ -117,10 +125,10 @@ function mountCapabilitiesMotion(root: HTMLElement) {
   const rows = root.querySelectorAll<HTMLElement>(".capability-row");
   if (!section || !rows.length) return;
 
-  gsap.fromTo(rows, { x: 45, opacity: .22 }, {
+  gsap.fromTo(rows, { x: motion.distance.medium, opacity: .22 }, {
     x: 0,
     opacity: 1,
-    stagger: .12,
+    stagger: motion.fast / 4,
     ease: motion.ease,
     scrollTrigger: { trigger: section, start: "top 76%", end: "top 34%", scrub: motion.scrub }
   });
@@ -143,7 +151,7 @@ function mountContactMotion(root: HTMLElement) {
   const heading = root.querySelector<HTMLElement>(".contact-heading");
   if (!section || !heading) return;
 
-  gsap.fromTo(heading, { y: 70, opacity: .2 }, {
+  gsap.fromTo(heading, { y: motion.distance.large, opacity: .2 }, {
     y: 0,
     opacity: 1,
     ease: motion.ease,
@@ -155,7 +163,8 @@ export function mountScrollExperience(root: HTMLElement) {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) return () => undefined;
 
-  const lenis = new Lenis({ autoRaf: false, duration: 1.05, smoothWheel: true, syncTouch: true, anchors: true });
+  const isMobile = window.matchMedia("(max-width: 640px)").matches;
+  const lenis = new Lenis({ autoRaf: false, duration: motion.slow, smoothWheel: true, syncTouch: !isMobile, anchors: true });
   const ticker = (time: number) => lenis.raf(time * 1000);
   gsap.ticker.add(ticker);
   lenis.on("scroll", ScrollTrigger.update);

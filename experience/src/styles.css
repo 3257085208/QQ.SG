@@ -25,6 +25,7 @@ html { background: var(--background); color: var(--foreground); scroll-behavior:
 body { margin: 0; min-width: 320px; background: var(--background); color: var(--foreground); font-family: var(--body); overflow-x: hidden; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
 button { color: inherit; font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .mono { font: 500 10px/1.35 var(--mono); letter-spacing: var(--label-tracking); text-transform: uppercase; }
 .site-shell { position: relative; overflow: clip; }
 .grid-12 { display: grid; grid-template-columns: repeat(12, var(--grid)); gap: 18px; }

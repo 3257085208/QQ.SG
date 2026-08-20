@@ -54,18 +54,19 @@ function App() {
         <span className="site-status">PERSONAL SYSTEM / 2026</span>
         <div className="site-actions">
           <a href="#work" className="header-link">SELECTED WORK <span>↘</span></a>
-          <button className={`menu-button ${menuOpen ? "is-open" : ""}`} type="button" aria-label="Open navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}><i /><i /></button>
+          <button className={`menu-button ${menuOpen ? "is-open" : ""}`} type="button" aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}><i /><i /></button>
         </div>
       </header>
 
       <aside className={`site-menu ${menuOpen ? "is-open" : ""}`} aria-hidden={!menuOpen}>
         <span className="mono">INDEX / NAVIGATION</span>
         <nav>
-          <a href="#home" onClick={closeMenu}>Home</a>
-          <a href="#origin" onClick={closeMenu}>Origin</a>
-          <a href="#work" onClick={closeMenu}>Work</a>
-          <a href="#capabilities" onClick={closeMenu}>Capabilities</a>
-          <a href="#contact" onClick={closeMenu}>Contact</a>
+          <a href="#home" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Home</a>
+          <a href="#origin" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Origin</a>
+          <a href="#work" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Work</a>
+          <a href="#capabilities" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Capabilities</a>
+          <a href="#system" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>System</a>
+          <a href="#contact" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Contact</a>
         </nav>
       </aside>
 
