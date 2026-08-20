@@ -68,6 +68,7 @@ export function NetworkScene() {
     const target = new THREE.Vector2();
     let frame = 0;
     let visible = false;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const startedAt = performance.now();
 
     function resize() {
@@ -88,10 +89,7 @@ export function NetworkScene() {
       target.y = ((event.clientY - rect.top) / Math.max(1, rect.height) - 0.5) * -2;
     }
 
-    function loop() {
-      frame = 0;
-      if (!visible) return;
-      const time = (performance.now() - startedAt) / 1000;
+    function renderFrame(time: number) {
       pointer.lerp(target, 0.045);
       graph.rotation.y = pointer.x * 0.04;
       graph.rotation.x = pointer.y * 0.025;
@@ -101,6 +99,12 @@ export function NetworkScene() {
         if (index !== nodes.length - 1) node.scale.setScalar(1 + Math.sin(time * 1.2 + index) * 0.08);
       });
       renderer.render(scene, camera);
+    }
+
+    function loop() {
+      frame = 0;
+      if (!visible) return;
+      renderFrame((performance.now() - startedAt) / 1000);
       frame = window.requestAnimationFrame(loop);
     }
 
@@ -120,10 +124,15 @@ export function NetworkScene() {
       if (visible) start();
       else stop();
     }, { threshold: 0.01 });
-    observer.observe(surface);
     surface.addEventListener("pointermove", move, { passive: true });
     window.addEventListener("resize", resize, { passive: true });
     resize();
+    if (reduced) {
+      visible = true;
+      renderFrame(0);
+    } else {
+      observer.observe(surface);
+    }
 
     return () => {
       stop();

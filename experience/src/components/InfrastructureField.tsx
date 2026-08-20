@@ -1,17 +1,11 @@
-const readings = [
-  ["LAX", "184ms"],
-  ["FRA", "231ms"],
-  ["HKG", "036ms"],
-  ["SIN", "072ms"],
-  ["TYO", "048ms"]
-] as const;
+import { statusSnapshot } from "../data";
 
 export function InfrastructureField() {
   return (
     <div className="infrastructure-field">
       <div className="infrastructure-field__top mono">
-        <span>QQ.SG / FIELD 01</span>
-        <span>REFERENCE / UTC+08</span>
+        <span>STATUS.QQ.SG / FIELD 01</span>
+        <span>SNAPSHOT / {statusSnapshot.snapshot}</span>
       </div>
 
       <svg className="infrastructure-field__routes" viewBox="0 0 800 480" role="presentation" aria-hidden="true">
@@ -26,22 +20,22 @@ export function InfrastructureField() {
       </svg>
 
       <div className="infrastructure-field__metrics">
-        {readings.map(([region, latency]) => (
-          <div className="field-reading" key={region}>
-            <span className="mono">{region}</span>
-            <strong>{latency}</strong>
+        {statusSnapshot.regions.map((region) => (
+          <div className="field-reading" key={region.label}>
+            <span className="mono">{region.label}</span>
+            <strong>{region.value}</strong>
           </div>
         ))}
       </div>
 
       <div className="infrastructure-field__core">
-        <span className="mono">HOME / STATUS</span>
-        <strong>ONLINE</strong>
+        <span className="mono">ONLINE / TOTAL</span>
+        <strong>{statusSnapshot.online}</strong>
       </div>
 
       <div className="infrastructure-field__bottom mono">
-        <span>5 REGIONS / 1 SYSTEM</span>
-        <span>NODE GRAPH / 01</span>
+        <span>{statusSnapshot.total} NODES / 06 FILTERS</span>
+        <span>NODEGET / CARD VIEW</span>
       </div>
     </div>
   );

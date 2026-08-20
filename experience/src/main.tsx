@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { capabilities, networkNodes, selectedWorks, timeline } from "./data";
+import { capabilities, networkNodes, networkSummary, selectedWorks, timeline } from "./data";
 import { mountScrollExperience } from "./engine/scroll";
 import { InfrastructureField } from "./components/InfrastructureField";
 import { WorkVisual } from "./components/WorkVisual";
@@ -72,7 +72,7 @@ function App() {
       <main>
         <section className="hero" id="home">
           <div className="hero__frame">
-            <div className="hero-topline mono"><span>Digital builder / independent</span><span>31°N / 121°E</span></div>
+            <div className="hero-topline mono"><span>Digital builder / independent</span><span>CHINA / UTC+8</span></div>
             <div className="hero-title" aria-label="Nie Kaixiang">
               <span>NIE</span>
               <span>KAIXIANG</span>
@@ -81,7 +81,7 @@ function App() {
             <div className="hero-statement" aria-hidden="true">BUILD / RUN /<br /><em>RECORD.</em></div>
             <div className="hero-aside">
               <span className="mono">FIELD / 01—03</span>
-              <p>Self-hosted services<br />from Shanghai / UTC+8.</p>
+              <p>Public services<br />open code / field notes.</p>
             </div>
             <div className="hero-bottomline mono"><span>QQ.SG / PERSONAL INDEX</span><span>Scroll to enter ↓</span></div>
             <div className="hero-rule" />
@@ -89,20 +89,20 @@ function App() {
         </section>
 
         <section className="origin section-dark" id="origin">
-          <div className="archive-header mono"><span>01 / ORIGIN</span><span>PERSONAL ARCHIVE / 2008—NOW</span></div>
+          <div className="archive-header mono"><span>01 / ORIGIN</span><span>PERSONAL ARCHIVE / PUBLIC TRACE</span></div>
           <div className="origin-archive grid-12">
-            <div className="origin-mark"><span className="mono">NKX / 01</span><strong>上海</strong><span className="mono">31°N / 121°E</span></div>
-            <div className="origin-copy"><p className="origin-lede">我从好奇心开始：想知道页面如何被送到屏幕，服务器如何保持安静，系统如何在没有人盯着的时候继续工作。</p><p>现在我做基础设施、软件和一些不太容易被归类的小工具。它们大多公开运行，也都留下了可以回看的痕迹。</p></div>
+            <div className="origin-mark"><span className="mono">NKX / 01</span><strong>QQ.SG</strong><span className="mono">CHINA / UTC+8</span></div>
+            <div className="origin-copy"><p className="origin-lede">我关心一件事情：页面如何被送到屏幕，服务如何在没人盯着时继续工作。</p><p>现在公开做基础设施、软件和一些不太容易被归类的小工具。代码、状态页和文章，都是这套系统留下的记录。</p></div>
             <dl className="origin-facts">
-              <div><dt className="mono">BASE</dt><dd>SHANGHAI / UTC+8</dd></div>
-              <div><dt className="mono">SYSTEM</dt><dd>QQ.SG / PERSONAL INDEX</dd></div>
+              <div><dt className="mono">BASE</dt><dd>CHINA / UTC+8</dd></div>
+              <div><dt className="mono">SOURCE</dt><dd>GITHUB / PUBLIC TRACE</dd></div>
               <div><dt className="mono">MODE</dt><dd>BUILD / OPERATE / WRITE</dd></div>
             </dl>
           </div>
         </section>
 
         <section className="timeline section-dark" id="timeline" aria-labelledby="timeline-title">
-          <div className="archive-header mono" id="timeline-title"><span>01.1 / HISTORY</span><span>FOUR OBSERVATIONS</span></div>
+          <div className="archive-header mono" id="timeline-title"><span>01.1 / HISTORY</span><span>PUBLIC TRACE / FOUR RECORDS</span></div>
           <div className="timeline-stage">
             <div className="timeline-viewport">
               <div className="timeline-rail" aria-hidden="true" />
@@ -125,7 +125,7 @@ function App() {
         </section>
 
         <section className="work section-paper" id="work">
-          <div className="section-kicker mono">02 / SELECTED WORK <span>THINGS THAT WORK</span></div>
+          <div className="section-kicker mono">02 / SELECTED WORK <span>PUBLIC PROJECTS</span></div>
           <h2 className="display-heading work-heading">SELECTED<br /><em>WORK.</em></h2>
           <div className="work-list">
             <div className="work-sequence-rail mono" aria-hidden="true"><span>WORK / SEQUENCE</span><span className="work-sequence-current">01 / STATUS SYSTEM</span><span>03 PROJECTS</span></div>
@@ -138,26 +138,26 @@ function App() {
         </section>
 
         <section className="capabilities section-dark" id="capabilities">
-          <div className="section-kicker mono">03 / CAPABILITIES <span>THE MATERIAL</span></div>
+          <div className="section-kicker mono">03 / CAPABILITIES <span>TOOLS / PRACTICE</span></div>
           <div className="capabilities-grid grid-12">
-            <h2 className="display-heading capabilities-heading">WHAT I<br /><em>USE.</em></h2>
+            <div className="capabilities-note"><span className="mono">PUBLIC PRACTICE</span><p>从基础设施到写作，工具只是让系统继续工作的材料。</p></div>
             <div className="capability-list">{capabilities.map((item) => <div className="capability-row" key={item.title}><h3>{item.title}</h3><p className="mono">{item.items}</p></div>)}</div>
           </div>
         </section>
 
-        <section className="system section-paper" aria-labelledby="system-title">
-          <div className="section-kicker mono" id="system-title">04 / SYSTEM <span>ONE QUIET NETWORK</span></div>
-          <div className="system-grid grid-12"><div className="system-map"><DeferredNetworkScene /></div><div className="system-copy"><h2>STATUS.<br />ROUTE.<br /><em>DEPENDENCY.</em></h2><p>状态、连接、依赖关系。好的工具不会把自己放在内容前面，它让内容更容易被看见。</p><div className="system-data">{networkNodes.map((node) => <div className="system-data__row" key={node.label}><span className="mono">{node.label}</span><strong>{node.latency}</strong><span className="mono">{node.role}</span></div>)}</div></div></div>
+        <section className="system section-paper" id="system" aria-labelledby="system-title">
+          <div className="section-kicker mono" id="system-title">04 / SYSTEM <span>INFRASTRUCTURE MAP</span></div>
+          <div className="system-grid grid-12"><div className="system-map"><DeferredNetworkScene /></div><div className="system-copy"><div className="system-summary"><span className="mono">ONLINE / TOTAL</span><strong>{networkSummary.online}</strong><span className="mono">{networkSummary.total} NODES / SNAPSHOT {networkSummary.snapshot}</span></div><p>公开状态页的一个现场快照。Canvas 只负责呈现关系，旁边的 HTML 数据才是可读的来源。</p><div className="system-data">{networkNodes.map((node) => <div className="system-data__row" key={node.label}><span className="mono">{node.label}</span><strong>{node.value}</strong><span className="mono">{node.role}</span></div>)}</div><a className="system-source mono" href={networkSummary.source} target="_blank" rel="noreferrer">OPEN STATUS.QQ.SG <span>↗</span></a></div></div>
         </section>
 
         <section className="contact section-dark" id="contact">
           <div className="section-kicker mono">05 / CONTACT <span>OPEN CHANNEL</span></div>
-          <h2 className="contact-heading">LET'S<br /><em>BUILD</em><br />SOMETHING.</h2>
-          <div className="contact-links"><a href="mailto:hello@qq.sg">EMAIL <span>↗</span></a><a href="https://github.com/3257085208" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a><a href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">WEB <span>↗</span></a></div>
+          <h2 className="contact-heading">OPEN<br /><em>CHANNEL.</em></h2>
+          <div className="contact-links"><a href="https://github.com/3257085208" target="_blank" rel="noreferrer">GITHUB <span>↗</span></a><a href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">WEB <span>↗</span></a><a href="https://status.qq.sg" target="_blank" rel="noreferrer">STATUS <span>↗</span></a></div>
         </section>
       </main>
 
-      <footer className="site-footer mono"><span>NIE KAIXIANG / QQ.SG</span><span>© 2026 / BUILT WITH INTENTION</span></footer>
+      <footer className="site-footer mono"><span>NIE KAIXIANG / QQ.SG</span><span>2026 / UTC+8</span></footer>
     </div>
   );
 }
