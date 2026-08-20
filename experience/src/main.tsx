@@ -102,7 +102,7 @@ function App() {
         </section>
 
         <section className="timeline section-dark" id="timeline" aria-labelledby="timeline-title">
-          <div className="archive-header mono" id="timeline-title"><span>02 / HISTORY</span><span>FOUR OBSERVATIONS</span></div>
+          <div className="archive-header mono" id="timeline-title"><span>01.1 / HISTORY</span><span>FOUR OBSERVATIONS</span></div>
           <div className="timeline-stage">
             <div className="timeline-viewport">
               <div className="timeline-rail" aria-hidden="true" />

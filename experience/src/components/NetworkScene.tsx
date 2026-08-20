@@ -67,7 +67,7 @@ export function NetworkScene() {
     const pointer = new THREE.Vector2();
     const target = new THREE.Vector2();
     let frame = 0;
-    let visible = true;
+    let visible = false;
     const startedAt = performance.now();
 
     function resize() {
@@ -88,9 +88,9 @@ export function NetworkScene() {
       target.y = ((event.clientY - rect.top) / Math.max(1, rect.height) - 0.5) * -2;
     }
 
-    function animate() {
+    function loop() {
+      frame = 0;
       if (!visible) return;
-      frame = window.requestAnimationFrame(animate);
       const time = (performance.now() - startedAt) / 1000;
       pointer.lerp(target, 0.045);
       graph.rotation.y = pointer.x * 0.04;
@@ -101,20 +101,32 @@ export function NetworkScene() {
         if (index !== nodes.length - 1) node.scale.setScalar(1 + Math.sin(time * 1.2 + index) * 0.08);
       });
       renderer.render(scene, camera);
+      frame = window.requestAnimationFrame(loop);
+    }
+
+    function start() {
+      if (!frame) frame = window.requestAnimationFrame(loop);
+    }
+
+    function stop() {
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
     }
 
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
-      if (visible && !frame) animate();
+      if (visible) start();
+      else stop();
     }, { threshold: 0.01 });
     observer.observe(surface);
     surface.addEventListener("pointermove", move, { passive: true });
     window.addEventListener("resize", resize, { passive: true });
     resize();
-    animate();
 
     return () => {
-      window.cancelAnimationFrame(frame);
+      stop();
       observer.disconnect();
       surface.removeEventListener("pointermove", move);
       window.removeEventListener("resize", resize);
@@ -129,5 +141,5 @@ export function NetworkScene() {
     };
   }, []);
 
-  return <canvas className="network-scene" ref={canvasRef} aria-label="Infrastructure network map" />;
+  return <canvas className="network-scene" ref={canvasRef} aria-hidden="true" />;
 }
