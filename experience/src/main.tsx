@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { capabilities, selectedWorks, timeline } from "./data";
 import { mountScrollExperience } from "./engine/scroll";
 import { InfrastructureField } from "./components/InfrastructureField";
+import { WorkVisual } from "./components/WorkVisual";
 import "./styles.css";
 
 type NetworkSceneComponent = typeof import("./components/NetworkScene").NetworkScene;
@@ -126,10 +127,10 @@ function App() {
           <div className="section-kicker mono">02 / SELECTED WORK <span>THINGS THAT WORK</span></div>
           <h2 className="display-heading work-heading">SELECTED<br /><em>WORK.</em></h2>
           <div className="work-list">
-            {selectedWorks.map((item) => <a className="work-row" href={item.href} target="_blank" rel="noreferrer" key={item.index}>
+            {selectedWorks.map((item) => <a className={`work-row work-row--${item.kind}`} href={item.href} target="_blank" rel="noreferrer" key={item.index}>
               <div className="work-meta mono"><span>{item.index}</span><span>{item.year}</span></div>
               <div className="work-copy"><h3>{lines(item.title)}</h3><p>{item.detail}</p><span className="mono">{item.meta}</span></div>
-              <div className={`work-visual work-visual--${item.visual}`} aria-hidden="true"><span className="visual-code">{item.index} / {item.year}</span><i /><b>↗</b></div>
+              <WorkVisual item={item} />
             </a>)}
           </div>
         </section>

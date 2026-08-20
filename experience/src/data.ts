@@ -14,7 +14,10 @@ export type Work = {
   detail: string;
   meta: string;
   href: string;
-  visual: "signal" | "archive" | "notes";
+  kind: "status" | "systems" | "notes";
+  metrics: Array<{ label: string; value: string }>;
+  records: string[];
+  footnote: string;
 };
 
 export const timeline: TimelineEntry[] = [
@@ -32,7 +35,10 @@ export const selectedWorks: Work[] = [
     detail: "节点、可用性与基础设施状态的实时索引。把复杂的运行状态压缩成一张可以快速读懂的地图。",
     meta: "WEB / INFRASTRUCTURE / LIVE",
     href: "https://status.qq.sg",
-    visual: "signal"
+    kind: "status",
+    metrics: [{ label: "SERVICE", value: "ONLINE" }, { label: "REGIONS", value: "05" }, { label: "ROUTES", value: "14" }],
+    records: ["LAX / 184ms", "FRA / 231ms", "HKG / 036ms", "SIN / 072ms", "TYO / 048ms"],
+    footnote: "STATUS.QQ.SG / REFERENCE FIELD"
   },
   {
     index: "02",
@@ -41,7 +47,10 @@ export const selectedWorks: Work[] = [
     detail: "Cloudflare 工具、服务端实验与日常代码。公开、可复用，也允许它们继续被改造。",
     meta: "CODE / SYSTEMS / OPEN SOURCE",
     href: "https://github.com/3257085208",
-    visual: "archive"
+    kind: "systems",
+    metrics: [{ label: "REPOSITORIES", value: "30" }, { label: "STARS", value: "03" }, { label: "OWNER", value: "3257085208" }],
+    records: ["NodeWarden", "CloudSSL", "KomariPlugin", "ImgBed"],
+    footnote: "GITHUB.COM / 3257085208"
   },
   {
     index: "03",
@@ -50,7 +59,10 @@ export const selectedWorks: Work[] = [
     detail: "系统、路线、服务器笔记，以及那些只有真正运行过才会知道的细节。",
     meta: "WRITING / FIELD NOTES / NIE HIGAN",
     href: "https://www.niekaixiang.com",
-    visual: "notes"
+    kind: "notes",
+    metrics: [{ label: "PUBLISHED", value: "34" }, { label: "FORMAT", value: "FIELD NOTES" }, { label: "UPDATED", value: "2026" }],
+    records: ["我最后还是自己写了这个博客系统", "niekaixiang.com：现在它和聶.NET一样", "NodeGet NIE Theme：基于 NodeGet StatusShow"],
+    footnote: "NIEKAIXIANG.COM / ARCHIVE"
   }
 ];
 
