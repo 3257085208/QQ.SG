@@ -112,6 +112,7 @@ function App() {
               <div className="timeline-entries">
                 {timeline.map((entry, index) => <article className="timeline-entry" key={entry.year}>
                   <div className="timeline-entry__index mono">0{index + 1} / {entry.label}</div>
+                  <span className="timeline-entry__year">{entry.year}</span>
                   <div className="timeline-entry__content">
                     <h3>{entry.title}</h3>
                     <p>{entry.detail}</p>
