@@ -1,0 +1,4 @@
+.DS_Store
+experience/node_modules/
+experience/dist/
+experience/*.tsbuildinfo
