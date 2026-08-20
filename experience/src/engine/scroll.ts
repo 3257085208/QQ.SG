@@ -46,20 +46,34 @@ export function mountScrollExperience(root: HTMLElement) {
       .to(".hero-statement", { y: -54, opacity: 0, ease: motion.ease }, 0.82)
       .to(".hero-window", { y: -26, scale: 1.04, opacity: 0.35, ease: "none" }, 0.78);
 
-    gsap.utils.toArray<HTMLElement>(".timeline-row").forEach((row, index) => {
-      gsap.fromTo(row.querySelector("strong"), { x: -80, opacity: 0.15 }, {
-        x: 0,
-        opacity: 1,
-        ease: "none",
-        scrollTrigger: { trigger: row, start: "top 84%", end: "top 45%", scrub: motion.scrub }
+    const timelineStage = root.querySelector<HTMLElement>(".timeline-stage");
+    const timelineEntries = gsap.utils.toArray<HTMLElement>(".timeline-entry");
+    const timelineYears = gsap.utils.toArray<HTMLElement>(".timeline-years span");
+    if (timelineStage && timelineEntries.length) {
+      gsap.set(timelineEntries, { opacity: 0, y: 52 });
+      gsap.set(timelineYears, { opacity: .14, scale: .98 });
+      gsap.set(timelineEntries[0], { opacity: 1, y: 0 });
+      gsap.set(timelineYears[0], { opacity: .78, scale: 1 });
+
+      const timelineSequence = gsap.timeline({
+        scrollTrigger: {
+          trigger: timelineStage,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: motion.scrub,
+          invalidateOnRefresh: true
+        }
       });
-      gsap.fromTo(row.querySelector("div"), { x: 40 + index * 10, opacity: 0.2 }, {
-        x: 0,
-        opacity: 1,
-        ease: "none",
-        scrollTrigger: { trigger: row, start: "top 80%", end: "top 42%", scrub: motion.scrub }
+
+      timelineEntries.forEach((entry, index) => {
+        if (index > 0) {
+          timelineSequence.to(timelineEntries[index - 1], { y: -52, opacity: 0, duration: .42, ease: motion.ease }, index);
+          timelineSequence.to(timelineYears[index - 1], { opacity: .14, scale: .98, duration: .28, ease: motion.ease }, index);
+          timelineSequence.to(entry, { y: 0, opacity: 1, duration: .58, ease: motion.ease }, index + .08);
+          timelineSequence.to(timelineYears[index], { opacity: .78, scale: 1, duration: .4, ease: motion.ease }, index + .08);
+        }
       });
-    });
+    }
 
     gsap.utils.toArray<HTMLElement>(".work-row").forEach((row, index) => {
       const visual = row.querySelector<HTMLElement>(".work-visual");

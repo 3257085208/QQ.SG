@@ -1,7 +1,10 @@
 export type TimelineEntry = {
   year: string;
+  label: string;
   title: string;
   detail: string;
+  stat: string;
+  location: string;
 };
 
 export type Work = {
@@ -15,10 +18,10 @@ export type Work = {
 };
 
 export const timeline: TimelineEntry[] = [
-  { year: "2019", title: "FIRST SERVER", detail: "A small machine, a public IP, and the beginning of a habit." },
-  { year: "2021", title: "BUILDING INFRASTRUCTURE", detail: "Networks, containers, monitoring, and systems that stay quiet." },
-  { year: "2024", title: "SERVICES IN THE WILD", detail: "Tools used by people outside the room where they were made." },
-  { year: "2026", title: "WHAT'S NEXT?", detail: "More useful things, with less noise around them." }
+  { year: "2019", label: "ORIGIN", title: "FIRST SERVER", detail: "一台机器、一个公网 IP。先弄清楚请求从哪里来，再决定要把什么交给别人。", stat: "1 MACHINE / 1 PUBLIC IP", location: "HOME / UTC+8" },
+  { year: "2021", label: "INFRASTRUCTURE", title: "NETWORKS / VIRTUALIZATION", detail: "容器、网络、监控和备份开始成为日常，而不是一次性的实验。", stat: "RUN / OBSERVE / REPEAT", location: "EDGE / PRIVATE" },
+  { year: "2024", label: "PUBLIC SERVICES", title: "SERVICES IN THE WILD", detail: "一些工具离开本地，开始被不认识的人使用；稳定性第一次变成真正的设计约束。", stat: "PUBLIC / SELF-HOSTED", location: "MULTI-REGION" },
+  { year: "2026", label: "CURRENTLY", title: "BUILD / RUN / RECORD", detail: "继续把基础设施、软件和写作放在同一个系统里，留下可以回看的痕迹。", stat: "OPEN / IN PROGRESS", location: "SHANGHAI / UTC+8" }
 ];
 
 export const selectedWorks: Work[] = [

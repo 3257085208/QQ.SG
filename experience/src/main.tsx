@@ -88,17 +88,37 @@ function App() {
         </section>
 
         <section className="origin section-dark" id="origin">
-          <div className="section-kicker mono">01 / ORIGIN <span>2008—NOW</span></div>
-          <div className="origin-grid grid-12">
-            <h2 className="display-heading origin-heading">BUILT<br />FROM<br /><em>CURIOSITY.</em></h2>
-            <div className="origin-copy"><p>我从好奇心开始：想知道页面如何被送到屏幕，服务器如何保持安静，系统如何在没有人盯着的时候继续工作。</p><p>现在我做基础设施、软件和一些不太容易被归类的小工具。</p><span className="mono origin-index">A PERSONAL SYSTEM, STILL IN PROGRESS.</span></div>
+          <div className="archive-header mono"><span>01 / ORIGIN</span><span>PERSONAL ARCHIVE / 2008—NOW</span></div>
+          <div className="origin-archive grid-12">
+            <div className="origin-mark"><span className="mono">NKX / 01</span><strong>上海</strong><span className="mono">31°N / 121°E</span></div>
+            <div className="origin-copy"><p className="origin-lede">我从好奇心开始：想知道页面如何被送到屏幕，服务器如何保持安静，系统如何在没有人盯着的时候继续工作。</p><p>现在我做基础设施、软件和一些不太容易被归类的小工具。它们大多公开运行，也都留下了可以回看的痕迹。</p></div>
+            <dl className="origin-facts">
+              <div><dt className="mono">BASE</dt><dd>SHANGHAI / UTC+8</dd></div>
+              <div><dt className="mono">SYSTEM</dt><dd>QQ.SG / PERSONAL INDEX</dd></div>
+              <div><dt className="mono">MODE</dt><dd>BUILD / OPERATE / WRITE</dd></div>
+            </dl>
           </div>
         </section>
 
-        <section className="timeline section-dark" aria-labelledby="timeline-title">
-          <div className="section-kicker mono" id="timeline-title">A SHORT HISTORY <span>NOT A RESUME</span></div>
-          <div className="timeline-list">
-            {timeline.map((entry) => <article className="timeline-row" key={entry.year}><strong>{entry.year}</strong><div><h3>{entry.title}</h3><p>{entry.detail}</p></div></article>)}
+        <section className="timeline section-dark" id="timeline" aria-labelledby="timeline-title">
+          <div className="archive-header mono" id="timeline-title"><span>02 / HISTORY</span><span>FOUR OBSERVATIONS</span></div>
+          <div className="timeline-stage">
+            <div className="timeline-viewport">
+              <div className="timeline-rail" aria-hidden="true" />
+              <div className="timeline-years" aria-hidden="true">
+                {timeline.map((entry) => <span key={entry.year}>{entry.year}</span>)}
+              </div>
+              <div className="timeline-entries">
+                {timeline.map((entry, index) => <article className="timeline-entry" key={entry.year}>
+                  <div className="timeline-entry__index mono">0{index + 1} / {entry.label}</div>
+                  <div className="timeline-entry__content">
+                    <h3>{entry.title}</h3>
+                    <p>{entry.detail}</p>
+                    <div className="timeline-entry__facts mono"><span>{entry.stat}</span><span>{entry.location}</span></div>
+                  </div>
+                </article>)}
+              </div>
+            </div>
           </div>
         </section>
 
