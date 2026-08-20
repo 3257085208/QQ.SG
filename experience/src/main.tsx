@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { capabilities, selectedWorks, timeline } from "./data";
 import { mountScrollExperience } from "./engine/scroll";
+import { InfrastructureField } from "./components/InfrastructureField";
 import "./styles.css";
 
 type NetworkSceneComponent = typeof import("./components/NetworkScene").NetworkScene;
@@ -75,13 +76,13 @@ function App() {
               <span>NIE</span>
               <span>KAIXIANG</span>
             </div>
-            <div className="hero-window" aria-hidden="true"><img src="/virtual-helmet-v1-cutout.png" alt="" /><span>PERSONAL SYSTEM / 01</span></div>
-            <div className="hero-statement" aria-hidden="true">I BUILD THINGS<br /><em>FOR THE INTERNET.</em></div>
+            <div className="hero-window" aria-hidden="true"><InfrastructureField /></div>
+            <div className="hero-statement" aria-hidden="true">BUILD / RUN /<br /><em>RECORD.</em></div>
             <div className="hero-aside">
-              <span className="mono">SELECTED WORK / 01—03</span>
-              <p>Systems, software<br />and the spaces between.</p>
+              <span className="mono">FIELD / 01—03</span>
+              <p>Self-hosted services<br />from Shanghai / UTC+8.</p>
             </div>
-            <div className="hero-bottomline mono"><span>Personal system / digital archive</span><span>Scroll to enter ↓</span></div>
+            <div className="hero-bottomline mono"><span>QQ.SG / PERSONAL INDEX</span><span>Scroll to enter ↓</span></div>
             <div className="hero-rule" />
           </div>
         </section>

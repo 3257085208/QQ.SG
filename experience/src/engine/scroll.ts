@@ -35,12 +35,12 @@ export function mountScrollExperience(root: HTMLElement) {
     });
 
     heroTimeline
-      .to(".hero-title span:first-child", { x: "-16vw", ease: "none" }, 0)
-      .to(".hero-title span:last-child", { x: "16vw", ease: "none" }, 0)
+      .to(".hero-title span:first-child", { x: "-9vw", y: "-3vh", scale: .9, ease: "none" }, 0)
+      .to(".hero-title span:last-child", { x: "7vw", y: "4vh", scale: .9, ease: "none" }, 0)
       .to(".hero-aside", { x: 90, opacity: 0, ease: "none" }, 0)
       .to(".hero-topline, .hero-bottomline, .hero-rule", { opacity: 0, ease: "none" }, 0.08)
       .to(".hero-window", { width: "min(100vw, 1220px)", height: "calc(100svh - 92px)", ease: motion.ease }, 0.08)
-      .to(".hero-window img", { scale: 1.06, ease: "none" }, 0.42)
+      .to(".infrastructure-field", { scale: 1.04, ease: "none" }, 0.42)
       .to(".hero-title", { opacity: 0.08, ease: "none" }, 0.47)
       .to(".hero-statement", { y: -18, opacity: 1, ease: motion.ease }, 0.52)
       .to(".hero-statement", { y: -54, opacity: 0, ease: motion.ease }, 0.82)
