@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { capabilities, selectedWorks, timeline } from "./data";
+import { capabilities, networkNodes, selectedWorks, timeline } from "./data";
 import { mountScrollExperience } from "./engine/scroll";
 import { InfrastructureField } from "./components/InfrastructureField";
 import { WorkVisual } from "./components/WorkVisual";
@@ -127,7 +127,8 @@ function App() {
           <div className="section-kicker mono">02 / SELECTED WORK <span>THINGS THAT WORK</span></div>
           <h2 className="display-heading work-heading">SELECTED<br /><em>WORK.</em></h2>
           <div className="work-list">
-            {selectedWorks.map((item) => <a className={`work-row work-row--${item.kind}`} href={item.href} target="_blank" rel="noreferrer" key={item.index}>
+            <div className="work-sequence-rail mono" aria-hidden="true"><span>WORK / SEQUENCE</span><span className="work-sequence-current">01 / STATUS SYSTEM</span><span>03 PROJECTS</span></div>
+            {selectedWorks.map((item) => <a className={`work-row work-row--${item.kind}`} data-work-label={`${item.index} / ${item.title.replace("\n", " ")}`} href={item.href} target="_blank" rel="noreferrer" key={item.index}>
               <div className="work-meta mono"><span>{item.index}</span><span>{item.year}</span></div>
               <div className="work-copy"><h3>{lines(item.title)}</h3><p>{item.detail}</p><span className="mono">{item.meta}</span></div>
               <WorkVisual item={item} />
@@ -145,7 +146,7 @@ function App() {
 
         <section className="system section-paper" aria-labelledby="system-title">
           <div className="section-kicker mono" id="system-title">04 / SYSTEM <span>ONE QUIET NETWORK</span></div>
-          <div className="system-grid grid-12"><div className="system-map"><DeferredNetworkScene /></div><div className="system-copy"><h2>MAKE THE<br /><em>INVISIBLE</em><br />USEFUL.</h2><p>状态、连接、依赖关系。好的工具不会把自己放在内容前面，它让内容更容易被看见。</p></div></div>
+          <div className="system-grid grid-12"><div className="system-map"><DeferredNetworkScene /></div><div className="system-copy"><h2>STATUS.<br />ROUTE.<br /><em>DEPENDENCY.</em></h2><p>状态、连接、依赖关系。好的工具不会把自己放在内容前面，它让内容更容易被看见。</p><div className="system-data">{networkNodes.map((node) => <div className="system-data__row" key={node.label}><span className="mono">{node.label}</span><strong>{node.latency}</strong><span className="mono">{node.role}</span></div>)}</div></div></div>
         </section>
 
         <section className="contact section-dark" id="contact">

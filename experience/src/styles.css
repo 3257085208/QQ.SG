@@ -122,6 +122,8 @@ button { color: inherit; font: inherit; }
 .work { min-height: 100svh; }
 .work-heading { margin-bottom: clamp(65px, 10vw, 140px); }
 .work-list { border-top: 1px solid rgba(10,10,10,.28); }
+.work-sequence-rail { position: sticky; top: 112px; z-index: 4; display: grid; grid-template-columns: 1fr 3fr 2fr; gap: 25px; margin: -1px 0 20px; padding: 12px 0; border-bottom: 1px solid var(--line-dark); background: var(--paper); color: rgba(23,25,22,.54); }
+.work-sequence-current { color: var(--paper-ink); }
 .work-row { display: grid; grid-template-columns: 1fr 3fr 2fr; gap: 25px; min-height: min(72svh, 720px); padding: 28px 0; border-bottom: 1px solid var(--line-dark); text-decoration: none; }
 .work-row--status { grid-template-columns: .8fr 1.8fr 3.2fr; }
 .work-row--systems { grid-template-columns: .8fr 2.2fr 2.8fr; }
@@ -191,6 +193,11 @@ button { color: inherit; font: inherit; }
 .system-copy { grid-column: 10 / span 3; }
 .system-copy h2 { margin: 0 0 28px; font: 650 clamp(3rem, 5vw, 6rem)/.8 var(--display); letter-spacing: -.055em; }
 .system-copy p { color: var(--muted-dark); font: 400 15px/1.7 var(--body); }
+.system-data { margin-top: 42px; border-top: 1px solid rgba(23,25,22,.24); }
+.system-data__row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 11px 0; border-bottom: 1px solid rgba(23,25,22,.18); }
+.system-data__row span:first-child { color: rgba(23,25,22,.68); }
+.system-data__row strong { font: 600 15px/1 var(--display); letter-spacing: -.02em; }
+.system-data__row span:last-child { justify-self: end; color: rgba(23,25,22,.48); }
 
 .contact { min-height: 78svh; }
 .contact-heading { margin: 0 0 95px; font: 650 clamp(6rem, 14vw, 16rem)/.74 var(--display); letter-spacing: var(--display-tracking); }
@@ -253,6 +260,8 @@ button { color: inherit; font: inherit; }
   .timeline-entry__content h3 { font-size: 15vw; }
   .work-heading { font-size: 22vw; }
   .work-row { display: block; min-height: 0; padding: 24px 0 50px; }
+  .work-sequence-rail { position: sticky; top: 72px; display: block; margin-bottom: 16px; padding: 10px 0; line-height: 1.8; }
+  .work-sequence-rail span { display: block; }
   .work-meta { margin-bottom: 45px; }
   .work-copy h3 { font-size: 20vw; }
   .work-visual { min-height: 98vw; margin-top: 46px; }
@@ -275,6 +284,7 @@ button { color: inherit; font: inherit; }
   .capability-row h3 { font-size: 18px; }
   .system-map { min-height: 72vw; margin-bottom: 55px; }
   .network-loader, .network-scene { min-height: 72vw; }
+  .system-data { margin-top: 38px; }
   .contact-heading { margin-bottom: 70px; font-size: 23vw; }
   .contact-links { grid-template-columns: 1fr; max-width: none; }
   .site-footer { display: block; line-height: 2; }

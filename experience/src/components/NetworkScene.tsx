@@ -1,16 +1,19 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { networkNodes } from "../data";
 
 type NodePoint = { label: string; x: number; y: number; z: number };
 
-const nodes: NodePoint[] = [
-  { label: "LAX", x: -3.6, y: 1.2, z: 0 },
-  { label: "FRA", x: -1.5, y: 1.9, z: -0.2 },
-  { label: "HKG", x: 0.4, y: 0.75, z: 0.2 },
-  { label: "SIN", x: 1.6, y: -1.0, z: -0.1 },
-  { label: "TYO", x: 3.6, y: 1.4, z: 0.15 },
-  { label: "HOME", x: 0, y: -0.2, z: 0.4 }
+const positions = [
+  { x: -3.6, y: 1.2, z: 0 },
+  { x: -1.5, y: 1.9, z: -0.2 },
+  { x: 0.4, y: 0.75, z: 0.2 },
+  { x: 1.6, y: -1.0, z: -0.1 },
+  { x: 3.6, y: 1.4, z: 0.15 },
+  { x: 0, y: -0.2, z: 0.4 }
 ];
+
+const nodes: NodePoint[] = networkNodes.map((node, index) => ({ label: node.label, ...positions[index] }));
 
 const edges: [number, number][] = [[0, 1], [1, 2], [2, 3], [2, 4], [3, 5], [5, 2], [5, 1]];
 

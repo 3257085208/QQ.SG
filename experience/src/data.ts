@@ -71,3 +71,12 @@ export const capabilities = [
   { title: "SOFTWARE", items: "Go / JavaScript / TypeScript / Automation" },
   { title: "TOOLS", items: "Docker / Git / SQLite / Cloudflare" }
 ];
+
+export const networkNodes = [
+  { label: "LAX", latency: "184ms", role: "EDGE" },
+  { label: "FRA", latency: "231ms", role: "EDGE" },
+  { label: "HKG", latency: "036ms", role: "EDGE" },
+  { label: "SIN", latency: "072ms", role: "EDGE" },
+  { label: "TYO", latency: "048ms", role: "EDGE" },
+  { label: "HOME", latency: "ONLINE", role: "ORIGIN" }
+];
