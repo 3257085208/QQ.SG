@@ -27,8 +27,10 @@ const menuItems = [
 ] as const;
 
 function HeroTrack({ items, className, collection }: { items: string[]; className: string; collection: string }) {
+  const direction = className.includes("lower") ? "right" : "left";
+  const speed = className.includes("lower") ? "42" : "56";
   return (
-    <div className={`intro-track ${className}`} aria-hidden="true">
+    <div className={`intro-track ${className}`} data-marquee-direction={direction} data-marquee-speed={speed} aria-hidden="true">
       <div className="intro-track__strip">
         {Array.from({ length: 3 }, (_, collectionIndex) => (
           <div className="intro-track__collection" key={`${collection}-${collectionIndex}`}>

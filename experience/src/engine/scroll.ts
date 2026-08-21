@@ -37,6 +37,41 @@ function getChapterIndex(progress: number, count: number, timing: typeof WORK_TI
   return Math.min(count - 1, Math.max(0, Math.floor(timelineTime / (timing.hold + timing.transition))));
 }
 
+function mountHeroMarqueeMotion(tracks: HTMLElement[]) {
+  const trigger = tracks[0]?.closest<HTMLElement>(".intro");
+  if (!trigger) return;
+
+  tracks.forEach((track) => {
+    const strip = track.querySelector<HTMLElement>(".intro-track__strip");
+    const collection = strip?.querySelector<HTMLElement>(".intro-track__collection");
+    if (!strip || !collection) return;
+
+    const direction = track.dataset.marqueeDirection === "right" ? 1 : -1;
+    const pixelsPerSecond = Math.max(24, Number(track.dataset.marqueeSpeed) || 48);
+    const collectionWidth = Math.max(1, collection.getBoundingClientRect().width);
+    const startX = direction > 0 ? -collectionWidth : 0;
+    const endX = direction > 0 ? 0 : -collectionWidth;
+    const loop = gsap.fromTo(
+      strip,
+      { x: startX },
+      {
+        x: endX,
+        duration: Math.max(14, collectionWidth / pixelsPerSecond),
+        ease: "none",
+        repeat: -1
+      }
+    );
+
+    ScrollTrigger.create({
+      trigger,
+      start: "top top",
+      end: "bottom bottom",
+      invalidateOnRefresh: true,
+      onUpdate: (self) => loop.timeScale(self.direction === 1 ? 1.12 : -0.72)
+    });
+  });
+}
+
 function mountIntroMotion(root: HTMLElement) {
   const intro = root.querySelector<HTMLElement>(".intro");
   const name = root.querySelector<HTMLElement>(".intro-name");
@@ -54,6 +89,7 @@ function mountIntroMotion(root: HTMLElement) {
   gsap.set(nameLines, { transformOrigin: "center center" });
   gsap.set(tracks, { x: 0 });
   gsap.set(signature, { autoAlpha: 0, xPercent: -50, yPercent: -50, x: -12, y: 8, scale: 0.96 });
+  mountHeroMarqueeMotion(tracks);
 
   const signatureStart = "polygon(0 70%, 13% 43%, 34% 16%, 55% 0, 61% 0, 56% 35%, 38% 65%, 16% 100%, 0 100%)";
   const signatureMiddle = "polygon(0 44%, 16% 20%, 39% 2%, 62% 0, 82% 18%, 100% 43%, 100% 67%, 79% 96%, 50% 100%, 24% 86%, 0 69%)";
