@@ -67,9 +67,10 @@ function mountIntroMotion(root: HTMLElement) {
 
   timeline
     .to(".intro-topline, .intro-bottomline", { opacity: 0, y: -motion.distance.small, duration: 0.09, ease: "none" }, "identity+=0.16")
-    .to(name, { scaleX: 0.86, scaleY: 0.82, y: "-9vh", opacity: 0.64, duration: HERO_PHASE.fieldDwell - HERO_PHASE.fieldEnter, ease: "none" }, "fieldEnter")
+    .to(name, { opacity: 0.4, duration: 0.15, ease: "none" }, "fieldEnter")
+    .to(name, { scaleX: 0.86, scaleY: 0.82, y: "-9vh", duration: HERO_PHASE.fieldDwell - HERO_PHASE.fieldEnter, ease: "none" }, "fieldEnter")
     .to(nameLines[0], { x: "-7vw", y: "-5vh", opacity: 0.82, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
-    .to(nameLines[1], { x: "8vw", y: "6vh", opacity: 0.68, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
+    .to(nameLines[1], { x: "8vw", y: "6vh", opacity: 0.52, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
     .set(field, { clipPath: "inset(22% 22% 22% 22%)", opacity: 0, scale: 0.955 }, "fieldEnter")
     .to(field, { opacity: 0.38, scale: 0.97, duration: 0.07, ease: motion.hero.ease }, "fieldEnter")
     .to(field, { clipPath: "inset(10% 8% 10% 8%)", opacity: 0.62, scale: 0.985, duration: 0.08, ease: motion.hero.ease }, "fieldEnter+=0.07")
@@ -98,9 +99,9 @@ function mountArchiveMotion(root: HTMLElement) {
   const activeState = { index: -1 };
   gsap.set(cards, { transformOrigin: "center center" });
   const incomingStates = [
-    { x: "5vw", y: "2.5vh", scale: 0.965, opacity: 0.09 },
-    { x: "3vw", y: "3.5vh", scale: 0.95, opacity: 0.07 },
-    { x: "4vw", y: "1.5vh", scale: 0.96, opacity: 0.055 }
+    { x: "5vw", y: "2.5vh", scale: 0.965, opacity: 0.08 },
+    { x: "3vw", y: "3.5vh", scale: 0.95, opacity: 0.04 },
+    { x: "4vw", y: "1.5vh", scale: 0.96, opacity: 0.015 }
   ];
   cards.slice(1).forEach((card, index) => gsap.set(card, incomingStates[index] ?? incomingStates[0]));
   gsap.set(cards[0], { x: 0, y: 0, scale: 1, opacity: 1, clipPath: "inset(0 0 0 0%)" });
@@ -127,15 +128,19 @@ function mountArchiveMotion(root: HTMLElement) {
     const cardNumber = String(index + 2).padStart(2, "0");
     const incoming = incomingStates[index] ?? incomingStates[0];
     const outgoing = [
-      { x: "-3.5vw", y: "-2.2vh", scale: 0.95, opacity: 0.24 },
-      { x: "-4vw", y: "-3vh", scale: 0.94, opacity: 0.2 },
-      { x: "-2.5vw", y: "-3.5vh", scale: 0.95, opacity: 0.18 }
-    ][index] ?? { x: "-3vw", y: "-2.5vh", scale: 0.95, opacity: 0.2 };
+      { x: "-3.5vw", y: "-2.2vh", scale: 0.95, opacity: 0.08 },
+      { x: "-4vw", y: "-3vh", scale: 0.94, opacity: 0.06 },
+      { x: "-2.5vw", y: "-3.5vh", scale: 0.95, opacity: 0.04 }
+    ][index] ?? { x: "-3vw", y: "-2.5vh", scale: 0.95, opacity: 0.06 };
 
     sequence
       .addLabel(`record-${cardNumber}-enter`, transitionStart)
       .addLabel(`record-${cardNumber}-hold`, transitionStart + ARCHIVE_TIMING.transition)
-      .to(previous, { ...outgoing, duration: ARCHIVE_TIMING.transition, ease: motion.archive.ease }, transitionStart)
+      .to(previous, { ...outgoing, duration: ARCHIVE_TIMING.transition, ease: "power2.out" }, transitionStart);
+    if (index > 0) {
+      sequence.to(cards[index - 1], { opacity: 0.015, duration: ARCHIVE_TIMING.transition, ease: "power2.out" }, transitionStart);
+    }
+    sequence
       .fromTo(card,
         incoming,
         { x: 0, y: 0, scale: 1, opacity: 1, duration: ARCHIVE_TIMING.transition, ease: "power2.out" },
