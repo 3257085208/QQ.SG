@@ -67,12 +67,13 @@ function mountIntroMotion(root: HTMLElement) {
 
   timeline
     .to(".intro-topline, .intro-bottomline", { opacity: 0, y: -motion.distance.small, duration: 0.09, ease: "none" }, "identity+=0.16")
-    .to(name, { scaleX: 0.86, scaleY: 0.82, y: "-9vh", duration: 0.12, ease: "none" }, "fieldEnter")
-    .to(nameLines[0], { x: "-10vw", y: "-9vh", opacity: 0.54, duration: 0.23, ease: "none" }, "fieldEnter")
-    .to(nameLines[1], { x: "12vw", y: "10vh", opacity: 0.4, duration: 0.23, ease: "none" }, "fieldEnter")
-    .to(field, { clipPath: "inset(9% 38% 9% 38%)", opacity: 0.28, scale: 0.98, duration: 0.12, ease: motion.hero.ease }, "fieldEnter")
-    .to(name, { scaleX: 0.7, scaleY: 0.62, y: "-18vh", clipPath: "inset(0 0 86% 0)", opacity: 0.42, duration: 0.11, ease: motion.hero.ease }, "fieldEnter+=0.12")
-    .to(field, { clipPath: "inset(0 0% 0 0%)", opacity: 1, scale: 1, duration: 0.13, ease: motion.hero.ease }, "fieldEnter+=0.10")
+    .to(name, { scaleX: 0.86, scaleY: 0.82, y: "-9vh", opacity: 0.64, duration: HERO_PHASE.fieldDwell - HERO_PHASE.fieldEnter, ease: "none" }, "fieldEnter")
+    .to(nameLines[0], { x: "-7vw", y: "-5vh", opacity: 0.82, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
+    .to(nameLines[1], { x: "8vw", y: "6vh", opacity: 0.68, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
+    .set(field, { clipPath: "inset(22% 22% 22% 22%)", opacity: 0, scale: 0.955 }, "fieldEnter")
+    .to(field, { opacity: 0.38, scale: 0.97, duration: 0.07, ease: motion.hero.ease }, "fieldEnter")
+    .to(field, { clipPath: "inset(10% 8% 10% 8%)", opacity: 0.62, scale: 0.985, duration: 0.08, ease: motion.hero.ease }, "fieldEnter+=0.07")
+    .to(field, { clipPath: "inset(0% 0% 0% 0%)", opacity: 1, scale: 1, duration: 0.08, ease: motion.hero.ease }, "fieldEnter+=0.15")
     .to(field, { scale: 1.004, duration: HERO_PHASE.handoff - HERO_PHASE.fieldDwell, ease: "none" }, "fieldDwell")
     .to(name, { x: "-2vw", y: "-28vh", scaleX: 0.54, scaleY: 0.52, opacity: 0, duration: 0.14, ease: "none" }, "handoff")
     .to(handoff, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, "handoff+=0.02")
@@ -96,7 +97,12 @@ function mountArchiveMotion(root: HTMLElement) {
 
   const activeState = { index: -1 };
   gsap.set(cards, { transformOrigin: "center center" });
-  gsap.set(cards.slice(1), { x: "5vw", y: "4vh", scale: 0.92, opacity: 0.2, clipPath: "inset(0 0 0 76%)" });
+  const incomingStates = [
+    { x: "5vw", y: "2.5vh", scale: 0.965, opacity: 0.09 },
+    { x: "3vw", y: "3.5vh", scale: 0.95, opacity: 0.07 },
+    { x: "4vw", y: "1.5vh", scale: 0.96, opacity: 0.055 }
+  ];
+  cards.slice(1).forEach((card, index) => gsap.set(card, incomingStates[index] ?? incomingStates[0]));
   gsap.set(cards[0], { x: 0, y: 0, scale: 1, opacity: 1, clipPath: "inset(0 0 0 0%)" });
   setArchiveActive(stage, cards, current, 0, activeState);
 
@@ -119,14 +125,20 @@ function mountArchiveMotion(root: HTMLElement) {
     const previous = cards[index];
     const transitionStart = (index + 1) * ARCHIVE_TIMING.hold + index * ARCHIVE_TIMING.transition;
     const cardNumber = String(index + 2).padStart(2, "0");
+    const incoming = incomingStates[index] ?? incomingStates[0];
+    const outgoing = [
+      { x: "-3.5vw", y: "-2.2vh", scale: 0.95, opacity: 0.24 },
+      { x: "-4vw", y: "-3vh", scale: 0.94, opacity: 0.2 },
+      { x: "-2.5vw", y: "-3.5vh", scale: 0.95, opacity: 0.18 }
+    ][index] ?? { x: "-3vw", y: "-2.5vh", scale: 0.95, opacity: 0.2 };
 
     sequence
       .addLabel(`record-${cardNumber}-enter`, transitionStart)
       .addLabel(`record-${cardNumber}-hold`, transitionStart + ARCHIVE_TIMING.transition)
-      .to(previous, { x: "-5vw", y: "-5vh", scale: 0.88, opacity: 0.42, duration: ARCHIVE_TIMING.transition, ease: motion.archive.ease }, transitionStart)
+      .to(previous, { ...outgoing, duration: ARCHIVE_TIMING.transition, ease: motion.archive.ease }, transitionStart)
       .fromTo(card,
-        { x: "5vw", y: "4vh", scale: 0.92, opacity: 0.2, clipPath: "inset(0 0 0 76%)" },
-        { x: 0, y: 0, scale: 1, opacity: 1, clipPath: "inset(0 0 0 0%)", duration: ARCHIVE_TIMING.transition, ease: "power2.out" },
+        incoming,
+        { x: 0, y: 0, scale: 1, opacity: 1, duration: ARCHIVE_TIMING.transition, ease: "power2.out" },
         transitionStart
       )
       .to({}, { duration: ARCHIVE_TIMING.hold }, transitionStart + ARCHIVE_TIMING.transition);
