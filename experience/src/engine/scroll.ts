@@ -18,8 +18,10 @@ const motion = {
 
 const HERO_PHASE = {
   identity: 0,
-  fieldEnter: 0.25,
-  fieldDwell: 0.48,
+  signatureEnter: 0.12,
+  tracksEnter: 0.24,
+  fieldEnter: 0.42,
+  fieldDwell: 0.54,
   handoff: 0.78,
   exit: 1
 } as const;
@@ -43,10 +45,19 @@ function mountIntroMotion(root: HTMLElement) {
   const handoff = root.querySelector<HTMLElement>(".intro-handoff");
   const trackWindow = root.querySelector<HTMLElement>(".intro-track-window");
   const tracks = Array.from(root.querySelectorAll<HTMLElement>(".intro-track"));
-  if (!intro || !name || nameLines.length < 2 || !field || !handoff || !trackWindow || tracks.length !== 2) return;
+  const signature = root.querySelector<HTMLElement>(".intro-signature");
+  const signatureMask = root.querySelector<HTMLElement>(".intro-signature__mask");
+  const metadata = Array.from(root.querySelectorAll<HTMLElement>(".intro-topline, .intro-bottomline"));
+  if (!intro || !name || nameLines.length < 2 || !field || !handoff || !trackWindow || tracks.length !== 2 || !signature || !signatureMask) return;
 
   gsap.set(nameLines, { transformOrigin: "center center" });
   gsap.set(tracks, { x: 0 });
+  gsap.set(signature, { autoAlpha: 0, xPercent: -50, yPercent: -50, x: -12, y: 8, scale: 0.96 });
+
+  const signatureStart = "polygon(0 70%, 13% 43%, 34% 16%, 55% 0, 61% 0, 56% 35%, 38% 65%, 16% 100%, 0 100%)";
+  const signatureMiddle = "polygon(0 44%, 16% 20%, 39% 2%, 62% 0, 82% 18%, 100% 43%, 100% 67%, 79% 96%, 50% 100%, 24% 86%, 0 69%)";
+  const signatureFull = "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
+  gsap.set(signatureMask, { clipPath: signatureStart });
 
   const timeline = gsap.timeline({
     scrollTrigger: {
@@ -60,33 +71,46 @@ function mountIntroMotion(root: HTMLElement) {
 
   timeline
     .addLabel("identity", HERO_PHASE.identity)
+    .addLabel("signatureEnter", HERO_PHASE.signatureEnter)
+    .addLabel("tracksEnter", HERO_PHASE.tracksEnter)
     .addLabel("fieldEnter", HERO_PHASE.fieldEnter)
     .addLabel("fieldDwell", HERO_PHASE.fieldDwell)
     .addLabel("handoff", HERO_PHASE.handoff)
     .addLabel("exit", HERO_PHASE.exit);
 
   timeline
-    .to(".intro-topline, .intro-bottomline", { opacity: 0, y: -motion.distance.small, duration: 0.09, ease: "none" }, "identity+=0.16")
-    .to(trackWindow, { opacity: 1, duration: 0.1, ease: "none" }, "identity+=0.16")
-    .to(name, { opacity: 0.4, duration: 0.15, ease: "none" }, "fieldEnter")
-    .to(name, { scaleX: 0.86, scaleY: 0.82, y: "-9vh", duration: HERO_PHASE.fieldDwell - HERO_PHASE.fieldEnter, ease: "none" }, "fieldEnter")
-    .to(nameLines[0], { x: "-11vw", y: "-5vh", opacity: 0.72, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
-    .to(nameLines[1], { x: "13vw", y: "6vh", opacity: 0.46, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
-    .to(tracks[0], { x: "-82vw", duration: 0.24, ease: "none" }, "fieldEnter+=0.02")
-    .to(tracks[1], { x: "82vw", duration: 0.24, ease: "none" }, "fieldEnter+=0.02")
+    .to(signature, { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.07, ease: "power1.out" }, "signatureEnter")
+    .to(signatureMask, { clipPath: signatureMiddle, duration: 0.065, ease: "power1.out" }, "signatureEnter")
+    .to(signatureMask, { clipPath: signatureFull, duration: 0.1, ease: "power1.out" }, "signatureEnter+=0.065")
+    .to(metadata, { opacity: 0.5, y: -8, duration: 0.12, ease: "none" }, "tracksEnter")
+    .to(trackWindow, { opacity: 1, duration: 0.08, ease: "none" }, "tracksEnter")
+    .to(name, { opacity: 0.08, scaleX: 0.92, scaleY: 0.9, y: "-4vh", duration: 0.1, ease: "none" }, "tracksEnter")
+    .to(nameLines[0], { x: "-3vw", y: "-2vh", opacity: 0.1, duration: 0.11, ease: "none" }, "tracksEnter+=0.02")
+    .to(nameLines[1], { x: "4vw", y: "3vh", opacity: 0.08, duration: 0.11, ease: "none" }, "tracksEnter+=0.02")
+    .to(tracks[0], { x: "-56vw", duration: 0.22, ease: "none" }, "tracksEnter")
+    .to(tracks[1], { x: "56vw", duration: 0.22, ease: "none" }, "tracksEnter")
+    .to(signature, { autoAlpha: 0.5, x: "1vw", y: "-0.8vh", scale: 1.005, duration: 0.12, ease: "none" }, "tracksEnter+=0.14")
     .set(field, { clipPath: "inset(22% 22% 22% 22%)", opacity: 0, scale: 0.955 }, "fieldEnter")
-    .to(field, { opacity: 0.38, scale: 0.97, duration: 0.07, ease: motion.hero.ease }, "fieldEnter")
-    .to(field, { clipPath: "inset(10% 8% 10% 8%)", opacity: 0.62, scale: 0.985, duration: 0.08, ease: motion.hero.ease }, "fieldEnter+=0.07")
-    .to(field, { clipPath: "inset(0% 0% 0% 0%)", opacity: 1, scale: 1, duration: 0.08, ease: motion.hero.ease }, "fieldEnter+=0.15")
-    .to(trackWindow, { opacity: 0, y: "-5vh", duration: 0.1, ease: "none" }, "fieldDwell-=0.02")
+    .to(field, { opacity: 0.52, scale: 0.97, duration: 0.05, ease: motion.hero.ease }, "fieldEnter")
+    .to(field, { clipPath: "inset(10% 8% 10% 8%)", opacity: 0.76, scale: 0.985, duration: 0.07, ease: motion.hero.ease }, "fieldEnter+=0.05")
+    .to(field, { clipPath: "inset(0% 0% 0% 0%)", opacity: 1, scale: 1, duration: 0.07, ease: motion.hero.ease }, "fieldEnter+=0.12")
+    .to(metadata, { opacity: 0, y: -motion.distance.small, duration: 0.09, ease: "none" }, "fieldEnter+=0.03")
+    .to(name, { x: "-2vw", y: "-9vh", scaleX: 0.72, scaleY: 0.68, opacity: 0, duration: 0.12, ease: "none" }, "fieldEnter+=0.03")
+    .to(signature, { autoAlpha: 0.3, x: "1vw", y: "-0.8vh", scale: 1.006, duration: 0.055, ease: "none" }, "fieldEnter")
+    .to(trackWindow, { opacity: 0.28, y: "-1vh", duration: 0.055, ease: "none" }, "fieldEnter")
+    .to(signature, { autoAlpha: 0, x: "1.4vw", y: "-1vh", scale: 1.01, duration: 0.075, ease: "none" }, "fieldEnter+=0.055")
+    .to(trackWindow, { opacity: 0, y: "-4vh", duration: 0.075, ease: "none" }, "fieldEnter+=0.055")
     .to(field, { scale: 1.004, duration: HERO_PHASE.handoff - HERO_PHASE.fieldDwell, ease: "none" }, "fieldDwell")
-    .to(name, { x: "-2vw", y: "-28vh", scaleX: 0.54, scaleY: 0.52, opacity: 0, duration: 0.14, ease: "none" }, "handoff")
     .to(handoff, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, "handoff+=0.02")
     .to(field, { scale: 1.03, duration: HERO_PHASE.exit - HERO_PHASE.handoff - 0.08, ease: "none" }, "handoff+=0.08");
 }
 
 function setArchiveActive(stage: HTMLElement, cards: HTMLElement[], current: HTMLElement | null, index: number, state: { index: number }) {
   const safeIndex = Math.min(cards.length - 1, Math.max(0, index));
+  cards.forEach((card, cardIndex) => {
+    card.classList.toggle("is-active", cardIndex === safeIndex);
+    if (cardIndex === safeIndex) card.classList.add("is-entered");
+  });
   if (safeIndex === state.index) return;
   state.index = safeIndex;
   const label = cards[safeIndex]?.dataset.archiveLabel;
@@ -99,22 +123,34 @@ function mountArchiveMotion(root: HTMLElement) {
   const viewport = stage?.querySelector<HTMLElement>(".archive-stage__viewport");
   const deck = stage?.querySelector<HTMLElement>(".archive-deck");
   const cards = Array.from(root.querySelectorAll<HTMLElement>(".archive-stage .archive-card"));
+  const media = cards.map((card) => card.querySelector<HTMLElement>(".archive-card__image picture"));
   const current = root.querySelector<HTMLElement>(".archive-stage__current");
   if (!stage || !viewport || !deck || cards.length < 2) return;
 
   const activeState = { index: -1 };
-  let geometry = { positions: [] as number[], metrics: [] as { offsetLeft: number; width: number }[], viewportWidth: 0 };
+  let appliedRunway = 0;
+  let geometry = { positions: [] as number[], metrics: [] as { offsetLeft: number; width: number }[], viewportWidth: 0, runway: 0 };
   const measure = () => {
     const viewportWidth = viewport.clientWidth;
+    const rawMetrics = cards.map((card) => ({ offsetLeft: card.offsetLeft, width: card.offsetWidth }));
+    const startPadding = Math.max(0, viewportWidth / 2 - rawMetrics[0].width / 2);
+    const endPadding = Math.max(0, viewportWidth / 2 - rawMetrics[rawMetrics.length - 1].width / 2);
+    deck.style.setProperty("--archive-deck-start", `${startPadding}px`);
+    deck.style.setProperty("--archive-deck-end", `${endPadding}px`);
     const metrics = cards.map((card) => ({ offsetLeft: card.offsetLeft, width: card.offsetWidth }));
     const positions = metrics.map(({ offsetLeft, width }) => viewportWidth / 2 - (offsetLeft + width / 2));
-    return { positions, metrics, viewportWidth };
+    const actualOverflow = Math.max(0, deck.scrollWidth - viewportWidth);
+    const runway = actualOverflow / 0.9;
+    const stageHeight = Math.ceil(viewport.clientHeight + runway);
+    if (Math.abs(stageHeight - appliedRunway) > 1) {
+      stage.style.setProperty("--archive-runway", `${stageHeight}px`);
+      appliedRunway = stageHeight;
+    }
+    return { positions, metrics, viewportWidth, runway };
   };
   const updateFocus = (deckX: number) => {
     let nearest = 0;
     let nearestDistance = Number.POSITIVE_INFINITY;
-    const focusRadius = geometry.viewportWidth * .18;
-    const fadeRange = geometry.viewportWidth * .48;
     cards.forEach((card, index) => {
       const metric = geometry.metrics[index];
       const cardCenter = deckX + metric.offsetLeft + metric.width / 2;
@@ -123,8 +159,18 @@ function mountArchiveMotion(root: HTMLElement) {
         nearest = index;
         nearestDistance = distance;
       }
-      const fade = clamp((distance - focusRadius) / fadeRange, 0, 1);
-      gsap.set(card, { opacity: 1 - fade * .68, scale: 1 - fade * .07 });
+    });
+    cards.forEach((card, index) => {
+      const metric = geometry.metrics[index];
+      const cardCenter = deckX + metric.offsetLeft + metric.width / 2;
+      const direction = cardCenter - geometry.viewportWidth / 2;
+      const relative = clamp(direction / (geometry.viewportWidth * .7), -1, 1);
+      const offset = index - nearest;
+      const adjacency = Math.abs(offset);
+      const opacity = adjacency === 0 ? 1 : adjacency === 1 ? (offset < 0 ? 0.1 : 0.07) : 0.015;
+      const scale = adjacency === 0 ? 1 : adjacency === 1 ? 0.965 : 0.94;
+      gsap.set(card, { opacity, scale, zIndex: adjacency === 0 ? 3 : adjacency === 1 ? 2 : 1 });
+      if (media[index]) gsap.set(media[index], { x: clamp(-relative * 48, -48, 48) });
     });
     setArchiveActive(stage, cards, current, nearest, activeState);
   };
@@ -162,12 +208,9 @@ function mountArchiveMotion(root: HTMLElement) {
 
 function mountWorkIntroMotion(root: HTMLElement) {
   const intro = root.querySelector<HTMLElement>(".work-intro");
-  const left = root.querySelector<HTMLElement>(".work-intro__block--left");
-  const right = root.querySelector<HTMLElement>(".work-intro__block--right");
-  const panel = root.querySelector<HTMLElement>(".work-sequence");
-  if (!intro || !left || !right || !panel) return;
-
-  gsap.set(panel, { y: "100vh" });
+  const copy = Array.from(root.querySelectorAll<HTMLElement>("[data-work-intro-copy]"));
+  const media = Array.from(root.querySelectorAll<HTMLElement>("[data-work-intro-media]"));
+  if (!intro || copy.length !== 2 || media.length !== 2) return;
 
   const timeline = gsap.timeline({
     scrollTrigger: {
@@ -181,11 +224,12 @@ function mountWorkIntroMotion(root: HTMLElement) {
 
   timeline
     .addLabel("convergence-enter", 0)
-    .fromTo(left, { x: "-42vw", opacity: .24 }, { x: "-17.5vw", opacity: 1, duration: .58, ease: "power1.inOut" }, 0)
-    .fromTo(right, { x: "42vw", opacity: .24 }, { x: "17.5vw", opacity: 1, duration: .58, ease: "power1.inOut" }, 0)
-    .addLabel("convergence-settled", .64)
-    .addLabel("panel-rise", .72)
-    .to(panel, { y: "0vh", duration: .28, ease: "none" }, .72)
+    .fromTo(copy[0], { x: "-5.5rem", y: "-1.5vh", opacity: .28 }, { x: 0, y: 0, opacity: 1, duration: .6, ease: "power1.inOut" }, 0)
+    .fromTo(copy[1], { x: "5.5rem", y: "1.5vh", opacity: .28 }, { x: 0, y: 0, opacity: 1, duration: .6, ease: "power1.inOut" }, 0)
+    .addLabel("text-settled", .6)
+    .fromTo(media[0], { x: "-22rem", y: "14vh", scale: .94, opacity: .08 }, { x: 0, y: 0, scale: 1, opacity: 1, duration: .84, ease: "power1.inOut" }, 0)
+    .fromTo(media[1], { x: "22rem", y: "-14vh", scale: .94, opacity: .08 }, { x: 0, y: 0, scale: 1, opacity: 1, duration: .84, ease: "power1.inOut" }, .02)
+    .addLabel("media-settled", .84)
     .addLabel("takeover-complete", 1);
 }
 

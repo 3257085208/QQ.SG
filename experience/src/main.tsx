@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import { networkNodes, networkSummary, selectedWorks, statusSnapshot, timeline } from "./data";
 import { publicData } from "./generated/publicData";
 import { mountScrollExperience } from "./engine/scroll";
-import { HeroInkCanvas } from "./components/HeroInkCanvas";
 import { InfrastructureField } from "./components/InfrastructureField";
 import { WorkVisual } from "./components/WorkVisual";
 import "./styles.css";
@@ -16,8 +15,8 @@ function splitTitle(value: string) {
 
 const systemTree = ["agent/", "agent/src/", "agent/Cargo.toml", "docs/", "package.json", "README.md"];
 
-const heroUpperTrack = ["NIE KAIXIANG", "PERSONAL INDEX", "QQ.SG", "NIE KAIXIANG", "PERSONAL INDEX", "QQ.SG", "NIE KAIXIANG", "PERSONAL INDEX", "QQ.SG"];
-const heroLowerTrack = ["BUILD", "RUN", "RECORD", "PUBLIC", "SYSTEM", "BUILD", "RUN", "RECORD", "PUBLIC", "SYSTEM"];
+const heroUpperTrack = ["NIE KAIXIANG", "PERSONAL INDEX", "QQ.SG / 15 / 26", "FIELD TRACE"];
+const heroLowerTrack = ["BUILD", "RUN", "RECORD", "PUBLIC", "SYSTEM", "TRACE"];
 
 const menuItems = [
   { id: "home", index: "00", label: "Intro", descriptor: "identity / field" },
@@ -26,6 +25,57 @@ const menuItems = [
   { id: "system", index: "03", label: "System", descriptor: "live index" },
   { id: "contact", index: "04", label: "Contact", descriptor: "open channel" }
 ] as const;
+
+function HeroTrack({ items, className, collection }: { items: string[]; className: string; collection: string }) {
+  return (
+    <div className={`intro-track ${className}`} aria-hidden="true">
+      <div className="intro-track__strip">
+        {Array.from({ length: 3 }, (_, collectionIndex) => (
+          <div className="intro-track__collection" key={`${collection}-${collectionIndex}`}>
+            {items.map((item, itemIndex) => <span key={`${collection}-${collectionIndex}-${item}-${itemIndex}`}>{item}<i>—</i></span>)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WorkConvergence() {
+  const repository = publicData.github.repositories[0];
+  const readme = "readme" in repository ? repository.readme : undefined;
+  const tree = "tree" in repository ? repository.tree.slice(0, 4) : ["src/", "public/", "README.md", "package.json"];
+
+  return (
+    <div className="work-intro__spread">
+      <article className="work-intro__project work-intro__project--status">
+        <div className="work-intro__copy" data-work-intro-copy>
+          <span className="mono">01 / STATUS.QQ.SG</span>
+          <h2 id="work-title">STATUS<br />SYSTEM</h2>
+          <span className="mono">NODEGET / LIVE INDEX / {statusSnapshot.online} ONLINE</span>
+        </div>
+        <figure className="work-intro__media work-intro__media--status" data-work-intro-media>
+          <picture><source type="image/avif" srcSet="/assets/status-nodeget-light-1600.avif" /><img src="/assets/status-nodeget-light.png" width="1600" height="900" loading="lazy" decoding="async" alt="Status.qq.sg NodeGet status interface" /></picture>
+          <figcaption className="mono">LIVE SNAPSHOT / PUBLIC</figcaption>
+        </figure>
+      </article>
+
+      <article className="work-intro__project work-intro__project--systems">
+        <div className="work-intro__copy" data-work-intro-copy>
+          <span className="mono">02 / GITHUB PUBLIC API</span>
+          <h3>OPEN<br />SYSTEMS</h3>
+          <span className="mono">{publicData.github.profile.publicRepos} REPOSITORIES / MAIN</span>
+        </div>
+        <div className="work-intro__media work-intro__media--systems" data-work-intro-media aria-label="Public repository README and source tree fragment">
+          <div className="work-intro__artifact-head mono"><span>README.md / {repository.name}</span><span>MAIN</span></div>
+          <strong>{readme?.title ?? repository.name}</strong>
+          <p>{readme?.excerpt ?? repository.description}</p>
+          <pre>{tree.join("\n")}</pre>
+          <span className="work-intro__artifact-foot mono">LATEST / {repository.latestCommit.short}</span>
+        </div>
+      </article>
+    </div>
+  );
+}
 
 function DesktopExperience() {
   return (
@@ -38,10 +88,10 @@ function DesktopExperience() {
             <div className="intro-bottomline mono"><span>QQ.SG / CHINA / UTC+8</span><span>SCROLL TO ENTER ↓</span></div>
           </div>
           <div className="intro-track-window" aria-hidden="true">
-            <div className="intro-track intro-track--upper"><div className="intro-track__strip">{heroUpperTrack.map((item, index) => <span key={`upper-${item}-${index}`}>{item}<i>—</i></span>)}</div></div>
-            <div className="intro-track intro-track--lower"><div className="intro-track__strip">{heroLowerTrack.map((item, index) => <span key={`lower-${item}-${index}`}>{item}<i>—</i></span>)}</div></div>
+            <HeroTrack items={heroUpperTrack} className="intro-track--upper" collection="upper" />
+            <HeroTrack items={heroLowerTrack} className="intro-track--lower" collection="lower" />
           </div>
-          <HeroInkCanvas />
+          <div className="intro-signature" aria-hidden="true"><div className="intro-signature__mask"><img src="/assets/nkx-brush-signature.png" width="1280" height="420" decoding="async" alt="" /></div></div>
           <div className="intro-field" aria-hidden="true"><InfrastructureField /></div>
           <div className="intro-handoff mono"><span>PUBLIC TRACE / FIELD OPEN</span><span>01 / ARCHIVE ↓</span></div>
         </div>
@@ -77,10 +127,7 @@ function DesktopExperience() {
         <div className="work-intro">
           <div className="work-intro__viewport">
             <span className="work-intro__label mono">THE SYSTEM BECOMES VISIBLE HERE</span>
-            <h2 id="work-title" className="work-intro__blocks" aria-label="Build, run, record, public">
-              <span className="work-intro__block work-intro__block--left"><span className="work-intro__word work-intro__word--serif">BUILD</span><span className="work-intro__word work-intro__word--sans">RUN</span></span>
-              <span className="work-intro__block work-intro__block--right"><span className="work-intro__word work-intro__word--serif">RECORD</span><span className="work-intro__word work-intro__word--sans">PUBLIC</span></span>
-            </h2>
+            <WorkConvergence />
           </div>
         </div>
         <div className="work-sequence" data-active="01">
