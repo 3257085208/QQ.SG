@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { statusSnapshot } from "../data";
 import { WORLD_MAP_PATH } from "../data/worldMap";
 
@@ -18,6 +18,11 @@ type FieldCity = GeoPoint & {
 };
 
 type FieldCitySeed = Omit<FieldCity, "x" | "y">;
+
+type FieldPoint = {
+  x: number;
+  y: number;
+};
 
 const FIELD_MAP = {
   left: 28,
@@ -61,6 +66,10 @@ type FieldRoute = {
   source: FieldCity;
   destination: FieldCity;
   path: string;
+  start: FieldPoint;
+  controlOne: FieldPoint;
+  controlTwo: FieldPoint;
+  end: FieldPoint;
   sequence: number;
   emissionDelay: number;
 };
@@ -82,6 +91,13 @@ type FieldBurst = {
 type FieldPhase = "idle" | "source" | "route-draw" | "travel" | "receive" | "decay";
 
 const destinationRotation = ["fra", "tyo", "lax", "hk", "ams", "nyc", "sin", "kiv", "phx", "sh"];
+const BURST_TRAVEL_OFFSET = .62;
+const FIELD_TAIL_DOTS = [
+  { lag: .2, radius: 1.05, opacity: .13 },
+  { lag: .14, radius: 1.3, opacity: .19 },
+  { lag: .08, radius: 1.7, opacity: .27 },
+  { lag: .035, radius: 2, opacity: .36 }
+] as const;
 
 function fieldNoise(seed: number) {
   const value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
@@ -106,7 +122,13 @@ function buildTransmissionPath(source: FieldCity, destination: FieldCity, varian
   };
 
   // Screen-space arcs intentionally keep Pacific traffic continuous inside the composition.
-  return `M${source.x.toFixed(1)} ${source.y.toFixed(1)} C${controlOne.x.toFixed(1)} ${controlOne.y.toFixed(1)} ${controlTwo.x.toFixed(1)} ${controlTwo.y.toFixed(1)} ${destination.x.toFixed(1)} ${destination.y.toFixed(1)}`;
+  return {
+    path: `M${source.x.toFixed(1)} ${source.y.toFixed(1)} C${controlOne.x.toFixed(1)} ${controlOne.y.toFixed(1)} ${controlTwo.x.toFixed(1)} ${controlTwo.y.toFixed(1)} ${destination.x.toFixed(1)} ${destination.y.toFixed(1)}`,
+    start: { x: source.x, y: source.y },
+    controlOne,
+    controlTwo,
+    end: { x: destination.x, y: destination.y }
+  };
 }
 
 function makeFieldBurst(sequence: number, requestedDestination?: string): FieldBurst {
@@ -123,15 +145,18 @@ function makeFieldBurst(sequence: number, requestedDestination?: string): FieldB
   const routes = candidates.map((source, index) => ({
     source,
     destination,
-    path: buildTransmissionPath(source, destination, sequence + index),
+    ...buildTransmissionPath(source, destination, sequence + index),
     sequence: index,
     emissionDelay: .08 + index * .115 + fieldNoise(sequence * 19 + index + 2) * .14
   }));
 
+  let packetTotal = 0;
   const packets = routes.flatMap((route, index) => {
-    const packetCount = (index + sequence) % 3 === 0 ? 2 : 1;
+    const wantsPair = (index + sequence) % 3 === 0;
+    const packetCount = wantsPair && packetTotal + 2 <= 12 ? 2 : 1;
+    packetTotal += packetCount;
     return Array.from({ length: packetCount }, (_, packetIndex) => {
-      const delay = route.emissionDelay + packetIndex * .16 + fieldNoise(sequence * 43 + index * 7 + packetIndex) * .1;
+      const delay = BURST_TRAVEL_OFFSET + route.emissionDelay + packetIndex * .16 + fieldNoise(sequence * 43 + index * 7 + packetIndex) * .1;
       const duration = 1.92 + fieldNoise(sequence * 53 + index * 11 + packetIndex) * .82;
       return {
         id: `burst-${sequence}-route-${index}-packet-${packetIndex}`,
@@ -145,37 +170,120 @@ function makeFieldBurst(sequence: number, requestedDestination?: string): FieldB
   return { sequence, destination, routes, packets };
 }
 
-function FieldTransmissionPacket({ packet, phase }: { packet: FieldPacket; phase: FieldPhase }) {
-  if (phase === "idle") return null;
+function sampleTransmissionPoint(route: FieldRoute, progress: number): FieldPoint {
+  const t = Math.max(0, Math.min(1, progress));
+  const inverse = 1 - t;
+  return {
+    x: inverse ** 3 * route.start.x + 3 * inverse ** 2 * t * route.controlOne.x + 3 * inverse * t ** 2 * route.controlTwo.x + t ** 3 * route.end.x,
+    y: inverse ** 3 * route.start.y + 3 * inverse ** 2 * t * route.controlOne.y + 3 * inverse * t ** 2 * route.controlTwo.y + t ** 3 * route.end.y
+  };
+}
 
-  const tailDots = [
-    { lag: .2, radius: 1.05, opacity: .13 },
-    { lag: .14, radius: 1.3, opacity: .19 },
-    { lag: .08, radius: 1.7, opacity: .27 },
-    { lag: .035, radius: 2, opacity: .36 }
-  ];
+function buildTransmissionKeyframes(route: FieldRoute, peakOpacity: number): Keyframe[] {
+  const sampleCount = 25;
+  return Array.from({ length: sampleCount }, (_, index) => {
+    const progress = index / (sampleCount - 1);
+    const fadeIn = Math.min(1, progress / .08);
+    const fadeOut = progress > .88 ? (1 - progress) / .12 : 1;
+    const point = sampleTransmissionPoint(route, progress);
+
+    return {
+      transform: `translate(${point.x.toFixed(2)}px, ${point.y.toFixed(2)}px)`,
+      opacity: Number((peakOpacity * Math.min(fadeIn, fadeOut)).toFixed(3)),
+      offset: progress
+    };
+  });
+}
+
+function FieldTransmissionSourcePulse({ route }: { route: FieldRoute }) {
+  const pulseRef = useRef<SVGCircleElement>(null);
+
+  useEffect(() => {
+    const pulse = pulseRef.current;
+    if (!pulse) return;
+
+    const animation = pulse.animate(
+      [
+        { transform: "scale(1)", opacity: 0, offset: 0 },
+        { transform: "scale(1)", opacity: .58, offset: .08 },
+        { transform: "scale(3.5)", opacity: 0, offset: 1 }
+      ],
+      {
+        delay: route.emissionDelay * 1000,
+        duration: 680,
+        easing: "ease-out",
+        fill: "both"
+      }
+    );
+
+    return () => animation.cancel();
+  }, [route]);
+
+  return <circle className="field-transmission__source-pulse" ref={pulseRef} cx={route.source.x} cy={route.source.y} r="4" />;
+}
+
+function FieldTransmissionPacket({ packet }: { packet: FieldPacket }) {
+  const tailRefs = useRef<Array<SVGCircleElement | null>>([]);
+  const ringRef = useRef<SVGCircleElement>(null);
+  const particleRef = useRef<SVGCircleElement>(null);
+  const receivePulseRef = useRef<SVGCircleElement>(null);
   const arrival = packet.delay + packet.duration;
 
+  useEffect(() => {
+    const animations: Animation[] = [];
+    const motionOptions = (delay: number): KeyframeAnimationOptions => ({
+      delay: delay * 1000,
+      duration: packet.duration * 1000,
+      easing: "linear",
+      fill: "both"
+    });
+
+    FIELD_TAIL_DOTS.forEach((dot, index) => {
+      const tail = tailRefs.current[index];
+      if (!tail) return;
+      animations.push(tail.animate(buildTransmissionKeyframes(packet.route, dot.opacity), motionOptions(packet.delay + dot.lag)));
+    });
+
+    if (ringRef.current) {
+      animations.push(ringRef.current.animate(buildTransmissionKeyframes(packet.route, .62), motionOptions(packet.delay)));
+    }
+
+    if (particleRef.current) {
+      animations.push(particleRef.current.animate(buildTransmissionKeyframes(packet.route, 1), motionOptions(packet.delay)));
+    }
+
+    if (receivePulseRef.current) {
+      animations.push(receivePulseRef.current.animate(
+        [
+          { transform: "scale(1)", opacity: 0, offset: 0 },
+          { transform: "scale(1)", opacity: .62, offset: .08 },
+          { transform: "scale(3.25)", opacity: 0, offset: 1 }
+        ],
+        {
+          delay: arrival * 1000,
+          duration: 620,
+          easing: "ease-out",
+          fill: "both"
+        }
+      ));
+    }
+
+    return () => animations.forEach((animation) => animation.cancel());
+  }, [arrival, packet]);
+
   return (
-    <g className="field-transmission__packet" key={packet.id}>
-      {tailDots.map((dot, index) => (
-        <circle className="field-transmission__packet-tail" r={dot.radius} key={`${packet.id}-tail-${index}`}>
-          <animateMotion dur={`${packet.duration.toFixed(2)}s`} begin={`${(packet.delay + dot.lag).toFixed(2)}s`} path={packet.route.path} rotate="auto" fill="remove" />
-          <animate attributeName="opacity" values={`0;${dot.opacity};${dot.opacity * .34};0`} dur={`${packet.duration.toFixed(2)}s`} begin={`${(packet.delay + dot.lag).toFixed(2)}s`} fill="remove" />
-        </circle>
+    <g className="field-transmission__packet">
+      {FIELD_TAIL_DOTS.map((dot, index) => (
+        <circle
+          className="field-transmission__packet-tail"
+          ref={(node) => { tailRefs.current[index] = node; }}
+          r={dot.radius}
+          key={`${packet.id}-tail-${index}`}
+        />
       ))}
-      <circle className="field-transmission__packet-ring" r="6">
-        <animateMotion dur={`${packet.duration.toFixed(2)}s`} begin={`${packet.delay.toFixed(2)}s`} path={packet.route.path} rotate="auto" fill="remove" />
-        <animate attributeName="opacity" values="0;.62;.24;0" dur={`${packet.duration.toFixed(2)}s`} begin={`${packet.delay.toFixed(2)}s`} fill="remove" />
-      </circle>
-      <circle className="field-transmission__particle" r="2.8">
-        <animateMotion dur={`${packet.duration.toFixed(2)}s`} begin={`${packet.delay.toFixed(2)}s`} path={packet.route.path} rotate="auto" fill="remove" />
-        <animate attributeName="opacity" values="0;1;1;0" dur={`${packet.duration.toFixed(2)}s`} begin={`${packet.delay.toFixed(2)}s`} fill="remove" />
-      </circle>
-      <circle className="field-transmission__pulse field-transmission__receive-pulse" cx={packet.route.destination.x} cy={packet.route.destination.y} r="4">
-        <animate attributeName="r" values="4;13" dur=".62s" begin={`${arrival.toFixed(2)}s`} repeatCount="1" fill="remove" />
-        <animate attributeName="opacity" values=".62;0" dur=".62s" begin={`${arrival.toFixed(2)}s`} repeatCount="1" fill="remove" />
-      </circle>
+      <circle className="field-transmission__packet-ring" ref={ringRef} r="6" />
+      <circle className="field-transmission__particle" ref={particleRef} r="2.8" />
+      <circle className="field-transmission__pulse field-transmission__receive-pulse" ref={receivePulseRef} cx={packet.route.destination.x} cy={packet.route.destination.y} r="4" />
     </g>
   );
 }
@@ -209,7 +317,7 @@ export function InfrastructureField() {
         setBurst((current) => {
           const nextSequence = current.sequence + 1;
           const currentIndex = destinationRotation.indexOf(current.destination.id);
-          const nextDestination = destinationRotation[(currentIndex + 1 + nextSequence) % destinationRotation.length];
+          const nextDestination = destinationRotation[(currentIndex + 1) % destinationRotation.length];
           return makeFieldBurst(nextSequence, nextDestination);
         });
         startCycle();
@@ -251,8 +359,8 @@ export function InfrastructureField() {
         <g className="field-transmission__routes" aria-hidden="true">
           {burst.routes.map((route) => (
             <g key={`route-group-${burst.sequence}-${route.sequence}`}>
-              <path className={`field-transmission__underlay is-${phase}`} d={route.path} pathLength="1" />
-              <path className={`field-transmission__route is-${phase}`} d={route.path} pathLength="1" style={{ transitionDelay: `${(route.sequence * .035).toFixed(2)}s` }} />
+              <path className={`field-transmission__underlay is-${phase}`} d={route.path} />
+              <path className={`field-transmission__route is-${phase}`} d={route.path} />
             </g>
           ))}
         </g>
@@ -279,16 +387,12 @@ export function InfrastructureField() {
           })}
         </g>
 
-        <g className="field-transmission__emissions" aria-hidden="true">
-          {burst.routes.map((route) => (
-            <circle className="field-transmission__source-pulse" key={`source-pulse-${burst.sequence}-${route.sequence}`} cx={route.source.x} cy={route.source.y} r="4">
-              <animate attributeName="r" values="4;14" dur=".68s" begin={`${route.emissionDelay.toFixed(2)}s`} repeatCount="1" fill="remove" />
-              <animate attributeName="opacity" values=".58;0" dur=".68s" begin={`${route.emissionDelay.toFixed(2)}s`} repeatCount="1" fill="remove" />
-            </circle>
-          ))}
-        </g>
-
-        {burst.packets.map((packet) => <FieldTransmissionPacket key={packet.id} packet={packet} phase={phase} />)}
+        {phase !== "idle" && (
+          <g className="field-transmission__animated-burst" key={`burst-animation-${burst.sequence}`} data-burst={burst.sequence} aria-hidden="true">
+            {burst.routes.map((route) => <FieldTransmissionSourcePulse key={`source-pulse-${burst.sequence}-${route.sequence}`} route={route} />)}
+            {burst.packets.map((packet) => <FieldTransmissionPacket key={packet.id} packet={packet} />)}
+          </g>
+        )}
       </svg>
 
       <div className="infrastructure-field__core">
