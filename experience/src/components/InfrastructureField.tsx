@@ -49,127 +49,39 @@ const fieldCities: FieldCity[] = fieldCitySeeds.map((city) => ({
   ...projectFieldPoint(city.lat, city.lon)
 }));
 
-type ProjectedPoint = {
-  x: number;
-  y: number;
-};
-
-type FieldRouteSegment = {
-  d: string;
-  length: number;
-};
-
 type FieldRoute = {
   source: FieldCity;
   destination: FieldCity;
   path: string;
-  segments: FieldRouteSegment[];
   sequence: number;
 };
 
 type FieldPhase = "idle" | "source" | "route-draw" | "travel" | "receive" | "decay";
 
-function toRadians(value: number) {
-  return value * (Math.PI / 180);
-}
-
-function toDegrees(value: number) {
-  return value * (180 / Math.PI);
-}
-
-function interpolateGreatCircle(source: GeoPoint, destination: GeoPoint, segments = 42): GeoPoint[] {
-  const phi1 = toRadians(source.lat);
-  const phi2 = toRadians(destination.lat);
-  const lambda1 = toRadians(source.lon);
-  const lambda2 = toRadians(destination.lon);
-  const distance = 2 * Math.asin(Math.min(1, Math.sqrt(
-    Math.pow(Math.sin((phi2 - phi1) / 2), 2) +
-    Math.cos(phi1) * Math.cos(phi2) * Math.pow(Math.sin((lambda2 - lambda1) / 2), 2)
-  )));
-
-  if (distance < 0.0001) return [source, destination];
-
-  const sinDistance = Math.sin(distance);
-  return Array.from({ length: segments + 1 }, (_, index) => {
-    const progress = index / segments;
-    const a = Math.sin((1 - progress) * distance) / sinDistance;
-    const b = Math.sin(progress * distance) / sinDistance;
-    const x = a * Math.cos(phi1) * Math.cos(lambda1) + b * Math.cos(phi2) * Math.cos(lambda2);
-    const y = a * Math.cos(phi1) * Math.sin(lambda1) + b * Math.cos(phi2) * Math.sin(lambda2);
-    const z = a * Math.sin(phi1) + b * Math.sin(phi2);
-
-    return {
-      lat: toDegrees(Math.atan2(z, Math.sqrt(x * x + y * y))),
-      lon: toDegrees(Math.atan2(y, x))
-    };
-  });
-}
-
-function projectRoutePoint(point: GeoPoint): ProjectedPoint {
-  return projectFieldPoint(point.lat, point.lon);
-}
-
-function formatProjectedPoint(point: ProjectedPoint) {
-  return `${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
-}
-
-function makeRouteSegment(points: ProjectedPoint[]): FieldRouteSegment {
-  const length = points.slice(1).reduce((total, point, index) => {
-    const previous = points[index];
-    return total + Math.hypot(point.x - previous.x, point.y - previous.y);
-  }, 0);
-
-  return {
-    d: points.map((point, index) => `${index === 0 ? "M" : "L"}${formatProjectedPoint(point)}`).join(" "),
-    length
+function buildTransmissionPath(source: FieldCity, destination: FieldCity) {
+  const dx = destination.x - source.x;
+  const dy = destination.y - source.y;
+  const horizontalSpan = Math.abs(dx);
+  const verticalSpan = Math.abs(dy);
+  const lift = Math.min(92, Math.max(18, horizontalSpan * .12 + verticalSpan * .28));
+  const peakY = Math.max(FIELD_MAP.top + 16, Math.min(source.y, destination.y) - lift);
+  const controlOne = {
+    x: source.x + dx * .3,
+    y: source.y + (peakY - source.y) * .82
   };
-}
-
-function buildRouteGeometry(source: FieldCity, destination: FieldCity) {
-  const points = interpolateGreatCircle(source, destination);
-  const projectedSegments: ProjectedPoint[][] = [[]];
-
-  points.forEach((point, index) => {
-    const projected = projectRoutePoint(point);
-
-    if (index === 0) {
-      projectedSegments[0].push(projected);
-      return;
-    }
-
-    const previous = points[index - 1];
-    if (Math.abs(point.lon - previous.lon) > 180) {
-      const nextLon = point.lon + (previous.lon > 0 ? 360 : -360);
-      const seamLon = previous.lon > 0 ? 180 : -180;
-      const progress = (seamLon - previous.lon) / (nextLon - previous.lon);
-      const seamLat = previous.lat + (point.lat - previous.lat) * progress;
-      const seamPoint = projectRoutePoint({ lat: seamLat, lon: seamLon });
-      const wrappedSeamPoint = projectRoutePoint({ lat: seamLat, lon: seamLon === 180 ? -180 : 180 });
-
-      projectedSegments[projectedSegments.length - 1].push(seamPoint);
-      projectedSegments.push([wrappedSeamPoint, projected]);
-      return;
-    }
-
-    projectedSegments[projectedSegments.length - 1].push(projected);
-  });
-
-  const segments = projectedSegments
-    .filter((segment) => segment.length > 1)
-    .map(makeRouteSegment);
-
-  return {
-    path: segments.map((segment) => segment.d).join(" "),
-    segments
+  const controlTwo = {
+    x: destination.x - dx * .3,
+    y: destination.y + (peakY - destination.y) * .82
   };
+
+  return `M${source.x.toFixed(1)} ${source.y.toFixed(1)} C${controlOne.x.toFixed(1)} ${controlOne.y.toFixed(1)} ${controlTwo.x.toFixed(1)} ${controlTwo.y.toFixed(1)} ${destination.x.toFixed(1)} ${destination.y.toFixed(1)}`;
 }
 
 function makeFieldRoute(source: FieldCity, destination: FieldCity, sequence: number): FieldRoute {
-  const geometry = buildRouteGeometry(source, destination);
   return {
     source,
     destination,
-    ...geometry,
+    path: buildTransmissionPath(source, destination),
     sequence
   };
 }
@@ -192,30 +104,30 @@ function chooseFieldRoute(current: FieldRoute): FieldRoute {
 function FieldTransmissionPacket({ route, phase }: { route: FieldRoute; phase: FieldPhase }) {
   if (phase !== "travel") return null;
 
-  const totalLength = route.segments.reduce((total, segment) => total + segment.length, 0);
-  let elapsed = 0;
   const travelDuration = 2.35;
+  const tailDots = [
+    { delay: .08, radius: 1.1, opacity: .14 },
+    { delay: .06, radius: 1.35, opacity: .2 },
+    { delay: .04, radius: 1.7, opacity: .27 },
+    { delay: .02, radius: 2, opacity: .34 }
+  ];
 
   return (
     <g className="field-transmission__packet" key={`packet-${route.sequence}`}>
-      {route.segments.map((segment, index) => {
-        const segmentDuration = Math.max(.24, travelDuration * (segment.length / totalLength));
-        const begin = elapsed;
-        elapsed += segmentDuration;
-
-        return (
-          <g key={`packet-segment-${route.sequence}-${index}`}>
-            <circle className="field-transmission__packet-ring" r="5">
-              <animateMotion dur={`${segmentDuration}s`} begin={`${begin}s`} path={segment.d} rotate="auto" fill="remove" />
-              <animate attributeName="opacity" values="0;.55;.22;0" dur={`${segmentDuration}s`} begin={`${begin}s`} fill="remove" />
-            </circle>
-            <circle className="field-transmission__particle" r="2.7">
-              <animateMotion dur={`${segmentDuration}s`} begin={`${begin}s`} path={segment.d} rotate="auto" fill="remove" />
-              <animate attributeName="opacity" values="0;1;1;0" dur={`${segmentDuration}s`} begin={`${begin}s`} fill="remove" />
-            </circle>
-          </g>
-        );
-      })}
+      {tailDots.map((dot, index) => (
+        <circle className="field-transmission__packet-tail" r={dot.radius} key={`packet-tail-${route.sequence}-${index}`}>
+          <animateMotion dur={`${travelDuration}s`} begin={`${dot.delay}s`} path={route.path} rotate="auto" fill="remove" />
+          <animate attributeName="opacity" values={`0;${dot.opacity};${dot.opacity * .35};0`} dur={`${travelDuration}s`} begin={`${dot.delay}s`} fill="remove" />
+        </circle>
+      ))}
+      <circle className="field-transmission__packet-ring" r="6">
+        <animateMotion dur={`${travelDuration}s`} path={route.path} rotate="auto" fill="remove" />
+        <animate attributeName="opacity" values="0;.65;.28;0" dur={`${travelDuration}s`} fill="remove" />
+      </circle>
+      <circle className="field-transmission__particle" r="3.3">
+        <animateMotion dur={`${travelDuration}s`} path={route.path} rotate="auto" fill="remove" />
+        <animate attributeName="opacity" values="0;1;1;0" dur={`${travelDuration}s`} fill="remove" />
+      </circle>
     </g>
   );
 }
@@ -283,12 +195,12 @@ export function InfrastructureField() {
 
         <path className={`field-transmission__underlay is-${phase}`} d={route.path} pathLength="1" />
         <path className={`field-transmission__route is-${phase}`} d={route.path} pathLength="1" key={`route-${route.sequence}`} />
-        <path className={`field-transmission__tail is-${phase}`} d={route.path} pathLength="1" />
 
         <g className="field-cities">
           {fieldCities.map((city) => {
             const isSource = sourceActive && city.id === route.source.id;
             const isDestination = destinationActive && city.id === route.destination.id;
+            const isActive = isSource || isDestination;
             const labelX = city.x + city.labelDx;
             const labelY = city.y + city.labelDy;
             const leaderX = city.x + city.labelDx * .58;
@@ -296,10 +208,10 @@ export function InfrastructureField() {
 
             return (
               <g className={`field-city${isSource ? " is-source" : ""}${isDestination ? " is-destination" : ""}`} key={city.id}>
-                <path className="field-city__leader" d={`M${city.x.toFixed(1)} ${city.y.toFixed(1)} L${leaderX.toFixed(1)} ${leaderY.toFixed(1)} L${labelX.toFixed(1)} ${(labelY - 3).toFixed(1)}`} />
-                <circle className="field-city__halo" cx={city.x} cy={city.y} r="7" />
-                <circle className="field-city__dot" cx={city.x} cy={city.y} r="2.6" />
-                <text className="field-city__label" x={labelX} y={labelY}>{city.short}</text>
+                {isActive && <path className="field-city__leader" d={`M${city.x.toFixed(1)} ${city.y.toFixed(1)} L${leaderX.toFixed(1)} ${leaderY.toFixed(1)} L${labelX.toFixed(1)} ${(labelY - 3).toFixed(1)}`} />}
+                <circle className="field-city__halo" cx={city.x} cy={city.y} r={isActive ? 8 : 4.5} />
+                <circle className="field-city__dot" cx={city.x} cy={city.y} r={isActive ? 2.8 : 1.8} />
+                {isActive && <text className="field-city__label" x={labelX} y={labelY}>{city.short}</text>}
               </g>
             );
           })}
