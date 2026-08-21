@@ -9,7 +9,7 @@ const motion = {
   archive: { scrub: 0.64, ease: "power1.inOut" },
   work: { scrub: 0.52, ease: "power2.out" },
   system: { scrub: 0.72, ease: "power2.out" },
-  smoothing: 1.05,
+  smoothing: 0.84,
   distance: { small: 18, medium: 40 }
 };
 
@@ -36,8 +36,8 @@ function mountIntroMotion(root: HTMLElement) {
   timeline
     .to(".intro-topline, .intro-bottomline", { opacity: 0, y: -motion.distance.small, duration: 0.14, ease: "none" }, 0.02)
     .to(name, { scaleX: 0.86, scaleY: 0.82, y: "-9vh", duration: 0.2, ease: "none" }, 0.04)
-    .to(nameLines[0], { x: "-10vw", y: "-9vh", clipPath: "inset(0 78% 0 0)", opacity: 0.54, duration: 0.22, ease: "none" }, 0.14)
-    .to(nameLines[1], { x: "12vw", y: "10vh", clipPath: "inset(0 0 0 78%)", opacity: 0.4, duration: 0.22, ease: "none" }, 0.14)
+    .to(nameLines[0], { x: "-10vw", y: "-9vh", opacity: 0.54, duration: 0.22, ease: "none" }, 0.14)
+    .to(nameLines[1], { x: "12vw", y: "10vh", opacity: 0.4, duration: 0.22, ease: "none" }, 0.14)
     .to(field, { clipPath: "inset(9% 38% 9% 38%)", opacity: 0.28, scale: 0.98, duration: 0.22, ease: motion.hero.ease }, 0.24)
     .to(name, { scaleX: 0.7, scaleY: 0.62, y: "-18vh", clipPath: "inset(0 0 86% 0)", opacity: 0.42, duration: 0.18, ease: motion.hero.ease }, 0.37)
     .to(field, { clipPath: "inset(3% 10% 3% 9%)", opacity: 0.72, scale: 1, duration: 0.16, ease: motion.hero.ease }, 0.46)
@@ -47,8 +47,10 @@ function mountIntroMotion(root: HTMLElement) {
     .to(field, { scale: 1.03, duration: 0.14, ease: "none" }, 0.86);
 }
 
-function setArchiveActive(stage: HTMLElement, cards: HTMLElement[], current: HTMLElement | null, progress: number) {
+function setArchiveActive(stage: HTMLElement, cards: HTMLElement[], current: HTMLElement | null, progress: number, state: { index: number }) {
   const index = Math.min(cards.length - 1, Math.max(0, Math.floor(progress * cards.length)));
+  if (index === state.index) return;
+  state.index = index;
   const label = cards[index]?.dataset.archiveLabel;
   stage.dataset.active = String(index + 1).padStart(2, "0");
   if (current && label && current.textContent !== label) current.textContent = label;
@@ -60,10 +62,11 @@ function mountArchiveMotion(root: HTMLElement) {
   const current = root.querySelector<HTMLElement>(".archive-stage__current");
   if (!stage || cards.length < 2) return;
 
+  const activeState = { index: -1 };
   gsap.set(cards, { transformOrigin: "center center" });
   gsap.set(cards.slice(1), { x: "5vw", y: "4vh", scale: 0.92, opacity: 0.2, clipPath: "inset(0 0 0 76%)" });
   gsap.set(cards[0], { x: 0, y: 0, scale: 1, opacity: 1, clipPath: "inset(0 0 0 0%)" });
-  setArchiveActive(stage, cards, current, 0);
+  setArchiveActive(stage, cards, current, 0, activeState);
 
   const sequence = gsap.timeline({
     scrollTrigger: {
@@ -72,7 +75,7 @@ function mountArchiveMotion(root: HTMLElement) {
       end: "bottom bottom",
       scrub: motion.archive.scrub,
       invalidateOnRefresh: true,
-      onUpdate: (self) => setArchiveActive(stage, cards, current, self.progress)
+      onUpdate: (self) => setArchiveActive(stage, cards, current, self.progress, activeState)
     }
   });
 
@@ -82,7 +85,6 @@ function mountArchiveMotion(root: HTMLElement) {
 
     sequence
       .to(previous, { x: "-5vw", y: "-5vh", scale: 0.88, opacity: 0.42, duration: 0.46, ease: motion.archive.ease }, at - 0.22)
-      .to(previous, { clipPath: "inset(0 62% 0 0)", duration: 0.32, ease: motion.archive.ease }, at)
       .fromTo(card,
         { x: "5vw", y: "4vh", scale: 0.92, opacity: 0.2, clipPath: "inset(0 0 0 76%)" },
         { x: 0, y: 0, scale: 1, opacity: 1, clipPath: "inset(0 0 0 0%)", duration: 0.68, ease: "power2.out" },
@@ -100,8 +102,11 @@ function mountWorkMotion(root: HTMLElement) {
   if (!sequenceRoot || records.length !== visuals.length || !records.length) return;
 
   const handoffLabels = ["ROWS → README TREE", "README TREE → ARTICLE INDEX", "ARTICLE INDEX → LIVE INDEX"];
+  let activeIndex = -1;
   const updateActive = (index: number) => {
     const safeIndex = Math.min(records.length - 1, Math.max(0, index));
+    if (safeIndex === activeIndex) return;
+    activeIndex = safeIndex;
     const label = records[safeIndex].dataset.workLabel;
     sequenceRoot.dataset.active = records[safeIndex].dataset.workIndex ?? String(safeIndex + 1).padStart(2, "0");
     if (current && label && current.textContent !== label) current.textContent = label;
@@ -136,7 +141,6 @@ function mountWorkMotion(root: HTMLElement) {
     const at = index;
     sequence
       .to(previous, { x: "-2vw", y: "-2vh", scale: 0.95, opacity: 0.5, duration: 0.42, ease: motion.work.ease }, at - 0.16)
-      .to(previous, { clipPath: "inset(0 62% 0 0)", duration: 0.3, ease: motion.work.ease }, at + 0.02)
       .fromTo(visual,
         { x: "3vw", y: "2vh", scale: 0.98, opacity: 0.38, clipPath: "inset(0 0 0 100%)" },
         { x: 0, y: 0, scale: 1, opacity: 1, clipPath: "inset(0 0 0 0%)", duration: 0.58, ease: motion.work.ease },
@@ -178,12 +182,19 @@ export function mountScrollExperience(root: HTMLElement) {
     mountSystemMotion(root);
   }, root);
 
-  const refresh = () => ScrollTrigger.refresh();
-  let refreshTimer = window.setTimeout(refresh, 250);
-  window.addEventListener("resize", refresh, { passive: true });
+  let refreshTimer = 0;
+  const scheduleRefresh = () => {
+    window.clearTimeout(refreshTimer);
+    refreshTimer = window.setTimeout(() => {
+      refreshTimer = 0;
+      ScrollTrigger.refresh();
+    }, 140);
+  };
+  scheduleRefresh();
+  window.addEventListener("resize", scheduleRefresh, { passive: true });
 
   return () => {
-    window.removeEventListener("resize", refresh);
+    window.removeEventListener("resize", scheduleRefresh);
     window.clearTimeout(refreshTimer);
     refreshTimer = 0;
     context.revert();

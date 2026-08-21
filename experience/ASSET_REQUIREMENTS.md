@@ -8,6 +8,8 @@ This page uses a small set of real, attributable visual materials. No personal p
 | --- | --- | --- |
 | `public/assets/status-nodeget-light.png` | Available | Public NIE-Theme-NodeGet README preview: `https://img.nkx.moe/file/6KZhPpSB.png`. Used as the dominant Status System artifact. |
 | `public/assets/status-nodeget-dark.png` | Available | Public NIE-Theme-NodeGet README preview: `https://img.nkx.moe/file/aKD8feIV.png`. Used as a darker archive reference. |
+| `public/assets/status-nodeget-light-1600.avif` | Available | 1600×900 AVIF derivative of the public light preview, used for the desktop Work visual when supported. |
+| `public/assets/status-nodeget-dark-1600.avif` | Available | 1600×900 AVIF derivative of the public dark preview, used for the desktop Archive visual when supported. |
 | `public/assets/status-nodeget-mobile.png` | Available | Center crop of the same public light preview, prepared for the mobile Status scene so the NodeGet cards remain legible. |
 | `public/assets/status-nodeget-dark-mobile.png` | Available | Center crop of the same public dark preview, prepared for the mobile Archive stream. |
 | `publicData.status` | Available | Verified public snapshot of `https://status.qq.sg`, captured on `2026-08-21`. Text and metrics remain data-backed. |

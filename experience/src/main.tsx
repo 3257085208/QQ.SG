@@ -41,7 +41,7 @@ function DesktopExperience() {
             <div className="archive-deck">
               {timeline.map((entry, index) => <article className={`archive-card archive-card--${index + 1}`} data-archive-index={index} data-archive-label={`${entry.year} / ${entry.label}`} key={`${entry.year}-${entry.label}`}>
                 <div className="archive-card__top mono"><span>{entry.year}</span><span>{entry.label}</span></div>
-                {index === 2 && <div className="archive-card__image"><img src="/assets/status-nodeget-dark.png" width="2560" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page preview" /></div>}
+                {index === 2 && <div className="archive-card__image"><picture><source type="image/avif" srcSet="/assets/status-nodeget-dark-1600.avif" /><img src="/assets/status-nodeget-dark.png" width="1600" height="900" loading="lazy" decoding="async" alt="Dark NodeGet status page preview" /></picture></div>}
                 <h3>{entry.title}</h3>
                 <p>{entry.detail}</p>
                 <div className="archive-card__foot mono"><span>{entry.stat}</span><span>{entry.location}</span></div>
@@ -154,10 +154,10 @@ function MobileExperience() {
         <div className="mobile-chapter"><span>01 / ARCHIVE</span><span>PUBLIC TRACE</span></div>
         <div className="mobile-archive__intro"><h2 id="mobile-archive-title">Built, run, kept public.</h2><p>代码、状态页和文章，组成一份持续更新的个人档案。</p></div>
         <div className="mobile-archive__stream">
-          {timeline.map((entry, index) => <article className={`mobile-archive__entry mobile-archive__entry--${index + 1}`} key={`${entry.year}-${entry.label}`}>
+          {timeline.map((entry, index) => <article className={`mobile-archive__entry mobile-archive__entry--${index + 1}`} data-mobile-reveal="archive-entry" key={`${entry.year}-${entry.label}`}>
             <div className="mobile-archive__meta"><span>{entry.year}</span><span>{entry.label}</span></div>
             {index === 2 && <figure className="mobile-archive__media"><img src="/assets/status-nodeget-dark-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page detail" /></figure>}
-            <h3>{entry.title}</h3>
+            <h3 data-mobile-reveal="archive-title">{entry.title}</h3>
             <p>{entry.detail}</p>
             <span className="mobile-archive__source">{entry.stat}</span>
           </article>)}
@@ -170,7 +170,7 @@ function MobileExperience() {
 
         <article className="mobile-project mobile-project--status">
           <div className="mobile-project__meta"><span>01</span><span>2026</span></div>
-          <h3>STATUS<br />SYSTEM</h3>
+          <h3 data-mobile-reveal="project-title">STATUS<br />SYSTEM</h3>
           <div className="mobile-status__metric"><strong>{statusSnapshot.online}</strong><span>ONLINE / TOTAL</span></div>
           <figure className="mobile-status__media" data-mobile-reveal="status">
             <img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" />
@@ -181,19 +181,19 @@ function MobileExperience() {
 
         <article className="mobile-project mobile-project--systems">
           <div className="mobile-project__meta"><span>02</span><span>OPEN SYSTEMS</span></div>
-          <h3>OPEN<br />SYSTEMS</h3>
-          <div className="mobile-system__intro"><strong>NIE-SLA</strong><p>Cloudflare-native status page and VPS telemetry platform.</p><span>WORKER STATIC ASSETS + D1 + R2 + DURABLE OBJECTS + RUST AGENT</span></div>
-          <div className="mobile-system__tree"><span className="mobile-system__label">README.md / SOURCE TREE</span><pre>{"agent/\nagent/src/\nagent/Cargo.toml\ndocs/\npackage.json\nREADME.md"}</pre></div>
-          <div className="mobile-system__commit"><span>e846a7a</span><p>release: publish v1.1.16 source [skip ci]</p></div>
+          <h3 data-mobile-reveal="project-title">OPEN<br />SYSTEMS</h3>
+          <div className="mobile-system__intro" data-mobile-reveal="system-material"><strong>NIE-SLA</strong><p>Cloudflare-native status page and VPS telemetry platform.</p><span>WORKER STATIC ASSETS + D1 + R2 + DURABLE OBJECTS + RUST AGENT</span></div>
+          <div className="mobile-system__tree" data-mobile-reveal="system-material"><span className="mobile-system__label">README.md / SOURCE TREE</span><pre>{"agent/\nagent/src/\nagent/Cargo.toml\ndocs/\npackage.json\nREADME.md"}</pre></div>
+          <div className="mobile-system__commit" data-mobile-reveal="system-material"><span>e846a7a</span><p>release: publish v1.1.16 source [skip ci]</p></div>
           <a className="mobile-project__link" href="https://github.com/3257085208/NIE-SLA" target="_blank" rel="noreferrer">GITHUB / NIE-SLA <span>↗</span></a>
         </article>
 
         <article className="mobile-project mobile-project--notes">
           <div className="mobile-project__meta"><span>03</span><span>ARTICLE INDEX</span></div>
-          <h3>NOTES<br />FROM EDGE</h3>
+          <h3 data-mobile-reveal="project-title">NOTES<br />FROM EDGE</h3>
           <p className="mobile-notes__intro">博客公开归档里的系统、域名与 NodeGet 笔记。</p>
-          <ol className="mobile-notes__list" data-mobile-reveal="notes">
-            {publicData.notes.entries.map((entry) => <li key={entry.date}><span>{entry.date}</span><strong>{entry.title}</strong><p>{entry.excerpt}</p><small>{entry.meta}</small></li>)}
+          <ol className="mobile-notes__list">
+            {publicData.notes.entries.map((entry) => <li data-mobile-reveal="note" key={entry.date}><span>{entry.date}</span><strong>{entry.title}</strong><p>{entry.excerpt}</p><small>{entry.meta}</small></li>)}
           </ol>
           <a className="mobile-project__link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">NIEKAIXIANG.COM <span>↗</span></a>
         </article>
@@ -201,16 +201,16 @@ function MobileExperience() {
 
       <section className="mobile-current" id="system" aria-labelledby="mobile-current-title">
         <div className="mobile-chapter"><span>03 / CURRENT</span><span>LIVE INDEX</span></div>
-        <div className="mobile-current__headline"><h2 id="mobile-current-title">Current system.</h2><strong>{networkSummary.online}</strong><span>ONLINE / TOTAL</span></div>
-        <div className="mobile-current__regions">{networkNodes.map((node) => <div key={node.label}><span>{node.label}</span><strong>{node.value}</strong></div>)}</div>
-        <div className="mobile-current__observed"><span className="mobile-system__label">TWO OBSERVED NODES</span>{mobileNodes.map((node) => <div key={node.label}><strong>{node.label}</strong><span>{node.meta.replace("上海电信 ", "")}</span></div>)}</div>
+        <div className="mobile-current__headline" data-mobile-reveal="current"><h2 id="mobile-current-title">Current system.</h2><strong>{networkSummary.online}</strong><span>ONLINE / TOTAL</span></div>
+        <div className="mobile-current__regions">{networkNodes.map((node) => <div data-mobile-reveal="region" key={node.label}><span>{node.label}</span><strong>{node.value}</strong></div>)}</div>
+        <div className="mobile-current__observed" data-mobile-reveal="observed"><span className="mobile-system__label">TWO OBSERVED NODES</span>{mobileNodes.map((node) => <div key={node.label}><strong>{node.label}</strong><span>{node.meta.replace("上海电信 ", "")}</span></div>)}</div>
         <a className="mobile-project__link" href={networkSummary.source} target="_blank" rel="noreferrer">VIEW ALL LIVE NODES <span>↗</span></a>
       </section>
 
       <section className="mobile-contact" id="contact" aria-labelledby="mobile-contact-title">
         <div className="mobile-chapter"><span>04 / CONTACT</span><span>OPEN CHANNEL</span></div>
         <h2 id="mobile-contact-title">NIE KAIXIANG</h2>
-        <nav className="mobile-contact__links" aria-label="Contact links"><a href="https://github.com/3257085208" target="_blank" rel="noreferrer"><span>GITHUB</span><strong>3257085208</strong><b>↗</b></a><a href="https://www.niekaixiang.com" target="_blank" rel="noreferrer"><span>WEB</span><strong>NIEKAIXIANG.COM</strong><b>↗</b></a><a href="https://status.qq.sg" target="_blank" rel="noreferrer"><span>STATUS</span><strong>STATUS.QQ.SG</strong><b>↗</b></a></nav>
+        <nav className="mobile-contact__links" aria-label="Contact links"><a data-mobile-reveal="contact-link" href="https://github.com/3257085208" target="_blank" rel="noreferrer"><span>GITHUB</span><strong>3257085208</strong><b>↗</b></a><a data-mobile-reveal="contact-link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer"><span>WEB</span><strong>NIEKAIXIANG.COM</strong><b>↗</b></a><a data-mobile-reveal="contact-link" href="https://status.qq.sg" target="_blank" rel="noreferrer"><span>STATUS</span><strong>STATUS.QQ.SG</strong><b>↗</b></a></nav>
         <div className="mobile-contact__foot"><span className="mono">QQ.SG</span><span className="mono">2026 / UTC+8</span></div>
       </section>
     </main>

@@ -5,7 +5,7 @@ function StatusVisual() {
   return (
     <div className="work-visual work-visual--status">
       <figure className="work-status__figure">
-        <img src="/assets/status-nodeget-light.png" width="2560" height="1440" loading="lazy" decoding="async" alt="NIE Theme NodeGet status page card view" />
+        <picture><source type="image/avif" srcSet="/assets/status-nodeget-light-1600.avif" /><img src="/assets/status-nodeget-light.png" width="1600" height="900" loading="lazy" decoding="async" alt="NIE Theme NodeGet status page card view" /></picture>
         <figcaption className="mono">STATUS.QQ.SG / NODEGET / CARD VIEW</figcaption>
       </figure>
       <div className="work-status__readout">
