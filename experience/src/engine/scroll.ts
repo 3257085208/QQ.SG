@@ -10,7 +10,7 @@ const motion = {
   work: { scrub: 0.52, ease: "power2.out" },
   system: { scrub: 0.72, ease: "power2.out" },
   smoothing: 0.84,
-  wheelMultiplier: 0.72,
+  wheelMultiplier: 0.80,
   distance: { small: 18, medium: 40 }
 };
 
