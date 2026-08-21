@@ -4,6 +4,8 @@ import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 const motion = {
   hero: { scrub: 0.72, ease: "power1.inOut" },
   archive: { scrub: 0.64, ease: "power1.inOut" },
@@ -22,17 +24,12 @@ const HERO_PHASE = {
   exit: 1
 } as const;
 
-const ARCHIVE_TIMING = {
-  hold: 0.76,
-  transition: 0.24
-} as const;
-
 const WORK_TIMING = {
   hold: 0.66,
   transition: 0.34
 } as const;
 
-function getChapterIndex(progress: number, count: number, timing: typeof ARCHIVE_TIMING | typeof WORK_TIMING) {
+function getChapterIndex(progress: number, count: number, timing: typeof WORK_TIMING) {
   const total = count * timing.hold + Math.max(0, count - 1) * timing.transition;
   const timelineTime = Math.min(1, Math.max(0, progress)) * total;
   return Math.min(count - 1, Math.max(0, Math.floor(timelineTime / (timing.hold + timing.transition))));
@@ -44,9 +41,12 @@ function mountIntroMotion(root: HTMLElement) {
   const nameLines = Array.from(root.querySelectorAll<HTMLElement>(".intro-name span"));
   const field = root.querySelector<HTMLElement>(".intro-field");
   const handoff = root.querySelector<HTMLElement>(".intro-handoff");
-  if (!intro || !name || nameLines.length < 2 || !field || !handoff) return;
+  const trackWindow = root.querySelector<HTMLElement>(".intro-track-window");
+  const tracks = Array.from(root.querySelectorAll<HTMLElement>(".intro-track"));
+  if (!intro || !name || nameLines.length < 2 || !field || !handoff || !trackWindow || tracks.length !== 2) return;
 
   gsap.set(nameLines, { transformOrigin: "center center" });
+  gsap.set(tracks, { x: 0 });
 
   const timeline = gsap.timeline({
     scrollTrigger: {
@@ -67,14 +67,18 @@ function mountIntroMotion(root: HTMLElement) {
 
   timeline
     .to(".intro-topline, .intro-bottomline", { opacity: 0, y: -motion.distance.small, duration: 0.09, ease: "none" }, "identity+=0.16")
+    .to(trackWindow, { opacity: 1, duration: 0.1, ease: "none" }, "identity+=0.16")
     .to(name, { opacity: 0.4, duration: 0.15, ease: "none" }, "fieldEnter")
     .to(name, { scaleX: 0.86, scaleY: 0.82, y: "-9vh", duration: HERO_PHASE.fieldDwell - HERO_PHASE.fieldEnter, ease: "none" }, "fieldEnter")
-    .to(nameLines[0], { x: "-7vw", y: "-5vh", opacity: 0.82, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
-    .to(nameLines[1], { x: "8vw", y: "6vh", opacity: 0.52, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
+    .to(nameLines[0], { x: "-11vw", y: "-5vh", opacity: 0.72, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
+    .to(nameLines[1], { x: "13vw", y: "6vh", opacity: 0.46, duration: 0.18, ease: "none" }, "fieldEnter+=0.03")
+    .to(tracks[0], { x: "-82vw", duration: 0.24, ease: "none" }, "fieldEnter+=0.02")
+    .to(tracks[1], { x: "82vw", duration: 0.24, ease: "none" }, "fieldEnter+=0.02")
     .set(field, { clipPath: "inset(22% 22% 22% 22%)", opacity: 0, scale: 0.955 }, "fieldEnter")
     .to(field, { opacity: 0.38, scale: 0.97, duration: 0.07, ease: motion.hero.ease }, "fieldEnter")
     .to(field, { clipPath: "inset(10% 8% 10% 8%)", opacity: 0.62, scale: 0.985, duration: 0.08, ease: motion.hero.ease }, "fieldEnter+=0.07")
     .to(field, { clipPath: "inset(0% 0% 0% 0%)", opacity: 1, scale: 1, duration: 0.08, ease: motion.hero.ease }, "fieldEnter+=0.15")
+    .to(trackWindow, { opacity: 0, y: "-5vh", duration: 0.1, ease: "none" }, "fieldDwell-=0.02")
     .to(field, { scale: 1.004, duration: HERO_PHASE.handoff - HERO_PHASE.fieldDwell, ease: "none" }, "fieldDwell")
     .to(name, { x: "-2vw", y: "-28vh", scaleX: 0.54, scaleY: 0.52, opacity: 0, duration: 0.14, ease: "none" }, "handoff")
     .to(handoff, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, "handoff+=0.02")
@@ -109,6 +113,8 @@ function mountArchiveMotion(root: HTMLElement) {
   const updateFocus = (deckX: number) => {
     let nearest = 0;
     let nearestDistance = Number.POSITIVE_INFINITY;
+    const focusRadius = geometry.viewportWidth * .18;
+    const fadeRange = geometry.viewportWidth * .48;
     cards.forEach((card, index) => {
       const metric = geometry.metrics[index];
       const cardCenter = deckX + metric.offsetLeft + metric.width / 2;
@@ -117,8 +123,8 @@ function mountArchiveMotion(root: HTMLElement) {
         nearest = index;
         nearestDistance = distance;
       }
-      const fade = Math.min(1, distance / (geometry.viewportWidth * .72));
-      gsap.set(card, { opacity: 1 - fade * .66, scale: 1 - fade * .055 });
+      const fade = clamp((distance - focusRadius) / fadeRange, 0, 1);
+      gsap.set(card, { opacity: 1 - fade * .68, scale: 1 - fade * .07 });
     });
     setArchiveActive(stage, cards, current, nearest, activeState);
   };
@@ -147,35 +153,27 @@ function mountArchiveMotion(root: HTMLElement) {
     }
   });
 
-  let sequenceTime = 0;
-  sequence.addLabel("archive-enter", sequenceTime);
-  sequence.addLabel("record-01-hold", sequenceTime).to({}, { duration: ARCHIVE_TIMING.hold }, sequenceTime);
-  sequenceTime += ARCHIVE_TIMING.hold;
-
-  cards.slice(1).forEach((_, index) => {
-    const cardNumber = String(index + 2).padStart(2, "0");
-    sequence
-      .addLabel(`record-${cardNumber}-enter`, sequenceTime)
-      .to(deck, { x: () => geometry.positions[index + 1], duration: ARCHIVE_TIMING.transition + .06, ease: "power1.inOut" }, sequenceTime);
-    sequenceTime += ARCHIVE_TIMING.transition + .06;
-    sequence
-      .addLabel(`record-${cardNumber}-hold`, sequenceTime)
-      .to({}, { duration: ARCHIVE_TIMING.hold * .9 }, sequenceTime);
-    sequenceTime += ARCHIVE_TIMING.hold * .9;
-  });
-  sequence.addLabel("archive-exit", sequenceTime);
+  sequence
+    .addLabel("archive-start", 0)
+    .to(deck, { x: () => geometry.positions[geometry.positions.length - 1], duration: 1, ease: "none" }, 0)
+    .addLabel("archive-travel", .04)
+    .addLabel("archive-exit", .94);
 }
 
 function mountWorkIntroMotion(root: HTMLElement) {
   const intro = root.querySelector<HTMLElement>(".work-intro");
-  const lines = Array.from(root.querySelectorAll<HTMLElement>(".work-intro__line"));
-  if (!intro || lines.length !== 2) return;
+  const left = root.querySelector<HTMLElement>(".work-intro__block--left");
+  const right = root.querySelector<HTMLElement>(".work-intro__block--right");
+  const panel = root.querySelector<HTMLElement>(".work-sequence");
+  if (!intro || !left || !right || !panel) return;
+
+  gsap.set(panel, { y: "100vh" });
 
   const timeline = gsap.timeline({
     scrollTrigger: {
       trigger: intro,
-      start: "top 78%",
-      end: "bottom 22%",
+      start: "top top",
+      end: "bottom bottom",
       scrub: motion.work.scrub,
       invalidateOnRefresh: true
     }
@@ -183,9 +181,12 @@ function mountWorkIntroMotion(root: HTMLElement) {
 
   timeline
     .addLabel("convergence-enter", 0)
-    .fromTo(lines[0], { x: "-12vw", opacity: .38 }, { x: 0, opacity: 1, duration: .62, ease: "power1.inOut" }, 0)
-    .fromTo(lines[1], { x: "12vw", opacity: .38 }, { x: 0, opacity: 1, duration: .62, ease: "power1.inOut" }, 0)
-    .addLabel("convergence-settled", .68);
+    .fromTo(left, { x: "-42vw", opacity: .24 }, { x: "-17.5vw", opacity: 1, duration: .58, ease: "power1.inOut" }, 0)
+    .fromTo(right, { x: "42vw", opacity: .24 }, { x: "17.5vw", opacity: 1, duration: .58, ease: "power1.inOut" }, 0)
+    .addLabel("convergence-settled", .64)
+    .addLabel("panel-rise", .72)
+    .to(panel, { y: "0vh", duration: .28, ease: "none" }, .72)
+    .addLabel("takeover-complete", 1);
 }
 
 function mountWorkMotion(root: HTMLElement) {

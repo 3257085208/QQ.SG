@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { networkNodes, networkSummary, selectedWorks, statusSnapshot, timeline } from "./data";
 import { publicData } from "./generated/publicData";
 import { mountScrollExperience } from "./engine/scroll";
+import { HeroInkCanvas } from "./components/HeroInkCanvas";
 import { InfrastructureField } from "./components/InfrastructureField";
 import { WorkVisual } from "./components/WorkVisual";
 import "./styles.css";
@@ -14,6 +15,9 @@ function splitTitle(value: string) {
 }
 
 const systemTree = ["agent/", "agent/src/", "agent/Cargo.toml", "docs/", "package.json", "README.md"];
+
+const heroUpperTrack = ["NIE KAIXIANG", "PERSONAL INDEX", "QQ.SG", "NIE KAIXIANG", "PERSONAL INDEX", "QQ.SG", "NIE KAIXIANG", "PERSONAL INDEX", "QQ.SG"];
+const heroLowerTrack = ["BUILD", "RUN", "RECORD", "PUBLIC", "SYSTEM", "BUILD", "RUN", "RECORD", "PUBLIC", "SYSTEM"];
 
 const menuItems = [
   { id: "home", index: "00", label: "Intro", descriptor: "identity / field" },
@@ -33,6 +37,11 @@ function DesktopExperience() {
             <h1 className="intro-name" id="intro-title"><span>NIE</span><span>KAIXIANG</span></h1>
             <div className="intro-bottomline mono"><span>QQ.SG / CHINA / UTC+8</span><span>SCROLL TO ENTER ↓</span></div>
           </div>
+          <div className="intro-track-window" aria-hidden="true">
+            <div className="intro-track intro-track--upper"><div className="intro-track__strip">{heroUpperTrack.map((item, index) => <span key={`upper-${item}-${index}`}>{item}<i>—</i></span>)}</div></div>
+            <div className="intro-track intro-track--lower"><div className="intro-track__strip">{heroLowerTrack.map((item, index) => <span key={`lower-${item}-${index}`}>{item}<i>—</i></span>)}</div></div>
+          </div>
+          <HeroInkCanvas />
           <div className="intro-field" aria-hidden="true"><InfrastructureField /></div>
           <div className="intro-handoff mono"><span>PUBLIC TRACE / FIELD OPEN</span><span>01 / ARCHIVE ↓</span></div>
         </div>
@@ -65,7 +74,15 @@ function DesktopExperience() {
 
       <section className="work section-paper" id="work" aria-labelledby="work-title">
         <div className="chapter-head mono"><span>02 / SELECTED WORK</span><span>THREE PUBLIC ENTRIES</span></div>
-        <div className="work-intro grid-12"><span className="mono">THE SYSTEM BECOMES VISIBLE HERE</span><h2 id="work-title"><span className="work-intro__line work-intro__line--left">Work is where</span><span className="work-intro__line work-intro__line--right">the system becomes visible.</span></h2></div>
+        <div className="work-intro">
+          <div className="work-intro__viewport">
+            <span className="work-intro__label mono">THE SYSTEM BECOMES VISIBLE HERE</span>
+            <h2 id="work-title" className="work-intro__blocks" aria-label="Build, run, record, public">
+              <span className="work-intro__block work-intro__block--left"><span className="work-intro__word work-intro__word--serif">BUILD</span><span className="work-intro__word work-intro__word--sans">RUN</span></span>
+              <span className="work-intro__block work-intro__block--right"><span className="work-intro__word work-intro__word--serif">RECORD</span><span className="work-intro__word work-intro__word--sans">PUBLIC</span></span>
+            </h2>
+          </div>
+        </div>
         <div className="work-sequence" data-active="01">
           <div className="work-sequence__layout">
             <div className="work-sequence__visual-column">
