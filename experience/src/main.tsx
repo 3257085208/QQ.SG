@@ -317,6 +317,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_QUERY).matches);
   const [activeSection, setActiveSection] = useState("home");
+  const [headerColorSection, setHeaderColorSection] = useState("home");
 
   useEffect(() => {
     const media = window.matchMedia(MOBILE_QUERY);
@@ -349,6 +350,7 @@ function App() {
     if (isMobile) return;
     const sections = Array.from(document.querySelectorAll<HTMLElement>(".desktop-experience > section[id]"));
     if (!sections.length) return;
+    const header = document.querySelector<HTMLElement>(".site-header");
 
     let frame = 0;
     const updateActiveSection = () => {
@@ -359,6 +361,13 @@ function App() {
         if (section.getBoundingClientRect().top <= marker) current = section.id;
       });
       setActiveSection((value) => value === current ? value : current);
+
+      const headerBoundary = header?.getBoundingClientRect().bottom ?? 0;
+      let headerCurrent = sections[0].id;
+      sections.forEach((section) => {
+        if (section.getBoundingClientRect().top <= headerBoundary) headerCurrent = section.id;
+      });
+      setHeaderColorSection((value) => value === headerCurrent ? value : headerCurrent);
     };
     const onScroll = () => {
       if (frame) return;
@@ -399,7 +408,7 @@ function App() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <div className="site-shell" ref={rootRef} data-color-section={activeSection}>
+    <div className="site-shell" ref={rootRef} data-color-section={activeSection} data-header-color-section={headerColorSection}>
       <header className="site-header">
         <a className="site-mark" href="#home" onClick={closeMenu}>NKX<sup>®</sup></a>
         <span className="site-status">PERSONAL INDEX / 2026</span>
