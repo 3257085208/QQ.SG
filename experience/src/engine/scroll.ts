@@ -4,8 +4,6 @@ import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
 const motion = {
   hero: { scrub: 0.72, ease: "power1.inOut" },
   archive: { scrub: 0.64, ease: "power1.inOut" },
@@ -149,11 +147,11 @@ function mountIntroMotion(root: HTMLElement) {
 
 function setArchiveActive(stage: HTMLElement, cards: HTMLElement[], current: HTMLElement | null, index: number, state: { index: number }) {
   const safeIndex = Math.min(cards.length - 1, Math.max(0, index));
+  if (safeIndex === state.index) return;
   cards.forEach((card, cardIndex) => {
     card.classList.toggle("is-active", cardIndex === safeIndex);
     if (cardIndex === safeIndex) card.classList.add("is-entered");
   });
-  if (safeIndex === state.index) return;
   state.index = safeIndex;
   const label = cards[safeIndex]?.dataset.archiveLabel;
   stage.dataset.active = String(safeIndex + 1).padStart(2, "0");
@@ -202,17 +200,13 @@ function mountArchiveMotion(root: HTMLElement) {
         nearestDistance = distance;
       }
     });
+    if (nearest === activeState.index) return;
     cards.forEach((card, index) => {
-      const metric = geometry.metrics[index];
-      const cardCenter = deckX + metric.offsetLeft + metric.width / 2;
-      const direction = cardCenter - geometry.viewportWidth / 2;
-      const relative = clamp(direction / (geometry.viewportWidth * .7), -1, 1);
       const offset = index - nearest;
       const adjacency = Math.abs(offset);
       const opacity = adjacency === 0 ? 1 : adjacency === 1 ? (offset < 0 ? 0.1 : 0.07) : 0.015;
       const scale = adjacency === 0 ? 1 : adjacency === 1 ? 0.965 : 0.94;
       gsap.set(card, { opacity, scale, zIndex: adjacency === 0 ? 3 : adjacency === 1 ? 2 : 1 });
-      if (media[index]) gsap.set(media[index], { x: clamp(-relative * 48, -48, 48) });
     });
     setArchiveActive(stage, cards, current, nearest, activeState);
   };
@@ -246,6 +240,28 @@ function mountArchiveMotion(root: HTMLElement) {
     .to(deck, { x: () => geometry.positions[geometry.positions.length - 1], duration: 1, ease: "none" }, 0)
     .addLabel("archive-travel", .04)
     .addLabel("archive-exit", .94);
+
+  media.forEach((picture, index) => {
+    if (!picture) return;
+    const direction = index % 2 === 0 ? 1 : -1;
+    gsap.fromTo(
+      picture,
+      { x: direction * -24 },
+      {
+        x: direction * 24,
+        duration: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: cards[index],
+          containerAnimation: sequence,
+          start: "left right",
+          end: "right left",
+          scrub: true,
+          invalidateOnRefresh: true
+        }
+      }
+    );
+  });
 }
 
 function mountWorkIntroMotion(root: HTMLElement) {
