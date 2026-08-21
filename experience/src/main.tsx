@@ -157,7 +157,7 @@ function MobileExperience() {
         <div className="mobile-archive__stream">
           {timeline.map((entry, index) => <article className={`mobile-archive__entry mobile-archive__entry--${index + 1}`} data-mobile-reveal={index === 2 ? "archive-feature" : undefined} key={`${entry.year}-${entry.label}`}>
             <div className="mobile-archive__meta"><span>{entry.year}</span><span>{entry.label}</span></div>
-            {index === 2 && <figure className="mobile-archive__media" data-touch-visual="archive"><img src="/assets/status-nodeget-dark-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page detail" /><figcaption><span>NODEGET / ARCHIVE TRACE</span><em>2026.05 / STATUS UI</em></figcaption></figure>}
+            {index === 2 && <figure className="mobile-archive__media"><button className="mobile-archive__trigger" data-touch-visual="archive" data-inspect-target="archive" type="button" aria-pressed="false" aria-label="Inspect NodeGet archive image"><img src="/assets/status-nodeget-dark-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page detail" /></button><figcaption><span>NODEGET / ARCHIVE TRACE</span><em>2026.05 / STATUS UI</em></figcaption></figure>}
             <h3>{entry.title}</h3>
             <p>{entry.detail}</p>
             <span className="mobile-archive__source">{entry.stat}</span>
@@ -172,9 +172,11 @@ function MobileExperience() {
           <div className="mobile-project__meta"><span>01 / 2026</span><span>LIVE SYSTEM</span></div>
           <h3>STATUS<br />SYSTEM</h3>
           <div className="mobile-status__metric"><strong>{statusSnapshot.online} / {statusSnapshot.total}</strong><span>ONLINE</span></div>
-          <figure className="mobile-status__media" data-touch-visual="status">
-            <div className="mobile-status__image"><img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" /></div>
-            <figcaption className="mono"><span>NODEGET / CARD VIEW</span><em>STATUS.QQ.SG / NODEGET / LIVE SYSTEM</em></figcaption>
+          <figure className="mobile-status__media">
+            <button className="mobile-status__trigger" data-touch-visual="status" data-inspect-target="status" type="button" aria-pressed="false" aria-label="Inspect status screenshot">
+              <div className="mobile-status__image"><img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" /></div>
+            </button>
+            <figcaption className="mono"><span>NODEGET / CARD VIEW</span><em>STATUS.QQ.SG / NODEGET / LIVE SYSTEM / {statusSnapshot.online} ONLINE</em><b className="mobile-status__state" aria-hidden="true"><span>INSPECT +</span><span>INSPECTING ×</span></b></figcaption>
           </figure>
           <a className="mobile-project__link" data-touch-row="link" href={statusSnapshot.source} target="_blank" rel="noreferrer">STATUS.QQ.SG <span>↗</span></a>
         </article>
@@ -198,7 +200,7 @@ function MobileExperience() {
           <h3>NOTES</h3>
           <p className="mobile-notes__intro">公开归档 / 03 entries</p>
           <ol className="mobile-notes__list">
-            {publicData.notes.entries.map((entry, index) => <li data-touch-row="note" key={entry.date}><div className="mobile-note__head"><span>{String(index + 1).padStart(2, "0")}</span><time>{entry.date}</time><b aria-hidden="true">↗</b></div><strong>{entry.title}</strong><p>{entry.excerpt}</p><small>{entry.meta}</small></li>)}
+            {publicData.notes.entries.map((entry, index) => <li key={entry.date}><a className="mobile-note__link" data-touch-row="note" href={entry.href} target="_blank" rel="noreferrer"><div className="mobile-note__head"><span>{String(index + 1).padStart(2, "0")}</span><time>{entry.date}</time><b aria-hidden="true">↗</b></div><strong>{entry.title}</strong><p>{entry.excerpt}</p><small>{entry.meta}</small></a></li>)}
           </ol>
           <a className="mobile-project__link" data-touch-row="link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">NIEKAIXIANG.COM <span>↗</span></a>
         </article>
