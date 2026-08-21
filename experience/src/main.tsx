@@ -399,7 +399,7 @@ function App() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <div className="site-shell" ref={rootRef}>
+    <div className="site-shell" ref={rootRef} data-color-section={activeSection}>
       <header className="site-header">
         <a className="site-mark" href="#home" onClick={closeMenu}>NKX<sup>®</sup></a>
         <span className="site-status">PERSONAL INDEX / 2026</span>
