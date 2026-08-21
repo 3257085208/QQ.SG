@@ -154,9 +154,18 @@ function MobileExperience() {
   return (
     <main className="mobile-experience" ref={mobileRootRef}>
       <section className="mobile-intro" id="home" aria-labelledby="mobile-intro-title">
-        <div className="mobile-intro__top"><span className="mono">QQ.SG</span><span className="mono">2026</span></div>
-        <h1 className="mobile-intro__name" id="mobile-intro-title"><span>NIE</span><span>KAI</span><span>XIANG</span></h1>
-        <div className="mobile-intro__bottom"><span className="mono">PUBLIC INDEX</span><span className="mono">↓</span></div>
+        <div className="mobile-intro__top">
+          <span className="mono" data-mobile-hero-meta>QQ.SG / 00</span>
+          <span className="mono" data-mobile-hero-meta>IDENTITY / 2026</span>
+        </div>
+        <h1 className="mobile-intro__name" id="mobile-intro-title">
+          <span className="mobile-intro__name-art">NIE</span>
+          <span className="mobile-intro__name-sans">KAIXIANG</span>
+        </h1>
+        <div className="mobile-intro__bottom">
+          <span className="mono" data-mobile-hero-meta>CHINA / UTC+8</span>
+          <span className="mobile-intro__handoff mono">01 / ARCHIVE <b aria-hidden="true">↓</b></span>
+        </div>
       </section>
 
       <section className="mobile-archive" id="archive" aria-labelledby="mobile-archive-title">

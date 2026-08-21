@@ -329,10 +329,13 @@ function mountPersistentInteractions(root: HTMLElement) {
 function mountScrollLinkedMotion(root: HTMLElement) {
   const intro = root.querySelector<HTMLElement>(".mobile-intro");
   const name = root.querySelector<HTMLElement>(".mobile-intro__name");
-  const nameLines = Array.from(root.querySelectorAll<HTMLElement>(".mobile-intro__name span"));
+  const artName = root.querySelector<HTMLElement>(".mobile-intro__name-art");
+  const sansName = root.querySelector<HTMLElement>(".mobile-intro__name-sans");
+  const heroMeta = Array.from(root.querySelectorAll<HTMLElement>("[data-mobile-hero-meta]"));
+  const handoff = root.querySelector<HTMLElement>(".mobile-intro__handoff");
   const statusFigure = root.querySelector<HTMLElement>(".mobile-status__image");
   const mobileExperience = root.querySelector<HTMLElement>(".mobile-experience");
-  if (!intro || !name || nameLines.length < 3 || !statusFigure || !mobileExperience) return;
+  if (!intro || !name || !artName || !sansName || !handoff || !statusFigure || !mobileExperience) return;
 
   mobileExperience.classList.add("has-mobile-motion");
 
@@ -348,10 +351,11 @@ function mountScrollLinkedMotion(root: HTMLElement) {
     });
 
     heroTimeline
-      .to(name, { scale: .94, opacity: .72, duration: 1, ease: "none" }, 0)
-      .to(nameLines[0], { x: "-3vw", duration: 1, ease: "none" }, 0)
-      .to(nameLines[1], { x: "3vw", duration: 1, ease: "none" }, 0)
-      .to(nameLines[2], { y: "2vh", duration: 1, ease: "none" }, 0);
+      .to(name, { y: "-2vh", scale: .94, opacity: .84, duration: 1, ease: "none" }, 0)
+      .to(artName, { x: "-2.5vw", y: "-1.5vh", opacity: .84, duration: 1, ease: "none" }, 0)
+      .to(sansName, { x: "3.5vw", y: "1.5vh", opacity: .58, duration: 1, ease: "none" }, 0)
+      .to(heroMeta, { y: "-1vh", opacity: .42, duration: .72, ease: "none" }, .08)
+      .to(handoff, { y: "-8px", opacity: 1, duration: .28, ease: "none" }, .68);
 
     gsap.fromTo(statusFigure,
       { y: 12, scale: 1.02 },
