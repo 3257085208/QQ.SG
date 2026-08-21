@@ -13,6 +13,8 @@ function splitTitle(value: string) {
   return value.split("\n").map((line, index) => <span key={`${line}-${index}`}>{line}</span>);
 }
 
+const systemTree = ["agent/", "agent/src/", "agent/Cargo.toml", "docs/", "package.json", "README.md"];
+
 function DesktopExperience() {
   return (
     <main className="desktop-experience">
@@ -111,15 +113,14 @@ function DesktopExperience() {
 
 function MobileExperience() {
   const mobileRootRef = useRef<HTMLElement>(null);
-  const mobileNodes = [statusSnapshot.nodes[0], statusSnapshot.nodes[3]];
 
   useEffect(() => {
     const root = mobileRootRef.current;
     if (!root) return;
 
     const intro = root.querySelector<HTMLElement>(".mobile-intro");
-    const targets = Array.from(root.querySelectorAll<HTMLElement>("[data-mobile-reveal]"));
-    const reveal = () => targets.forEach((target) => target.classList.add("is-visible"));
+    const featureTargets = Array.from(root.querySelectorAll<HTMLElement>('[data-mobile-reveal="archive-feature"]'));
+    const reveal = () => featureTargets.forEach((target) => target.classList.add("is-visible"));
     const introFrame = window.requestAnimationFrame(() => intro?.classList.add("is-ready"));
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || typeof IntersectionObserver === "undefined") {
@@ -135,7 +136,7 @@ function MobileExperience() {
       });
     }, { threshold: .12, rootMargin: "0px 0px -8%" });
 
-    targets.forEach((target) => observer.observe(target));
+    featureTargets.forEach((target) => observer.observe(target));
     return () => {
       window.cancelAnimationFrame(introFrame);
       observer.disconnect();
@@ -151,66 +152,71 @@ function MobileExperience() {
       </section>
 
       <section className="mobile-archive" id="archive" aria-labelledby="mobile-archive-title">
-        <div className="mobile-chapter"><span>01 / ARCHIVE</span><span>PUBLIC TRACE</span></div>
+        <div className="mobile-chapter"><span>01 / ARCHIVE</span></div>
         <div className="mobile-archive__intro"><h2 id="mobile-archive-title">Built, run, kept public.</h2><p>代码、状态页和文章，组成一份持续更新的个人档案。</p></div>
         <div className="mobile-archive__stream">
-          {timeline.map((entry, index) => <article className={`mobile-archive__entry mobile-archive__entry--${index + 1}`} data-mobile-reveal="archive-entry" key={`${entry.year}-${entry.label}`}>
+          {timeline.map((entry, index) => <article className={`mobile-archive__entry mobile-archive__entry--${index + 1}`} data-mobile-reveal={index === 2 ? "archive-feature" : undefined} key={`${entry.year}-${entry.label}`}>
             <div className="mobile-archive__meta"><span>{entry.year}</span><span>{entry.label}</span></div>
-            {index === 2 && <figure className="mobile-archive__media"><img src="/assets/status-nodeget-dark-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page detail" /></figure>}
-            <h3 data-mobile-reveal="archive-title">{entry.title}</h3>
+            {index === 2 && <figure className="mobile-archive__media" data-touch-visual="archive"><img src="/assets/status-nodeget-dark-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page detail" /><figcaption><span>NODEGET / ARCHIVE TRACE</span><em>2026.05 / STATUS UI</em></figcaption></figure>}
+            <h3>{entry.title}</h3>
             <p>{entry.detail}</p>
             <span className="mobile-archive__source">{entry.stat}</span>
           </article>)}
         </div>
       </section>
 
-      <section className="mobile-work" id="work" aria-labelledby="mobile-work-title">
-        <div className="mobile-chapter"><span>02 / WORK</span><span>PUBLIC PROJECTS</span></div>
-        <h2 className="mobile-work__title" id="mobile-work-title">Selected work.</h2>
+      <section className="mobile-work" id="work" aria-label="Selected work">
+        <div className="mobile-chapter"><span>02 / WORK</span></div>
 
         <article className="mobile-project mobile-project--status">
-          <div className="mobile-project__meta"><span>01</span><span>2026</span></div>
-          <h3 data-mobile-reveal="project-title">STATUS<br />SYSTEM</h3>
-          <div className="mobile-status__metric"><strong>{statusSnapshot.online}</strong><span>ONLINE / TOTAL</span></div>
-          <figure className="mobile-status__media" data-mobile-reveal="status">
-            <img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" />
-            <figcaption className="mono">NODEGET / CARD VIEW</figcaption>
+          <div className="mobile-project__meta"><span>01 / 2026</span><span>LIVE SYSTEM</span></div>
+          <h3>STATUS<br />SYSTEM</h3>
+          <div className="mobile-status__metric"><strong>{statusSnapshot.online} / {statusSnapshot.total}</strong><span>ONLINE</span></div>
+          <figure className="mobile-status__media" data-touch-visual="status">
+            <div className="mobile-status__image"><img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" /></div>
+            <figcaption className="mono"><span>NODEGET / CARD VIEW</span><em>STATUS.QQ.SG / NODEGET / LIVE SYSTEM</em></figcaption>
           </figure>
-          <a className="mobile-project__link" href={statusSnapshot.source} target="_blank" rel="noreferrer">STATUS.QQ.SG <span>↗</span></a>
+          <a className="mobile-project__link" data-touch-row="link" href={statusSnapshot.source} target="_blank" rel="noreferrer">STATUS.QQ.SG <span>↗</span></a>
         </article>
 
         <article className="mobile-project mobile-project--systems">
-          <div className="mobile-project__meta"><span>02</span><span>OPEN SYSTEMS</span></div>
-          <h3 data-mobile-reveal="project-title">OPEN<br />SYSTEMS</h3>
-          <div className="mobile-system__intro" data-mobile-reveal="system-material"><strong>NIE-SLA</strong><p>Cloudflare-native status page and VPS telemetry platform.</p><span>WORKER STATIC ASSETS + D1 + R2 + DURABLE OBJECTS + RUST AGENT</span></div>
-          <div className="mobile-system__tree" data-mobile-reveal="system-material"><span className="mobile-system__label">README.md / SOURCE TREE</span><pre>{"agent/\nagent/src/\nagent/Cargo.toml\ndocs/\npackage.json\nREADME.md"}</pre></div>
-          <div className="mobile-system__commit" data-mobile-reveal="system-material"><span>e846a7a</span><p>release: publish v1.1.16 source [skip ci]</p></div>
-          <a className="mobile-project__link" href="https://github.com/3257085208/NIE-SLA" target="_blank" rel="noreferrer">GITHUB / NIE-SLA <span>↗</span></a>
+          <div className="mobile-project__meta"><span>02 / OPEN SYSTEMS</span><span>STRUCTURE</span></div>
+          <h3>OPEN<br />SYSTEMS</h3>
+          <div className="mobile-system__intro"><strong>NIE-SLA</strong><span>WORKER / D1 / R2 / DURABLE OBJECTS / RUST AGENT</span></div>
+          <div className="mobile-system__tree">
+            <div className="mobile-system__tree-head"><span className="mobile-system__label">README.md / SOURCE TREE</span><span className="mobile-system__tree-status">PUBLIC</span></div>
+            <div className="mobile-system__rows">
+              {systemTree.map((path, index) => <button className="mobile-system__row" data-touch-row="system" type="button" aria-pressed="false" key={path}><span>{path}</span><small>{index === 0 ? "ROOT" : "SOURCE"}</small></button>)}
+            </div>
+          </div>
+          <div className="mobile-system__commit"><span>e846a7a</span><p>release: publish v1.1.16 source [skip ci]</p></div>
+          <a className="mobile-project__link" data-touch-row="link" href="https://github.com/3257085208/NIE-SLA" target="_blank" rel="noreferrer">GITHUB / NIE-SLA <span>↗</span></a>
         </article>
 
         <article className="mobile-project mobile-project--notes">
-          <div className="mobile-project__meta"><span>03</span><span>ARTICLE INDEX</span></div>
-          <h3 data-mobile-reveal="project-title">NOTES<br />FROM EDGE</h3>
-          <p className="mobile-notes__intro">博客公开归档里的系统、域名与 NodeGet 笔记。</p>
+          <div className="mobile-project__meta"><span>03 / NOTES</span><span>READING INDEX</span></div>
+          <h3>NOTES</h3>
+          <p className="mobile-notes__intro">公开归档 / 03 entries</p>
           <ol className="mobile-notes__list">
-            {publicData.notes.entries.map((entry) => <li data-mobile-reveal="note" key={entry.date}><span>{entry.date}</span><strong>{entry.title}</strong><p>{entry.excerpt}</p><small>{entry.meta}</small></li>)}
+            {publicData.notes.entries.map((entry, index) => <li data-touch-row="note" key={entry.date}><div className="mobile-note__head"><span>{String(index + 1).padStart(2, "0")}</span><time>{entry.date}</time><b aria-hidden="true">↗</b></div><strong>{entry.title}</strong><p>{entry.excerpt}</p><small>{entry.meta}</small></li>)}
           </ol>
-          <a className="mobile-project__link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">NIEKAIXIANG.COM <span>↗</span></a>
+          <a className="mobile-project__link" data-touch-row="link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">NIEKAIXIANG.COM <span>↗</span></a>
         </article>
       </section>
 
-      <section className="mobile-current" id="system" aria-labelledby="mobile-current-title">
-        <div className="mobile-chapter"><span>03 / CURRENT</span><span>LIVE INDEX</span></div>
-        <div className="mobile-current__headline" data-mobile-reveal="current"><h2 id="mobile-current-title">Current system.</h2><strong>{networkSummary.online}</strong><span>ONLINE / TOTAL</span></div>
-        <div className="mobile-current__regions">{networkNodes.map((node) => <div data-mobile-reveal="region" key={node.label}><span>{node.label}</span><strong>{node.value}</strong></div>)}</div>
-        <div className="mobile-current__observed" data-mobile-reveal="observed"><span className="mobile-system__label">TWO OBSERVED NODES</span>{mobileNodes.map((node) => <div key={node.label}><strong>{node.label}</strong><span>{node.meta.replace("上海电信 ", "")}</span></div>)}</div>
-        <a className="mobile-project__link" href={networkSummary.source} target="_blank" rel="noreferrer">VIEW ALL LIVE NODES <span>↗</span></a>
+      <section className="mobile-current" id="system" aria-label="Current system">
+        <div className="mobile-chapter"><span>03 / CURRENT</span></div>
+        <div className="mobile-current__body">
+          <div className="mobile-current__head"><span className="mono">CURRENT / {networkSummary.snapshot}</span><a className="mobile-current__link" data-touch-row="link" href={networkSummary.source} target="_blank" rel="noreferrer">LIVE STATUS <span>↗</span></a></div>
+          <div className="mobile-current__online"><strong>{networkSummary.online} / {networkSummary.total}</strong><span>ONLINE</span></div>
+          <div className="mobile-current__regions">{networkNodes.map((node) => <span key={node.label}>{node.label} <strong>{node.value}</strong></span>)}</div>
+        </div>
       </section>
 
       <section className="mobile-contact" id="contact" aria-labelledby="mobile-contact-title">
-        <div className="mobile-chapter"><span>04 / CONTACT</span><span>OPEN CHANNEL</span></div>
+        <div className="mobile-chapter"><span>04 / CONTACT</span></div>
         <h2 id="mobile-contact-title">NIE KAIXIANG</h2>
-        <nav className="mobile-contact__links" aria-label="Contact links"><a data-mobile-reveal="contact-link" href="https://github.com/3257085208" target="_blank" rel="noreferrer"><span>GITHUB</span><strong>3257085208</strong><b>↗</b></a><a data-mobile-reveal="contact-link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer"><span>WEB</span><strong>NIEKAIXIANG.COM</strong><b>↗</b></a><a data-mobile-reveal="contact-link" href="https://status.qq.sg" target="_blank" rel="noreferrer"><span>STATUS</span><strong>STATUS.QQ.SG</strong><b>↗</b></a></nav>
+        <nav className="mobile-contact__links" aria-label="Contact links"><a data-touch-row="link" href="https://github.com/3257085208" target="_blank" rel="noreferrer"><span>GITHUB</span><strong>3257085208</strong><b>↗</b></a><a data-touch-row="link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer"><span>WEB</span><strong>NIEKAIXIANG.COM</strong><b>↗</b></a><a data-touch-row="link" href="https://status.qq.sg" target="_blank" rel="noreferrer"><span>STATUS</span><strong>STATUS.QQ.SG</strong><b>↗</b></a></nav>
         <div className="mobile-contact__foot"><span className="mono">QQ.SG</span><span className="mono">2026 / UTC+8</span></div>
       </section>
     </main>
@@ -235,6 +241,21 @@ function App() {
   useEffect(() => {
     if (!rootRef.current || isMobile) return;
     return mountScrollExperience(rootRef.current);
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (!rootRef.current || !isMobile) return;
+    const root = rootRef.current;
+    let cancelled = false;
+    let cleanup: (() => void) | undefined;
+    import("./engine/mobileMotion").then(({ mountMobileExperience }) => {
+      if (cancelled) return;
+      cleanup = mountMobileExperience(root);
+    });
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
   }, [isMobile]);
 
   useEffect(() => {
