@@ -155,8 +155,8 @@ function MobileExperience() {
     <main className="mobile-experience" ref={mobileRootRef}>
       <section className="mobile-intro" id="home" aria-labelledby="mobile-intro-title">
         <div className="mobile-intro__top">
-          <span className="mono" data-mobile-hero-meta>QQ.SG / 00</span>
-          <span className="mono" data-mobile-hero-meta>IDENTITY / 2026</span>
+          <span className="mono" data-mobile-hero-meta>QQ.SG</span>
+          <span className="mono" data-mobile-hero-meta>00 / 2026</span>
         </div>
         <h1 className="mobile-intro__name" id="mobile-intro-title">
           <span className="mobile-intro__name-art">NIE</span>
@@ -189,6 +189,7 @@ function MobileExperience() {
           <div className="mobile-project__meta"><span>01 / 2026</span><span>LIVE SYSTEM</span></div>
           <h3>STATUS<br />SYSTEM</h3>
           <div className="mobile-status__metric"><strong>{statusSnapshot.online} / {statusSnapshot.total}</strong><span>ONLINE</span></div>
+          <p className="mobile-status__summary">真实公开页面是来源，读数保持可读，图形只做辅助。</p>
           <figure className="mobile-status__media">
             <button className="mobile-status__trigger" data-touch-visual="status" data-inspect-target="status" type="button" aria-pressed="false" aria-label="Inspect status screenshot">
               <div className="mobile-status__image"><img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" /></div>

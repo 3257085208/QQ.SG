@@ -508,17 +508,17 @@ button { color: inherit; font: inherit; }
     --display-art: "Instrument Serif", "Iowan Old Style", "Baskerville", "Times New Roman", serif;
     --body: "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
     --header-height: calc(64px + env(safe-area-inset-top));
-    --m-page: 18px;
-    --m-section: 72px;
-    --m-block: 42px;
-    --m-content: 24px;
-    --m-tight: 12px;
+    --m-page: 20px;
+    --m-section: 84px;
+    --m-block: 48px;
+    --m-content: 26px;
+    --m-tight: 14px;
     --m-display-xl: clamp(64px, 21vw, 94px);
     --m-display: clamp(46px, 14vw, 68px);
     --m-heading: clamp(30px, 9vw, 44px);
-    --m-body: 15px;
-    --m-small: 12px;
-    --m-meta: 9px;
+    --m-body: 16px;
+    --m-small: 13px;
+    --m-meta: 10px;
   }
 
   html { scroll-snap-type: none; scroll-padding-top: var(--header-height); }
@@ -664,6 +664,76 @@ button { color: inherit; font: inherit; }
   .mobile-contact__links a.is-pressed { color: var(--paper-ink); transform: translateX(3px); }
   .mobile-contact__links a.is-pressed b { transform: translate(3px, -2px); }
   .mobile-contact__foot { display: flex; justify-content: space-between; gap: 16px; margin-top: 62px; padding-top: 14px; border-top: 1px solid var(--line-dark); color: var(--muted-dark); }
+
+  /* Mobile composition pass: one focus per screen, with a quieter system layer. */
+  .mobile-chapter { padding: 17px var(--m-page); line-height: 1.45; }
+
+  .mobile-intro { padding: 24px var(--m-page) calc(30px + env(safe-area-inset-bottom)); }
+  .mobile-intro__top, .mobile-intro__bottom { gap: 12px; }
+  .mobile-intro__name { display: flex; flex-direction: column; justify-content: center; align-items: stretch; padding-top: 5vh; transform: none; }
+  .mobile-intro__name::before { top: 27%; right: 0; width: 30%; opacity: .78; }
+  .mobile-intro__name::after { right: 2%; bottom: 20%; width: 6px; height: 6px; }
+  .mobile-intro__name-art { width: max-content; margin-left: -.055em; font-size: clamp(122px, 39vw, 162px); line-height: .76; letter-spacing: -.075em; }
+  .mobile-intro__name-sans { align-self: flex-end; width: 100%; margin-top: .04em; text-align: right; font-size: clamp(56px, 16.8vw, 72px); line-height: .82; letter-spacing: -.085em; }
+  .mobile-intro__bottom { padding-top: 16px; }
+
+  .mobile-archive__intro { padding: 58px var(--m-page) 42px; }
+  .mobile-archive__intro h2 { font-size: clamp(31px, 8.5vw, 41px); line-height: 1.02; }
+  .mobile-archive__intro p { margin-top: 24px; font-size: var(--m-body); line-height: 1.84; }
+  .mobile-archive__entry { padding: 44px 0 50px; }
+  .mobile-archive__entry:not(.mobile-archive__entry--3) { min-height: min(58svh, 460px); display: flex; flex-direction: column; justify-content: center; }
+  .mobile-archive__entry:first-child { padding-top: 2px; }
+  .mobile-archive__entry--1 { padding-bottom: 34px; }
+  .mobile-archive__entry--3 { margin: 40px calc(var(--m-page) * -1) 44px; padding: 0 var(--m-page) 38px; }
+  .mobile-archive__entry--3 .mobile-archive__meta { padding-top: 20px; }
+  .mobile-archive__meta { line-height: 1.45; }
+  .mobile-archive__entry h3 { margin: 25px 0 15px; font-size: clamp(32px, 9vw, 45px); line-height: .98; }
+  .mobile-archive__entry p { font-size: var(--m-body); line-height: 1.86; }
+  .mobile-archive__source { margin-top: 25px; line-height: 1.45; }
+  .mobile-archive__media { height: min(56svh, 430px); max-height: 430px; margin-top: 28px; margin-bottom: 34px; }
+  .mobile-archive__media img { height: 100%; object-fit: cover; object-position: center top; }
+
+  .mobile-project { padding: 44px var(--m-page) 64px; }
+  .mobile-project h3 { margin: 30px 0 25px; font-size: clamp(46px, 14.5vw, 63px); line-height: .88; }
+  .mobile-project__meta { line-height: 1.45; }
+  .mobile-status__metric { margin-bottom: 17px; }
+  .mobile-status__summary { max-width: 28em; margin: 0 0 28px; color: var(--muted-dark); font-size: var(--m-body); line-height: 1.82; }
+  .mobile-status__media { margin-top: 0; }
+  .mobile-status__image { height: min(58svh, 480px); overflow: hidden; }
+  .mobile-status__image img { height: 100%; object-fit: cover; object-position: center top; }
+  .mobile-status__media figcaption { right: 14px; bottom: 14px; left: 14px; padding: 9px 11px; font-size: 10px; line-height: 1.35; }
+  .mobile-status__media figcaption em { font-size: 9px; line-height: 1.45; }
+  .mobile-project__link { min-height: 56px; margin-top: 30px; padding: 16px 0; line-height: 1.45; }
+
+  .mobile-system__intro { padding-bottom: 32px; }
+  .mobile-system__intro strong { margin-bottom: 16px; font-size: 36px; }
+  .mobile-system__intro > span { line-height: 1.65; }
+  .mobile-system__tree { padding: 28px 0 24px; }
+  .mobile-system__rows { margin-top: 20px; }
+  .mobile-system__row { padding: 14px 0; line-height: 1.4; }
+  .mobile-system__rows .mobile-system__row:nth-child(n + 4) { display: none; }
+  .mobile-system__rows .mobile-system__row:nth-child(3) { border-bottom: 1px solid var(--line); }
+  .mobile-system__commit { gap: 12px; padding-top: 28px; }
+  .mobile-system__commit p { font-size: 15px; line-height: 1.65; }
+
+  .mobile-project--notes h3 { margin-bottom: 26px; font-size: clamp(43px, 12vw, 56px); }
+  .mobile-notes__intro { margin-bottom: 26px; line-height: 1.45; }
+  .mobile-notes__list li { padding: 30px 0 32px; }
+  .mobile-note__link { gap: 14px; }
+  .mobile-note__head { line-height: 1.45; }
+  .mobile-notes__list li strong { font-size: clamp(22px, 6.2vw, 28px); line-height: 1.16; font-weight: 550; }
+  .mobile-notes__list p { font-size: 15px; line-height: 1.86; }
+  .mobile-notes__list small { line-height: 1.5; }
+
+  .mobile-current__body { padding: 31px var(--m-page) 48px; }
+  .mobile-current__online { margin: 42px 0 31px; }
+  .mobile-current__online strong { font-size: clamp(52px, 17vw, 76px); }
+  .mobile-current__regions { gap: 13px 18px; padding-top: 19px; line-height: 1.4; }
+
+  .mobile-contact h2 { margin: 62px 0 54px; font-size: clamp(31px, 9vw, 44px); line-height: 1; }
+  .mobile-contact__links a { min-height: 60px; padding: 16px 0; }
+  .mobile-contact__links strong { font-size: 15px; }
+  .mobile-contact__foot { margin-top: 72px; padding-top: 16px; }
 
   @media (max-height: 500px) and (orientation: landscape) {
     :root { --m-display-xl: clamp(46px, 12vw, 70px); --m-display: clamp(38px, 10vw, 58px); --m-section: 50px; }
