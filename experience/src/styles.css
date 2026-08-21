@@ -264,14 +264,14 @@ button { color: inherit; font: inherit; }
   .archive-stage__head { top: 20px; color: var(--muted); }
   .archive-stage__head > span:last-child { color: var(--accent); }
   .archive-stage__hint { bottom: 20px; color: var(--muted); }
-  .archive-stage__axis { position: absolute; top: 16%; bottom: 14%; left: 50%; z-index: 1; width: 1px; background: linear-gradient(to bottom, transparent, var(--line), transparent); }
-  .archive-stage__axis i { position: absolute; top: 17%; left: 50%; display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); transform: translateX(-50%); }
-  .archive-deck { position: absolute; inset: 0; z-index: 2; display: block; padding: 0; }
-  .archive-card { position: absolute; width: auto; min-height: 0; margin: 0; overflow: hidden; will-change: transform, opacity; }
-  .archive-card--1 { top: 18%; left: 0; width: 25%; height: 48%; transform: none; }
-  .archive-card--2 { top: 13%; left: 27%; width: 36%; height: 72%; }
-  .archive-card--3 { top: 18%; right: 0; width: 25%; height: 50%; transform: none; }
-  .archive-card--4 { right: 16%; bottom: 8%; left: auto; width: 31%; height: 31%; margin: 0; }
+  .archive-stage__axis { position: absolute; top: 50%; right: 8%; bottom: auto; left: 8%; z-index: 1; width: auto; height: 1px; background: linear-gradient(to right, transparent, var(--line), transparent); }
+  .archive-stage__axis i { position: absolute; top: 50%; left: 50%; display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); transform: translate(-50%, -50%); }
+  .archive-deck { position: absolute; top: 0; bottom: 0; left: 0; z-index: 2; display: flex; align-items: center; gap: clamp(28px, 4.2vw, 72px); width: max-content; height: 100%; padding: 8vh 0 11vh; }
+  .archive-card { position: relative; top: auto; right: auto; bottom: auto; left: auto; flex: 0 0 auto; width: auto; min-height: 0; margin: 0; overflow: hidden; will-change: transform, opacity; }
+  .archive-card--1 { width: clamp(320px, 30vw, 520px); height: 53%; margin-top: 6vh; transform: none; }
+  .archive-card--2 { width: clamp(390px, 38vw, 650px); height: 72%; margin-top: -2vh; }
+  .archive-card--3 { width: clamp(320px, 31vw, 540px); height: 57%; margin-top: 8vh; transform: none; }
+  .archive-card--4 { width: clamp(350px, 33vw, 560px); height: 45%; margin-top: 14vh; }
   .archive-card__image { flex: 0 0 auto; height: 30%; aspect-ratio: auto; }
   .archive-card__image img { object-position: center; }
   .archive-card h3 { margin-top: auto; }
@@ -358,6 +358,14 @@ button { color: inherit; font: inherit; }
   .work-sequence__record--notes .work-copy .mono { color: rgba(23, 25, 22, .5); }
   .work-sequence__record::before { position: absolute; top: calc(var(--header-height) + 12px); left: 22px; width: 36px; height: 2px; background: transparent; content: ""; pointer-events: none; }
   .work-sequence[data-active="01"] .work-sequence__record--status::before, .work-sequence[data-active="02"] .work-sequence__record--systems::before, .work-sequence[data-active="03"] .work-sequence__record--notes::before { background: var(--accent); }
+
+  .work-intro { position: relative; min-height: 120svh; align-items: center; padding: 10svh var(--pad) 0; overflow: hidden; background: var(--background); color: var(--foreground); }
+  .work-intro > span { position: absolute; top: 18%; left: var(--pad); grid-column: auto; color: var(--muted); }
+  .work-intro h2 { grid-column: 1 / -1; display: grid; gap: .08em; max-width: 1320px; margin: 0 auto; font-size: clamp(3.8rem, 6.8vw, 8.5rem); line-height: .82; letter-spacing: -.065em; }
+  .work-intro__line { display: block; white-space: nowrap; will-change: transform, opacity; }
+  .work-intro__line--left { justify-self: start; text-align: left; }
+  .work-intro__line--right { justify-self: end; text-align: right; }
+  .work-sequence { position: relative; z-index: 2; margin-top: -14svh; padding-top: 14svh; background: var(--paper); box-shadow: 0 -20px 42px rgba(23, 25, 22, .14); }
 
   @media (prefers-reduced-motion: reduce) {
     .site-menu nav a, .site-menu__label, .site-menu__descriptor, .site-menu__marker::before { transition: none; }

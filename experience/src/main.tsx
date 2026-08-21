@@ -65,7 +65,7 @@ function DesktopExperience() {
 
       <section className="work section-paper" id="work" aria-labelledby="work-title">
         <div className="chapter-head mono"><span>02 / SELECTED WORK</span><span>THREE PUBLIC ENTRIES</span></div>
-        <div className="work-intro grid-12"><span className="mono">THE SYSTEM BECOMES VISIBLE HERE</span><h2 id="work-title">Work is where the system becomes visible.</h2></div>
+        <div className="work-intro grid-12"><span className="mono">THE SYSTEM BECOMES VISIBLE HERE</span><h2 id="work-title"><span className="work-intro__line work-intro__line--left">Work is where</span><span className="work-intro__line work-intro__line--right">the system becomes visible.</span></h2></div>
         <div className="work-sequence" data-active="01">
           <div className="work-sequence__layout">
             <div className="work-sequence__visual-column">

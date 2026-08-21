@@ -81,31 +81,52 @@ function mountIntroMotion(root: HTMLElement) {
     .to(field, { scale: 1.03, duration: HERO_PHASE.exit - HERO_PHASE.handoff - 0.08, ease: "none" }, "handoff+=0.08");
 }
 
-function setArchiveActive(stage: HTMLElement, cards: HTMLElement[], current: HTMLElement | null, progress: number, state: { index: number }) {
-  const index = getChapterIndex(progress, cards.length, ARCHIVE_TIMING);
-  if (index === state.index) return;
-  state.index = index;
-  const label = cards[index]?.dataset.archiveLabel;
-  stage.dataset.active = String(index + 1).padStart(2, "0");
+function setArchiveActive(stage: HTMLElement, cards: HTMLElement[], current: HTMLElement | null, index: number, state: { index: number }) {
+  const safeIndex = Math.min(cards.length - 1, Math.max(0, index));
+  if (safeIndex === state.index) return;
+  state.index = safeIndex;
+  const label = cards[safeIndex]?.dataset.archiveLabel;
+  stage.dataset.active = String(safeIndex + 1).padStart(2, "0");
   if (current && label && current.textContent !== label) current.textContent = label;
 }
 
 function mountArchiveMotion(root: HTMLElement) {
   const stage = root.querySelector<HTMLElement>(".archive-stage");
+  const viewport = stage?.querySelector<HTMLElement>(".archive-stage__viewport");
+  const deck = stage?.querySelector<HTMLElement>(".archive-deck");
   const cards = Array.from(root.querySelectorAll<HTMLElement>(".archive-stage .archive-card"));
   const current = root.querySelector<HTMLElement>(".archive-stage__current");
-  if (!stage || cards.length < 2) return;
+  if (!stage || !viewport || !deck || cards.length < 2) return;
 
   const activeState = { index: -1 };
-  gsap.set(cards, { transformOrigin: "center center" });
-  const incomingStates = [
-    { x: "5vw", y: "2.5vh", scale: 0.965, opacity: 0.08 },
-    { x: "3vw", y: "3.5vh", scale: 0.95, opacity: 0.04 },
-    { x: "4vw", y: "1.5vh", scale: 0.96, opacity: 0.015 }
-  ];
-  cards.slice(1).forEach((card, index) => gsap.set(card, incomingStates[index] ?? incomingStates[0]));
-  gsap.set(cards[0], { x: 0, y: 0, scale: 1, opacity: 1, clipPath: "inset(0 0 0 0%)" });
-  setArchiveActive(stage, cards, current, 0, activeState);
+  let geometry = { positions: [] as number[], metrics: [] as { offsetLeft: number; width: number }[], viewportWidth: 0 };
+  const measure = () => {
+    const viewportWidth = viewport.clientWidth;
+    const metrics = cards.map((card) => ({ offsetLeft: card.offsetLeft, width: card.offsetWidth }));
+    const positions = metrics.map(({ offsetLeft, width }) => viewportWidth / 2 - (offsetLeft + width / 2));
+    return { positions, metrics, viewportWidth };
+  };
+  const updateFocus = (deckX: number) => {
+    let nearest = 0;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    cards.forEach((card, index) => {
+      const metric = geometry.metrics[index];
+      const cardCenter = deckX + metric.offsetLeft + metric.width / 2;
+      const distance = Math.abs(geometry.viewportWidth / 2 - cardCenter);
+      if (distance < nearestDistance) {
+        nearest = index;
+        nearestDistance = distance;
+      }
+      const fade = Math.min(1, distance / (geometry.viewportWidth * .72));
+      gsap.set(card, { opacity: 1 - fade * .66, scale: 1 - fade * .055 });
+    });
+    setArchiveActive(stage, cards, current, nearest, activeState);
+  };
+
+  gsap.set(cards, { transformOrigin: "center center", clipPath: "inset(0% 0% 0% 0%)" });
+  geometry = measure();
+  gsap.set(deck, { x: geometry.positions[0] });
+  updateFocus(geometry.positions[0]);
 
   const sequence = gsap.timeline({
     scrollTrigger: {
@@ -114,40 +135,57 @@ function mountArchiveMotion(root: HTMLElement) {
       end: "bottom bottom",
       scrub: motion.archive.scrub,
       invalidateOnRefresh: true,
-      onUpdate: (self) => setArchiveActive(stage, cards, current, self.progress, activeState)
+      onRefresh: () => {
+        geometry = measure();
+        const deckX = Number(gsap.getProperty(deck, "x"));
+        updateFocus(Number.isFinite(deckX) ? deckX : geometry.positions[0]);
+      }
+    },
+    onUpdate: () => {
+      const deckX = Number(gsap.getProperty(deck, "x"));
+      updateFocus(Number.isFinite(deckX) ? deckX : geometry.positions[0]);
     }
   });
 
-  sequence
-    .addLabel("record-01-hold", 0)
-    .to({}, { duration: ARCHIVE_TIMING.hold }, "record-01-hold");
+  let sequenceTime = 0;
+  sequence.addLabel("archive-enter", sequenceTime);
+  sequence.addLabel("record-01-hold", sequenceTime).to({}, { duration: ARCHIVE_TIMING.hold }, sequenceTime);
+  sequenceTime += ARCHIVE_TIMING.hold;
 
-  cards.slice(1).forEach((card, index) => {
-    const previous = cards[index];
-    const transitionStart = (index + 1) * ARCHIVE_TIMING.hold + index * ARCHIVE_TIMING.transition;
+  cards.slice(1).forEach((_, index) => {
     const cardNumber = String(index + 2).padStart(2, "0");
-    const incoming = incomingStates[index] ?? incomingStates[0];
-    const outgoing = [
-      { x: "-3.5vw", y: "-2.2vh", scale: 0.95, opacity: 0.08 },
-      { x: "-4vw", y: "-3vh", scale: 0.94, opacity: 0.06 },
-      { x: "-2.5vw", y: "-3.5vh", scale: 0.95, opacity: 0.04 }
-    ][index] ?? { x: "-3vw", y: "-2.5vh", scale: 0.95, opacity: 0.06 };
-
     sequence
-      .addLabel(`record-${cardNumber}-enter`, transitionStart)
-      .addLabel(`record-${cardNumber}-hold`, transitionStart + ARCHIVE_TIMING.transition)
-      .to(previous, { ...outgoing, duration: ARCHIVE_TIMING.transition, ease: "power2.out" }, transitionStart);
-    if (index > 0) {
-      sequence.to(cards[index - 1], { opacity: 0.015, duration: ARCHIVE_TIMING.transition, ease: "power2.out" }, transitionStart);
-    }
+      .addLabel(`record-${cardNumber}-enter`, sequenceTime)
+      .to(deck, { x: () => geometry.positions[index + 1], duration: ARCHIVE_TIMING.transition + .06, ease: "power1.inOut" }, sequenceTime);
+    sequenceTime += ARCHIVE_TIMING.transition + .06;
     sequence
-      .fromTo(card,
-        incoming,
-        { x: 0, y: 0, scale: 1, opacity: 1, duration: ARCHIVE_TIMING.transition, ease: "power2.out" },
-        transitionStart
-      )
-      .to({}, { duration: ARCHIVE_TIMING.hold }, transitionStart + ARCHIVE_TIMING.transition);
+      .addLabel(`record-${cardNumber}-hold`, sequenceTime)
+      .to({}, { duration: ARCHIVE_TIMING.hold * .9 }, sequenceTime);
+    sequenceTime += ARCHIVE_TIMING.hold * .9;
   });
+  sequence.addLabel("archive-exit", sequenceTime);
+}
+
+function mountWorkIntroMotion(root: HTMLElement) {
+  const intro = root.querySelector<HTMLElement>(".work-intro");
+  const lines = Array.from(root.querySelectorAll<HTMLElement>(".work-intro__line"));
+  if (!intro || lines.length !== 2) return;
+
+  const timeline = gsap.timeline({
+    scrollTrigger: {
+      trigger: intro,
+      start: "top 78%",
+      end: "bottom 22%",
+      scrub: motion.work.scrub,
+      invalidateOnRefresh: true
+    }
+  });
+
+  timeline
+    .addLabel("convergence-enter", 0)
+    .fromTo(lines[0], { x: "-12vw", opacity: .38 }, { x: 0, opacity: 1, duration: .62, ease: "power1.inOut" }, 0)
+    .fromTo(lines[1], { x: "12vw", opacity: .38 }, { x: 0, opacity: 1, duration: .62, ease: "power1.inOut" }, 0)
+    .addLabel("convergence-settled", .68);
 }
 
 function mountWorkMotion(root: HTMLElement) {
@@ -247,6 +285,7 @@ export function mountScrollExperience(root: HTMLElement) {
   const context = gsap.context(() => {
     mountIntroMotion(root);
     mountArchiveMotion(root);
+    mountWorkIntroMotion(root);
     mountWorkMotion(root);
     mountSystemMotion(root);
   }, root);
