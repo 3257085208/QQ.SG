@@ -188,8 +188,8 @@ function MobileExperience() {
         <article className="mobile-project mobile-project--status">
           <div className="mobile-project__meta"><span>01 / 2026</span><span>LIVE SYSTEM</span></div>
           <h3>STATUS<br />SYSTEM</h3>
-          <div className="mobile-status__metric"><strong>{statusSnapshot.online} / {statusSnapshot.total}</strong><span>ONLINE</span></div>
-          <p className="mobile-status__summary">真实公开页面是来源，读数保持可读，图形只做辅助。</p>
+          <div className="mobile-status__metric"><strong>{statusSnapshot.online}</strong><span>ONLINE</span></div>
+          <p className="mobile-status__summary">节点状态取自 status.qq.sg 的公开快照。</p>
           <figure className="mobile-status__media">
             <button className="mobile-status__trigger" data-touch-visual="status" data-inspect-target="status" type="button" aria-pressed="false" aria-label="Inspect status screenshot">
               <div className="mobile-status__image"><img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" /></div>
@@ -228,7 +228,7 @@ function MobileExperience() {
         <div className="mobile-chapter"><span>03 / CURRENT</span></div>
         <div className="mobile-current__body">
           <div className="mobile-current__head"><span className="mono">CURRENT / {networkSummary.snapshot}</span><a className="mobile-current__link" data-touch-row="link" href={networkSummary.source} target="_blank" rel="noreferrer">LIVE STATUS <span>↗</span></a></div>
-          <div className="mobile-current__online"><strong>{networkSummary.online} / {networkSummary.total}</strong><span>ONLINE</span></div>
+          <div className="mobile-current__online"><strong>{networkSummary.online}</strong><span>ONLINE</span></div>
           <div className="mobile-current__regions">{networkNodes.map((node) => <span key={node.label}>{node.label} <strong>{node.value}</strong></span>)}</div>
         </div>
       </section>

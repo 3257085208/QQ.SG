@@ -681,13 +681,13 @@ button { color: inherit; font: inherit; }
   .mobile-archive__intro h2 { font-size: clamp(31px, 8.5vw, 41px); line-height: 1.02; }
   .mobile-archive__intro p { margin-top: 24px; font-size: var(--m-body); line-height: 1.84; }
   .mobile-archive__entry { padding: 44px 0 50px; }
-  .mobile-archive__entry:not(.mobile-archive__entry--3) { min-height: min(58svh, 460px); display: flex; flex-direction: column; justify-content: center; }
-  .mobile-archive__entry:first-child { padding-top: 2px; }
-  .mobile-archive__entry--1 { padding-bottom: 34px; }
+  .mobile-archive__entry:not(.mobile-archive__entry--3) { min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 62px; padding-bottom: 68px; }
+  .mobile-archive__entry:first-child:not(.mobile-archive__entry--3) { padding-top: 54px; }
+  .mobile-archive__entry--1 { padding-bottom: 68px; }
   .mobile-archive__entry--3 { margin: 40px calc(var(--m-page) * -1) 44px; padding: 0 var(--m-page) 38px; }
   .mobile-archive__entry--3 .mobile-archive__meta { padding-top: 20px; }
   .mobile-archive__meta { line-height: 1.45; }
-  .mobile-archive__entry h3 { margin: 25px 0 15px; font-size: clamp(32px, 9vw, 45px); line-height: .98; }
+  .mobile-archive__entry h3 { margin: 25px 0 15px; color: var(--foreground); font-family: var(--display-art); font-size: clamp(36px, 10vw, 48px); font-weight: 400; line-height: .96; letter-spacing: -.045em; }
   .mobile-archive__entry p { font-size: var(--m-body); line-height: 1.86; }
   .mobile-archive__source { margin-top: 25px; line-height: 1.45; }
   .mobile-archive__media { height: min(56svh, 430px); max-height: 430px; margin-top: 28px; margin-bottom: 34px; }
@@ -697,6 +697,7 @@ button { color: inherit; font: inherit; }
   .mobile-project h3 { margin: 30px 0 25px; font-size: clamp(46px, 14.5vw, 63px); line-height: .88; }
   .mobile-project__meta { line-height: 1.45; }
   .mobile-status__metric { margin-bottom: 17px; }
+  .mobile-status__metric strong { font-size: clamp(50px, 14.2vw, 68px); }
   .mobile-status__summary { max-width: 28em; margin: 0 0 28px; color: var(--muted-dark); font-size: var(--m-body); line-height: 1.82; }
   .mobile-status__media { margin-top: 0; }
   .mobile-status__image { height: min(58svh, 480px); overflow: hidden; }
@@ -721,7 +722,7 @@ button { color: inherit; font: inherit; }
   .mobile-notes__list li { padding: 30px 0 32px; }
   .mobile-note__link { gap: 14px; }
   .mobile-note__head { line-height: 1.45; }
-  .mobile-notes__list li strong { font-size: clamp(22px, 6.2vw, 28px); line-height: 1.16; font-weight: 550; }
+  .mobile-notes__list li strong { font-size: clamp(22px, 6.2vw, 28px); line-height: 1.22; font-weight: 550; }
   .mobile-notes__list p { font-size: 15px; line-height: 1.86; }
   .mobile-notes__list small { line-height: 1.5; }
 
