@@ -15,6 +15,14 @@ function splitTitle(value: string) {
 
 const systemTree = ["agent/", "agent/src/", "agent/Cargo.toml", "docs/", "package.json", "README.md"];
 
+const menuItems = [
+  { id: "home", index: "00", label: "Intro", descriptor: "identity / field" },
+  { id: "archive", index: "01", label: "Archive", descriptor: "public record" },
+  { id: "work", index: "02", label: "Work", descriptor: "status / systems / notes" },
+  { id: "system", index: "03", label: "System", descriptor: "live index" },
+  { id: "contact", index: "04", label: "Contact", descriptor: "open channel" }
+] as const;
+
 function DesktopExperience() {
   return (
     <main className="desktop-experience">
@@ -232,6 +240,7 @@ function App() {
   const wasMenuOpen = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_QUERY).matches);
+  const [activeSection, setActiveSection] = useState("home");
 
   useEffect(() => {
     const media = window.matchMedia(MOBILE_QUERY);
@@ -257,6 +266,36 @@ function App() {
     return () => {
       cancelled = true;
       cleanup?.();
+    };
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const sections = Array.from(document.querySelectorAll<HTMLElement>(".desktop-experience > section[id]"));
+    if (!sections.length) return;
+
+    let frame = 0;
+    const updateActiveSection = () => {
+      frame = 0;
+      const marker = window.innerHeight * .38;
+      let current = sections[0].id;
+      sections.forEach((section) => {
+        if (section.getBoundingClientRect().top <= marker) current = section.id;
+      });
+      setActiveSection((value) => value === current ? value : current);
+    };
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateActiveSection);
+    };
+
+    updateActiveSection();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      window.cancelAnimationFrame(frame);
     };
   }, [isMobile]);
 
@@ -295,14 +334,22 @@ function App() {
       </header>
 
       <aside className={`site-menu ${menuOpen ? "is-open" : ""}`} id="site-menu" aria-hidden={!menuOpen}>
-        <span className="mono">INDEX / NAVIGATION</span>
+        <div className="site-menu__head">
+          <div>
+            <span className="mono">INDEX / NAVIGATION</span>
+            <span className="site-menu__current mono">CURRENT / {menuItems.find((item) => item.id === activeSection)?.index ?? "00"} / {menuItems.find((item) => item.id === activeSection)?.label.toUpperCase() ?? "INTRO"}</span>
+          </div>
+          <button className="site-menu__close" type="button" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>CLOSE <span aria-hidden="true">×</span></button>
+        </div>
         <nav>
-          <a ref={menuFirstLinkRef} href="#home" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Intro</a>
-          <a href="#archive" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Archive</a>
-          <a href="#work" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Work</a>
-          <a href="#system" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>System</a>
-          <a href="#contact" tabIndex={menuOpen ? 0 : -1} onClick={closeMenu}>Contact</a>
+          {menuItems.map((item, index) => <a className={activeSection === item.id ? "is-active" : undefined} ref={index === 0 ? menuFirstLinkRef : undefined} data-section={item.id} href={`#${item.id}`} aria-current={activeSection === item.id ? "page" : undefined} tabIndex={menuOpen ? 0 : -1} onClick={closeMenu} key={item.id}>
+            <span className="site-menu__index mono">{item.index} /</span>
+            <span className="site-menu__label">{item.label}</span>
+            <span className="site-menu__descriptor">{item.descriptor}</span>
+            <span className="site-menu__marker" aria-hidden="true" />
+          </a>)}
         </nav>
+        <div className="site-menu__foot mono"><span>QQ.SG / PERSONAL INDEX</span><span>2026 / UTC+8</span></div>
       </aside>
 
       {isMobile ? <MobileExperience /> : <DesktopExperience />}

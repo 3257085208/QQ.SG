@@ -1,3 +1,5 @@
+import { statusSnapshot } from "../data";
+
 export function InfrastructureField() {
   return (
     <div className="infrastructure-field">
@@ -20,7 +22,13 @@ export function InfrastructureField() {
       <div className="infrastructure-field__core">
         <span className="mono">FIELD TRACE</span>
         <strong>QQ.SG</strong>
-        <span className="mono">OPEN / PUBLIC</span>
+        <span className="mono">OPEN / PUBLIC / STATUS</span>
+      </div>
+
+      <div className="infrastructure-field__readout">
+        <span className="mono">ONLINE / TOTAL</span>
+        <strong>{statusSnapshot.online}</strong>
+        <span className="mono">NODEGET / {statusSnapshot.snapshot}</span>
       </div>
 
       <div className="infrastructure-field__bottom mono">
