@@ -9,14 +9,18 @@ export function InfrastructureField() {
       </div>
 
       <svg className="infrastructure-field__graphic" viewBox="0 0 800 480" role="presentation" aria-hidden="true">
+        <path className="field-line field-line--secondary" d="M42 398C136 378 182 300 274 308S410 372 492 310 618 202 758 222" />
         <path className="field-line field-line--quiet" d="M74 342C160 248 194 168 306 188S438 250 520 126 650 92 726 144" />
         <path className="field-line field-line--main" d="M74 342C164 304 236 284 330 246S438 214 520 126 630 196 726 144" />
         <path className="field-line field-line--accent" d="M330 246C364 324 444 352 530 328S646 248 726 144" />
+        <path className="field-line field-line--link" d="M520 126C496 151 481 190 463 221S450 244 449 252" />
+        <path className="field-line field-line--readout-link" d="M726 144C704 130 679 103 646 78" />
         <circle className="field-point" cx="74" cy="342" r="5" />
         <circle className="field-point" cx="330" cy="246" r="5" />
         <circle className="field-point" cx="520" cy="126" r="5" />
         <circle className="field-point" cx="726" cy="144" r="5" />
         <circle className="field-point field-point--home" cx="530" cy="328" r="8" />
+        <circle className="field-ring" cx="530" cy="328" r="18" />
       </svg>
 
       <div className="infrastructure-field__core">

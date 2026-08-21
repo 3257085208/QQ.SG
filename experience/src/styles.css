@@ -219,6 +219,11 @@ button { color: inherit; font: inherit; }
 .contact-release__links a:hover > span:last-child, .work-sequence__record:hover .work-scene__foot span:last-child { transform: translate(4px, -3px); }
 
 @media (min-width: 821px) {
+  :root {
+    --display: "Iowan Old Style", "Baskerville", "Palatino Linotype", "Book Antiqua", "Noto Serif CJK SC", "Songti SC", serif;
+    --display-tracking: -.03em;
+  }
+
   .site-menu { overflow-y: auto; transition-duration: .32s; }
   .site-menu__head { display: flex; justify-content: space-between; align-items: start; gap: 24px; }
   .site-menu__head > div { display: grid; gap: 10px; }
@@ -266,6 +271,19 @@ button { color: inherit; font: inherit; }
   .archive-card__image { flex: 0 0 auto; height: 30%; aspect-ratio: auto; }
   .archive-card__image img { object-position: center; }
   .archive-card h3 { margin-top: auto; }
+
+  .field-line--secondary { stroke: rgba(241, 240, 233, .36); stroke-width: 1; stroke-dasharray: 2 9; }
+  .field-line--main { stroke-width: 1.8; }
+  .field-line--link { stroke: rgba(183, 255, 42, .82); stroke-width: 1.7; stroke-dasharray: 7 5; }
+  .field-line--readout-link { stroke: rgba(183, 255, 42, .58); stroke-width: 1; stroke-dasharray: 1 8; }
+  .field-ring { fill: none; stroke: rgba(183, 255, 42, .42); stroke-width: 1; stroke-dasharray: 1 7; }
+  .infrastructure-field__readout::after { position: absolute; top: 13px; left: -48px; width: 48px; height: 1px; background: rgba(241, 240, 233, .34); content: ""; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .archive-stage[data-active="01"] .archive-card--2 { clip-path: inset(0 0 0 84%) !important; opacity: .14 !important; filter: saturate(.25) brightness(.76); }
+    .archive-stage[data-active="01"] .archive-card--3 { clip-path: inset(0 84% 0 0) !important; opacity: .08 !important; filter: saturate(.18) brightness(.68); }
+    .archive-stage[data-active="01"] .archive-card--4 { clip-path: inset(0 0 86% 0) !important; opacity: .06 !important; filter: saturate(.15) brightness(.64); }
+  }
 
   .work-sequence { position: relative; min-height: 0; }
   .work-sequence__layout { display: grid; grid-template-columns: minmax(0, 1.36fr) minmax(300px, .64fr); gap: 22px; margin: 0 var(--pad); align-items: start; }
