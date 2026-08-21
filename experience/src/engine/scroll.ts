@@ -120,19 +120,19 @@ function mountIntroMotion(root: HTMLElement) {
     .to(signatureMask, { clipPath: signatureFull, duration: 0.1, ease: "power1.out" }, "signatureEnter+=0.065")
     .to(metadata, { opacity: 0.5, y: -8, duration: 0.12, ease: "none" }, "tracksEnter")
     .to(trackWindow, { opacity: 1, duration: 0.08, ease: "none" }, "tracksEnter")
-    .to(name, { opacity: 0.08, scaleX: 0.92, scaleY: 0.9, y: "-4vh", duration: 0.1, ease: "none" }, "tracksEnter")
-    .to(nameLines[0], { x: "-3vw", y: "-2vh", opacity: 0.1, duration: 0.11, ease: "none" }, "tracksEnter+=0.02")
-    .to(nameLines[1], { x: "4vw", y: "3vh", opacity: 0.08, duration: 0.11, ease: "none" }, "tracksEnter+=0.02")
+    .to(name, { opacity: 0.04, scaleX: 0.92, scaleY: 0.9, y: "-4vh", duration: 0.1, ease: "none" }, "tracksEnter")
+    .to(nameLines[0], { x: "-3vw", y: "-2vh", opacity: 0.05, duration: 0.11, ease: "none" }, "tracksEnter+=0.02")
+    .to(nameLines[1], { x: "4vw", y: "3vh", opacity: 0.04, duration: 0.11, ease: "none" }, "tracksEnter+=0.02")
     .to(tracks[0], { x: "-56vw", duration: 0.22, ease: "none" }, "tracksEnter")
     .to(tracks[1], { x: "56vw", duration: 0.22, ease: "none" }, "tracksEnter")
-    .to(signature, { autoAlpha: 0.5, x: "1vw", y: "-0.8vh", scale: 1.005, duration: 0.12, ease: "none" }, "tracksEnter+=0.14")
+    .to(signature, { autoAlpha: 0.1, x: "1vw", y: "-0.8vh", scale: 1.005, duration: 0.05, ease: "none" }, "tracksEnter")
     .set(field, { clipPath: "inset(22% 22% 22% 22%)", opacity: 0, scale: 0.955 }, "fieldEnter")
     .to(field, { opacity: 0.52, scale: 0.97, duration: 0.05, ease: motion.hero.ease }, "fieldEnter")
     .to(field, { clipPath: "inset(10% 8% 10% 8%)", opacity: 0.76, scale: 0.985, duration: 0.07, ease: motion.hero.ease }, "fieldEnter+=0.05")
     .to(field, { clipPath: "inset(0% 0% 0% 0%)", opacity: 1, scale: 1, duration: 0.07, ease: motion.hero.ease }, "fieldEnter+=0.12")
     .to(metadata, { opacity: 0, y: -motion.distance.small, duration: 0.09, ease: "none" }, "fieldEnter+=0.03")
     .to(name, { x: "-2vw", y: "-9vh", scaleX: 0.72, scaleY: 0.68, opacity: 0, duration: 0.12, ease: "none" }, "fieldEnter+=0.03")
-    .to(signature, { autoAlpha: 0.3, x: "1vw", y: "-0.8vh", scale: 1.006, duration: 0.055, ease: "none" }, "fieldEnter")
+    .to(signature, { autoAlpha: 0.08, x: "1vw", y: "-0.8vh", scale: 1.006, duration: 0.055, ease: "none" }, "fieldEnter")
     .to(trackWindow, { opacity: 0.28, y: "-1vh", duration: 0.055, ease: "none" }, "fieldEnter")
     .to(signature, { autoAlpha: 0, x: "1.4vw", y: "-1vh", scale: 1.01, duration: 0.075, ease: "none" }, "fieldEnter+=0.055")
     .to(trackWindow, { opacity: 0, y: "-4vh", duration: 0.075, ease: "none" }, "fieldEnter+=0.055")
@@ -204,7 +204,7 @@ function mountArchiveMotion(root: HTMLElement) {
     cards.forEach((card, index) => {
       const offset = index - nearest;
       const adjacency = Math.abs(offset);
-      const opacity = adjacency === 0 ? 1 : adjacency === 1 ? (offset < 0 ? 0.1 : 0.07) : 0.015;
+      const opacity = adjacency === 0 ? 1 : adjacency === 1 ? (offset < 0 ? 0.2 : 0.15) : 0.025;
       const scale = adjacency === 0 ? 1 : adjacency === 1 ? 0.965 : 0.94;
       gsap.set(card, { opacity, scale, zIndex: adjacency === 0 ? 3 : adjacency === 1 ? 2 : 1 });
     });

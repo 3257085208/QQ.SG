@@ -264,8 +264,8 @@ button { color: inherit; font: inherit; }
   .intro-signature img { display: block; width: 100%; height: auto; transform: rotate(-5deg); transform-origin: center; }
   .intro-track-window { position: absolute; inset: 0; z-index: 6; overflow: hidden; pointer-events: none; opacity: 0; will-change: opacity, transform; }
   .intro-track { position: absolute; left: 0; width: max-content; white-space: nowrap; will-change: transform; }
-  .intro-track--upper { top: 25%; left: -22vw; color: var(--foreground); }
-  .intro-track--lower { top: 57%; left: -104vw; color: var(--accent); }
+  .intro-track--upper { top: 18%; left: -22vw; color: var(--foreground); }
+  .intro-track--lower { top: 68%; left: -104vw; color: var(--accent); }
   .intro-track__strip { display: flex; align-items: baseline; width: max-content; will-change: transform; }
   .intro-track__collection { display: flex; flex: 0 0 auto; align-items: baseline; gap: clamp(34px, 4vw, 76px); width: max-content; padding-right: clamp(34px, 4vw, 76px); }
   .intro-track__collection > span { display: inline-flex; align-items: baseline; gap: .45em; font: 400 clamp(7.2rem, 15vw, 16rem)/.7 var(--display); letter-spacing: -.075em; }
@@ -281,18 +281,33 @@ button { color: inherit; font: inherit; }
   .archive-stage__axis i { position: absolute; top: 50%; left: 50%; display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); transform: translate(-50%, -50%); }
   .archive-deck { position: absolute; top: 0; bottom: 0; left: 0; z-index: 2; display: flex; align-items: center; gap: clamp(22px, 3.4vw, 58px); width: max-content; height: 100%; padding: 8vh var(--archive-deck-end, 0px) 11vh var(--archive-deck-start, 0px); }
   .archive-card { position: relative; top: auto; right: auto; bottom: auto; left: auto; display: flex; flex: 0 0 auto; flex-direction: column; width: auto; min-height: 0; margin: 0; padding: 22px; overflow: hidden; background: var(--background-raised); will-change: transform, opacity; }
-  .archive-card--1 { width: clamp(320px, 30vw, 520px); height: 53%; margin-top: 6vh; padding-left: 26px; border: 0; border-left: 1px solid var(--line); background: transparent; }
+  .archive-card--1 { width: clamp(320px, 30vw, 520px); height: 53%; margin-top: 6vh; padding-top: 18px; padding-left: 26px; border: 0; border-left: 1px solid var(--line); background: transparent; transform: none; }
   .archive-card--1::before { position: absolute; top: 22px; left: -1px; width: 2px; height: 62px; background: var(--accent); content: ""; }
-  .archive-card--2 { width: clamp(390px, 38vw, 650px); height: 72%; margin-top: -2vh; }
-  .archive-card--3 { width: clamp(360px, 34vw, 580px); height: 70%; margin-top: 8vh; padding: 0; border: 0; background: #131612; }
+  .archive-card--1 h3 { max-width: 7em; font-size: clamp(2rem, 3.4vw, 3.8rem); }
+  .archive-card--1 p { max-width: 27em; }
+  .archive-card--1 .archive-card__foot { margin-top: 24px; border-top: 0; }
+  .archive-card--2 { position: relative; width: clamp(390px, 38vw, 650px); height: 72%; margin-top: -2vh; padding: 24px 0 22px; border: 0; border-top: 1px solid var(--line); background: transparent; overflow: visible; }
+  .archive-card--2::before { position: absolute; top: -1px; left: 0; width: 82px; height: 2px; background: var(--accent); content: ""; }
+  .archive-card--2 .archive-card__top, .archive-card--2 h3, .archive-card--2 p, .archive-card--2 .archive-card__foot { margin-right: 0; margin-left: 0; }
+  .archive-card--2 h3 { max-width: 7em; font-size: clamp(2.3rem, 4.2vw, 4.8rem); }
+  .archive-card--2 p { max-width: 31em; }
+  .archive-card--2 .archive-card__foot { margin-top: 24px; }
+  .archive-card--3 { width: clamp(360px, 34vw, 580px); height: 70%; margin-top: 8vh; padding: 0; border: 0; background: transparent; transform: none; overflow: visible; }
   .archive-card--3 .archive-card__top, .archive-card--3 h3, .archive-card--3 p, .archive-card--3 .archive-card__foot { margin-right: 22px; margin-left: 22px; }
-  .archive-card--3 .archive-card__top { margin-top: 22px; }
-  .archive-card--3 .archive-card__foot { margin-bottom: 22px; }
+  .archive-card--3 .archive-card__top { margin-top: 0; margin-bottom: 14px; }
+  .archive-card--3 .archive-card__foot { margin-bottom: 0; margin-top: 24px; }
   .archive-card--3 h3 { font-size: clamp(1.7rem, 2.5vw, 2.8rem); }
-  .archive-card--4 { width: clamp(350px, 33vw, 560px); height: 45%; margin-top: 14vh; padding: 18px 0; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: transparent; }
-  .archive-card--4 .archive-card__top, .archive-card--4 h3, .archive-card--4 p, .archive-card--4 .archive-card__foot { margin-right: 18px; margin-left: 18px; }
+  .archive-card--3 .archive-card__image { background: #131612; }
+  .archive-card--3 h3 { margin-left: 0; padding-left: 16px; border-left: 2px solid var(--accent); }
+  .archive-card--3 h3::before { display: none; }
+  .archive-card--3 p, .archive-card--3 .archive-card__foot { margin-left: 0; }
+  .archive-card--4 { position: relative; width: clamp(350px, 33vw, 560px); height: 45%; margin-top: 14vh; padding: 18px 0 18px 22px; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: transparent; overflow: visible; }
+  .archive-card--4::before { position: absolute; top: 18px; bottom: 18px; left: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), transparent 80%); content: ""; }
+  .archive-card--4 .archive-card__top, .archive-card--4 h3, .archive-card--4 p, .archive-card--4 .archive-card__foot { margin-right: 18px; margin-left: 0; }
+  .archive-card--4 h3 { max-width: 8em; font-size: clamp(2rem, 3.7vw, 4rem); }
+  .archive-card--4 p { max-width: 25em; }
   .archive-card__image { flex: 0 0 auto; height: 38%; margin: 24px -22px 26px; overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .archive-card--3 .archive-card__image { height: 43%; margin: 18px 0 28px; }
+  .archive-card--3 .archive-card__image { height: 52%; margin: 0 0 30px; }
   .archive-card__image picture { display: block; width: 100%; height: 100%; will-change: transform; }
   .archive-card__image img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
   .archive-card h3 { position: relative; margin-top: auto; transform: translateY(12px); clip-path: inset(0 100% 0 0); opacity: .2; transition: clip-path .45s cubic-bezier(.22, .7, .2, 1), transform .45s cubic-bezier(.22, .7, .2, 1), opacity .35s ease; }
