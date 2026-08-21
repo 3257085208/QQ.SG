@@ -33,4 +33,5 @@ pnpm dev
 - GSAP ScrollTrigger + Lenis：Intro 交接、章节进入与惯性滚动
 - 真实公开数据快照：GitHub、status.qq.sg、NIE.NET 的可读 HTML 内容
 - 公共项目截图素材：Status System 以 NodeGet 的真实 README 预览作为主视觉
+- Mobile 独立构图：原生滚动、独立内容顺序与专用 Status 截图裁切
 - CSS Grid / `prefers-reduced-motion`：编辑型布局与可访问性

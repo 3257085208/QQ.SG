@@ -86,8 +86,10 @@ export function mountScrollExperience(root: HTMLElement) {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) return () => undefined;
 
-  const isMobile = window.matchMedia("(max-width: 640px)").matches;
-  const lenis = new Lenis({ autoRaf: false, duration: motion.slow, smoothWheel: true, syncTouch: !isMobile, anchors: true });
+  const isMobile = window.matchMedia("(max-width: 820px), (max-height: 500px) and (orientation: landscape)").matches;
+  if (isMobile) return () => undefined;
+
+  const lenis = new Lenis({ autoRaf: false, duration: motion.slow, smoothWheel: true, syncTouch: true, anchors: true });
   const ticker = (time: number) => lenis.raf(time * 1000);
   gsap.ticker.add(ticker);
   lenis.on("scroll", ScrollTrigger.update);
