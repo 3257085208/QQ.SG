@@ -17,6 +17,13 @@ export const publicData = {
         stars: "0",
         pushed: "2026.08.20",
         href: "https://github.com/3257085208/NIE-SLA",
+        readme: {
+          title: "NIE-SLA",
+          subtitle: "运行在 Cloudflare 上的状态页与 VPS 探针",
+          stack: "Worker Static Assets + D1 + R2 + Durable Objects + Rust Agent",
+          excerpt: "NIE-SLA 把 Cloudflare 的公网探测、公开状态页和 VPS 系统数据放在一起。"
+        },
+        tree: ["agent/", "agent/src/", "agent/Cargo.toml", "docs/", "package.json", "README.md"],
         latestCommit: {
           short: "e846a7a",
           message: "release: publish v1.1.16 source [skip ci]",

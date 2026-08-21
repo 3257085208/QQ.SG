@@ -8,24 +8,21 @@ const motion = {
   ease: "power2.out",
   easeSoft: "power1.inOut",
   scrub: 0.85,
-  fast: 0.45,
   normal: 0.8,
   slow: 1.2,
   distance: {
     small: 18,
-    medium: 40,
-    large: 64
+    medium: 40
   }
 };
 
-function mountHeroMotion(root: HTMLElement) {
-  const hero = root.querySelector<HTMLElement>(".hero");
-  const frame = root.querySelector<HTMLElement>(".hero__frame");
-  if (!hero || !frame) return;
+function mountIntroMotion(root: HTMLElement) {
+  const intro = root.querySelector<HTMLElement>(".intro");
+  if (!intro) return;
 
-  const heroTimeline = gsap.timeline({
+  const timeline = gsap.timeline({
     scrollTrigger: {
-      trigger: hero,
+      trigger: intro,
       start: "top top",
       end: "bottom bottom",
       scrub: motion.scrub,
@@ -33,129 +30,55 @@ function mountHeroMotion(root: HTMLElement) {
     }
   });
 
-  heroTimeline
-    .to(".hero-title span:first-child", { x: "-9vw", y: "-3vh", scale: .9, ease: "none" }, 0)
-    .to(".hero-title span:last-child", { x: "7vw", y: "4vh", scale: .9, ease: "none" }, 0)
-    .to(".hero-aside", { x: motion.distance.large, opacity: 0, ease: "none" }, 0)
-    .to(".hero-topline, .hero-bottomline, .hero-rule", { opacity: 0, ease: "none" }, 0.08)
-    .to(".hero-window", { width: "min(100vw, 1220px)", height: "calc(100svh - var(--header-height))", ease: motion.easeSoft }, 0.08)
-    .to(".infrastructure-field", { scale: 1.04, ease: "none" }, 0.42)
-    .to(".hero-title", { opacity: 0.08, ease: "none" }, 0.47)
-    .to(".hero-statement", { y: -motion.distance.small, opacity: 1, ease: motion.ease }, 0.52)
-    .to(".hero-statement", { y: -motion.distance.medium, opacity: 0, ease: motion.easeSoft }, 0.82)
-    .to(".hero-window", { y: -26, scale: 1.04, opacity: 0.35, ease: "none" }, 0.78);
+  timeline
+    .to(".intro-name", { y: "-14vh", scale: .86, ease: "none" }, 0)
+    .to(".intro-topline, .intro-bottomline", { opacity: 0, y: -motion.distance.small, ease: "none" }, .08)
+    .to(".intro-name", { opacity: 0, y: "-30vh", ease: motion.easeSoft }, .28)
+    .to(".intro-field", { opacity: 1, clipPath: "inset(0 0% 0 0)", scale: 1, ease: motion.easeSoft }, .43)
+    .to(".intro-handoff", { opacity: 1, y: 0, ease: motion.ease }, .7)
+    .to(".intro-field", { scale: 1.025, ease: "none" }, .82);
 }
 
-function mountTimelineMotion(root: HTMLElement) {
-  const timelineStage = root.querySelector<HTMLElement>(".timeline-stage");
-  const timelineEntries = Array.from(root.querySelectorAll<HTMLElement>(".timeline-entry"));
-  const timelineYears = Array.from(root.querySelectorAll<HTMLElement>(".timeline-years span"));
-  if (!timelineStage || !timelineEntries.length) return;
-  if (window.matchMedia("(max-width: 640px)").matches) return;
+function mountArchiveMotion(root: HTMLElement) {
+  const section = root.querySelector<HTMLElement>(".archive");
+  const cards = Array.from(root.querySelectorAll<HTMLElement>(".archive-card"));
+  if (!section || !cards.length) return;
 
-  gsap.set(timelineEntries, { opacity: 0, y: 52 });
-  gsap.set(timelineYears, { opacity: .14, scale: .98 });
-  gsap.set(timelineEntries[0], { opacity: 1, y: 0 });
-  gsap.set(timelineYears[0], { opacity: .78, scale: 1 });
-
-  const timelineSequence = gsap.timeline({
-    scrollTrigger: {
-      trigger: timelineStage,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: motion.scrub,
-      invalidateOnRefresh: true
-    }
-  });
-
-  timelineEntries.forEach((entry, index) => {
-    if (index === 0) return;
-    timelineSequence.to(timelineEntries[index - 1], { y: -motion.distance.medium, opacity: 0, duration: motion.fast, ease: motion.ease }, index);
-    timelineSequence.to(timelineYears[index - 1], { opacity: .14, scale: .98, duration: motion.fast, ease: motion.ease }, index);
-    timelineSequence.to(entry, { y: 0, opacity: 1, duration: motion.normal, ease: motion.ease }, index + .08);
-    timelineSequence.to(timelineYears[index], { opacity: .78, scale: 1, duration: motion.fast, ease: motion.ease }, index + .08);
+  cards.forEach((card, index) => {
+    gsap.fromTo(card, { y: index % 2 ? motion.distance.small : motion.distance.medium, opacity: .82 }, {
+      y: 0,
+      opacity: 1,
+      ease: motion.ease,
+      scrollTrigger: { trigger: card, start: "top 88%", end: "top 56%", scrub: motion.scrub }
+    });
   });
 }
 
 function mountWorkMotion(root: HTMLElement) {
-  const list = root.querySelector<HTMLElement>(".work-list");
-  const rows = Array.from(root.querySelectorAll<HTMLElement>(".work-row"));
-  const current = root.querySelector<HTMLElement>(".work-sequence-current");
-  if (!list || !rows.length) return;
-  if (window.matchMedia("(max-width: 640px)").matches) return;
+  const scenes = Array.from(root.querySelectorAll<HTMLElement>(".work-scene"));
+  if (!scenes.length) return;
 
-  const sequence = gsap.timeline({
-    scrollTrigger: {
-      trigger: list,
-      start: "top 70%",
-      end: "bottom bottom",
-      scrub: motion.scrub,
-      invalidateOnRefresh: true,
-      onUpdate: () => {
-        if (!current) return;
-        const focusLine = window.innerHeight * .56;
-        let activeIndex = 0;
-        rows.forEach((row, index) => {
-          if (row.getBoundingClientRect().top <= focusLine) activeIndex = index;
-        });
-        current.textContent = rows[activeIndex].dataset.workLabel ?? `0${activeIndex + 1} / PROJECT`;
-      }
-    }
-  });
-
-  rows.forEach((row, index) => {
-    const visual = row.querySelector<HTMLElement>(".work-visual");
-    const copy = row.querySelector<HTMLElement>(".work-copy");
-    if (!visual) return;
-
-    if (index === 0) {
-      sequence.fromTo(visual, { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: motion.normal, ease: motion.ease }, 0);
-      return;
-    }
-
-    const previousVisual = rows[index - 1].querySelector<HTMLElement>(".work-visual");
-    if (previousVisual) sequence.to(previousVisual, { x: -motion.distance.small, scale: .96, opacity: .58, duration: motion.fast, ease: motion.ease }, index - .12);
-    sequence.fromTo(visual, { clipPath: "inset(0 0 0 100%)", x: motion.distance.medium, opacity: .45 }, { clipPath: "inset(0 0 0 0%)", x: 0, opacity: 1, duration: motion.normal, ease: motion.easeSoft }, index);
-    if (copy) sequence.fromTo(copy, { x: motion.distance.small, opacity: .42 }, { x: 0, opacity: 1, duration: motion.fast, ease: motion.ease }, index + .08);
-  });
-}
-
-function mountCapabilitiesMotion(root: HTMLElement) {
-  const section = root.querySelector<HTMLElement>(".capabilities");
-  const rows = root.querySelectorAll<HTMLElement>(".capability-row");
-  if (!section || !rows.length) return;
-
-  gsap.fromTo(rows, { x: motion.distance.medium, opacity: .22 }, {
-    x: 0,
-    opacity: 1,
-    stagger: motion.fast / 4,
-    ease: motion.ease,
-    scrollTrigger: { trigger: section, start: "top 76%", end: "top 34%", scrub: motion.scrub }
+  scenes.forEach((scene, index) => {
+    gsap.fromTo(scene, { y: index === 0 ? motion.distance.small : motion.distance.medium, opacity: .92 }, {
+      y: 0,
+      opacity: 1,
+      ease: motion.ease,
+      scrollTrigger: { trigger: scene, start: "top 90%", end: "top 60%", scrub: motion.scrub }
+    });
   });
 }
 
 function mountSystemMotion(root: HTMLElement) {
-  const section = root.querySelector<HTMLElement>(".system");
-  const map = root.querySelector<HTMLElement>(".system-map");
-  if (!section || !map) return;
+  const section = root.querySelector<HTMLElement>(".current-system");
+  const bars = Array.from(root.querySelectorAll<HTMLElement>(".region-bar i"));
+  if (!section || !bars.length) return;
 
-  gsap.fromTo(map, { clipPath: "inset(0 100% 0 0)" }, {
-    clipPath: "inset(0 0% 0 0)",
+  gsap.fromTo(bars, { scaleX: 0 }, {
+    scaleX: 1,
+    duration: motion.normal,
+    stagger: .07,
     ease: motion.ease,
-    scrollTrigger: { trigger: section, start: "top 78%", end: "top 34%", scrub: motion.scrub }
-  });
-}
-
-function mountContactMotion(root: HTMLElement) {
-  const section = root.querySelector<HTMLElement>(".contact");
-  const heading = root.querySelector<HTMLElement>(".contact-heading");
-  if (!section || !heading) return;
-
-  gsap.fromTo(heading, { y: motion.distance.large, opacity: .2 }, {
-    y: 0,
-    opacity: 1,
-    ease: motion.ease,
-    scrollTrigger: { trigger: section, start: "top 78%", end: "top 36%", scrub: motion.scrub }
+    scrollTrigger: { trigger: section, start: "top 72%", end: "top 42%", scrub: motion.scrub }
   });
 }
 
@@ -170,12 +93,10 @@ export function mountScrollExperience(root: HTMLElement) {
   lenis.on("scroll", ScrollTrigger.update);
 
   const context = gsap.context(() => {
-    mountHeroMotion(root);
-    mountTimelineMotion(root);
+    mountIntroMotion(root);
+    mountArchiveMotion(root);
     mountWorkMotion(root);
-    mountCapabilitiesMotion(root);
     mountSystemMotion(root);
-    mountContactMotion(root);
   }, root);
 
   const refresh = () => ScrollTrigger.refresh();

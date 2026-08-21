@@ -1,6 +1,6 @@
 # QQ.SG / PERSONAL SYSTEM
 
-一个面向个人品牌的编辑型主页：大字号排版、滚动叙事、轻量 WebGL 网络系统与移动端独立布局。
+一个面向个人品牌的编辑型主页：分章节的滚动叙事、真实公开项目材料、状态页截图与移动端独立布局。
 
 ## 本地运行
 
@@ -30,7 +30,7 @@ pnpm dev
 ## 技术结构
 
 - React + TypeScript + Vite：页面结构与构建
-- GSAP ScrollTrigger + Lenis：滚动叙事和惯性滚动
-- Three.js：System 区域唯一的基础设施网络 WebGL 场景
+- GSAP ScrollTrigger + Lenis：Intro 交接、章节进入与惯性滚动
+- 真实公开数据快照：GitHub、status.qq.sg、NIE.NET 的可读 HTML 内容
+- 公共项目截图素材：Status System 以 NodeGet 的真实 README 预览作为主视觉
 - CSS Grid / `prefers-reduced-motion`：编辑型布局与可访问性
-- WebGL 场景按进入视口延迟加载，避免拖慢首屏

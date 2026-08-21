@@ -1,41 +1,31 @@
-import { statusSnapshot } from "../data";
-
 export function InfrastructureField() {
   return (
     <div className="infrastructure-field">
       <div className="infrastructure-field__top mono">
-        <span>STATUS.QQ.SG / FIELD 01</span>
-        <span>SNAPSHOT / {statusSnapshot.snapshot}</span>
+        <span>QQ.SG / PUBLIC INDEX</span>
+        <span>FIELD / 01</span>
       </div>
 
-      <svg className="infrastructure-field__routes" viewBox="0 0 800 480" role="presentation" aria-hidden="true">
-        <path className="field-route field-route--quiet" d="M90 318C160 236 190 192 284 180S430 206 506 118 634 88 718 152" />
-        <path className="field-route field-route--main" d="M90 318C176 298 236 270 318 246S428 210 506 118 616 188 718 152" />
-        <path className="field-route field-route--branch" d="M318 246C352 324 432 350 524 328S638 248 718 152" />
-        <circle className="field-node" cx="90" cy="318" r="5" />
-        <circle className="field-node" cx="318" cy="246" r="5" />
-        <circle className="field-node" cx="506" cy="118" r="5" />
-        <circle className="field-node" cx="718" cy="152" r="5" />
-        <circle className="field-node field-node--home" cx="524" cy="328" r="8" />
+      <svg className="infrastructure-field__graphic" viewBox="0 0 800 480" role="presentation" aria-hidden="true">
+        <path className="field-line field-line--quiet" d="M74 342C160 248 194 168 306 188S438 250 520 126 650 92 726 144" />
+        <path className="field-line field-line--main" d="M74 342C164 304 236 284 330 246S438 214 520 126 630 196 726 144" />
+        <path className="field-line field-line--accent" d="M330 246C364 324 444 352 530 328S646 248 726 144" />
+        <circle className="field-point" cx="74" cy="342" r="5" />
+        <circle className="field-point" cx="330" cy="246" r="5" />
+        <circle className="field-point" cx="520" cy="126" r="5" />
+        <circle className="field-point" cx="726" cy="144" r="5" />
+        <circle className="field-point field-point--home" cx="530" cy="328" r="8" />
       </svg>
 
-      <div className="infrastructure-field__metrics">
-        {statusSnapshot.regions.map((region) => (
-          <div className="field-reading" key={region.label}>
-            <span className="mono">{region.label}</span>
-            <strong>{region.value}</strong>
-          </div>
-        ))}
-      </div>
-
       <div className="infrastructure-field__core">
-        <span className="mono">ONLINE / TOTAL</span>
-        <strong>{statusSnapshot.online}</strong>
+        <span className="mono">FIELD TRACE</span>
+        <strong>QQ.SG</strong>
+        <span className="mono">OPEN / PUBLIC</span>
       </div>
 
       <div className="infrastructure-field__bottom mono">
-        <span>{statusSnapshot.total} NODES / 06 FILTERS</span>
-        <span>NODEGET / CARD VIEW</span>
+        <span>CHINA / UTC+8</span>
+        <span>ENTER / ARCHIVE ↓</span>
       </div>
     </div>
   );
