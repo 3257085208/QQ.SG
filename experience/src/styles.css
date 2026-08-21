@@ -277,29 +277,33 @@ button { color: inherit; font: inherit; }
 
   .infrastructure-field__core { top: 68%; left: 76%; }
   .infrastructure-field::before { background-image: linear-gradient(rgba(241, 240, 233, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(241, 240, 233, .025) 1px, transparent 1px); background-size: 96px 96px; }
-  .field-map__land { fill: rgba(241, 240, 233, .014); stroke: rgba(241, 240, 233, .12); stroke-width: .8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-  .field-map__graticule { fill: none; stroke: rgba(241, 240, 233, .034); stroke-width: 1; stroke-dasharray: 1 14; vector-effect: non-scaling-stroke; }
-  .field-transmission__underlay { fill: none; stroke: rgba(241, 240, 233, .25); stroke-width: 1.25; stroke-dasharray: 1 10; opacity: 0; transition: opacity .5s ease; vector-effect: non-scaling-stroke; }
-  .field-transmission__underlay.is-route-draw, .field-transmission__underlay.is-travel { opacity: .32; }
-  .field-transmission__underlay.is-receive { opacity: .2; }
-  .field-transmission__underlay.is-decay { opacity: .08; }
-  .field-transmission__underlay.is-idle { opacity: .07; }
-  .field-transmission__route { fill: none; stroke: var(--accent); stroke-width: 1; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; transition: stroke-dashoffset .48s cubic-bezier(.2,.7,.2,1), opacity .42s ease, stroke .42s ease; vector-effect: non-scaling-stroke; }
-  .field-transmission__route.is-route-draw, .field-transmission__route.is-travel { stroke-dashoffset: 0; opacity: .27; }
-  .field-transmission__route.is-receive { stroke-dashoffset: 0; opacity: .16; }
-  .field-transmission__route.is-decay { stroke-dashoffset: 0; opacity: .06; }
-  .field-transmission__route.is-idle { stroke: rgba(241, 240, 233, .34); stroke-dasharray: 1 12; stroke-dashoffset: 0; opacity: .08; }
-  .field-city__leader { fill: none; stroke: rgba(207, 255, 0, .54); stroke-width: .65; opacity: .72; vector-effect: non-scaling-stroke; }
-  .field-city__dot { fill: rgba(241, 240, 233, .28); transition: fill .35s ease; }
-  .field-city__halo { fill: none; stroke: rgba(241, 240, 233, .18); stroke-width: .8; opacity: .18; transition: opacity .35s ease, stroke .35s ease; vector-effect: non-scaling-stroke; }
-  .field-city__label { fill: var(--foreground); font: 600 8px/1 var(--mono); letter-spacing: .13em; opacity: 1; text-transform: uppercase; transition: fill .35s ease, opacity .35s ease; }
-  .field-city.is-source .field-city__dot, .field-city.is-destination .field-city__dot { fill: var(--accent); }
-  .field-city.is-source .field-city__halo, .field-city.is-destination .field-city__halo { stroke: var(--accent); opacity: .76; }
-  .field-city.is-source .field-city__label, .field-city.is-destination .field-city__label { fill: var(--foreground); opacity: 1; }
+  .field-map__land { fill: rgba(241, 240, 233, .011); stroke: rgba(241, 240, 233, .075); stroke-width: .7; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .field-map__graticule { fill: none; stroke: rgba(241, 240, 233, .018); stroke-width: 1; stroke-dasharray: 1 18; vector-effect: non-scaling-stroke; }
+  .field-transmission__underlay { fill: none; stroke: rgba(241, 240, 233, .24); stroke-width: .9; stroke-dasharray: 1 14; opacity: 0; transition: opacity .5s ease; vector-effect: non-scaling-stroke; }
+  .field-transmission__underlay.is-route-draw, .field-transmission__underlay.is-travel { opacity: .18; }
+  .field-transmission__underlay.is-receive { opacity: .13; }
+  .field-transmission__underlay.is-decay { opacity: .055; }
+  .field-transmission__underlay.is-idle { opacity: .045; }
+  .field-transmission__route { fill: none; stroke: var(--accent); stroke-width: .8; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; transition: stroke-dashoffset .48s cubic-bezier(.2,.7,.2,1), opacity .42s ease, stroke .42s ease; vector-effect: non-scaling-stroke; }
+  .field-transmission__route.is-route-draw, .field-transmission__route.is-travel { stroke-dashoffset: 0; opacity: .17; }
+  .field-transmission__route.is-receive { stroke-dashoffset: 0; opacity: .11; }
+  .field-transmission__route.is-decay { stroke-dashoffset: 0; opacity: .045; }
+  .field-transmission__route.is-idle { stroke: rgba(241, 240, 233, .32); stroke-dasharray: 1 15; stroke-dashoffset: 0; opacity: .035; }
+  .field-city__leader { fill: none; stroke: rgba(207, 255, 0, .4); stroke-width: .6; opacity: .62; vector-effect: non-scaling-stroke; }
+  .field-city__dot { fill: rgba(241, 240, 233, .23); transition: fill .35s ease; }
+  .field-city__halo { fill: none; stroke: rgba(241, 240, 233, .14); stroke-width: .75; opacity: .14; transition: opacity .35s ease, stroke .35s ease; vector-effect: non-scaling-stroke; }
+  .field-city__sink-ring { fill: none; stroke: var(--accent); stroke-width: .8; stroke-dasharray: 1 4; opacity: .58; vector-effect: non-scaling-stroke; }
+  .field-city__label { fill: var(--foreground); font: 600 8px/1 var(--mono); letter-spacing: .13em; opacity: .92; text-transform: uppercase; transition: fill .35s ease, opacity .35s ease; }
+  .field-city.is-source .field-city__dot { fill: var(--accent); }
+  .field-city.is-destination .field-city__dot { fill: var(--accent); }
+  .field-city.is-source .field-city__halo { stroke: var(--accent); opacity: .52; }
+  .field-city.is-destination .field-city__halo { stroke: var(--accent); opacity: .72; }
+  .field-city.is-destination .field-city__label { fill: var(--foreground); opacity: 1; }
+  .field-transmission__source-pulse { fill: none; stroke: var(--accent); stroke-width: .85; opacity: 0; vector-effect: non-scaling-stroke; }
   .field-transmission__packet-tail { fill: var(--accent); opacity: 0; }
-  .field-transmission__packet-ring { fill: none; stroke: var(--accent); stroke-width: 1; opacity: 0; vector-effect: non-scaling-stroke; }
+  .field-transmission__packet-ring { fill: none; stroke: var(--accent); stroke-width: .9; opacity: 0; vector-effect: non-scaling-stroke; }
   .field-transmission__particle { fill: var(--accent); opacity: 0; }
-  .field-transmission__pulse { fill: none; stroke: var(--accent); stroke-width: 1; opacity: 0; vector-effect: non-scaling-stroke; }
+  .field-transmission__pulse { fill: none; stroke: var(--accent); stroke-width: .9; opacity: 0; vector-effect: non-scaling-stroke; }
   .infrastructure-field__readout::after { position: absolute; top: 13px; left: -48px; width: 48px; height: 1px; background: rgba(241, 240, 233, .34); content: ""; }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -360,7 +364,7 @@ button { color: inherit; font: inherit; }
     .field-transmission__underlay { opacity: .14; }
     .field-transmission__route { transition: none; }
     .field-transmission__route.is-idle { opacity: .28; }
-    .field-transmission__packet, .field-transmission__packet-tail, .field-transmission__particle, .field-transmission__packet-ring, .field-transmission__pulse { display: none; }
+    .field-transmission__packet, .field-transmission__packet-tail, .field-transmission__particle, .field-transmission__packet-ring, .field-transmission__pulse, .field-transmission__source-pulse { display: none; }
     .archive-stage { min-height: 0; padding-bottom: 0; }
     .archive-stage__viewport { position: relative; top: auto; height: auto; min-height: 0; overflow: visible; padding-top: 62px; }
     .archive-stage__axis, .archive-stage__hint { display: none; }
