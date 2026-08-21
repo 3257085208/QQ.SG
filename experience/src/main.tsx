@@ -34,14 +34,21 @@ function DesktopExperience() {
           <div className="archive-index"><span className="mono">NKX / 01</span><strong>QQ.SG</strong><span className="mono">CHINA / UTC+8</span></div>
           <div className="archive-copy"><h2 id="archive-title">A record of what is built, run, and kept public.</h2><p>我关心一件事情：页面如何被送到屏幕，服务如何在没人盯着时继续工作。代码、状态页和文章，都是这套系统留下的记录。</p></div>
         </div>
-        <div className="archive-deck">
-          {timeline.map((entry, index) => <article className={`archive-card archive-card--${index + 1}`} key={`${entry.year}-${entry.label}`}>
-            <div className="archive-card__top mono"><span>{entry.year}</span><span>{entry.label}</span></div>
-            {index === 2 && <div className="archive-card__image"><img src="/assets/status-nodeget-dark.png" width="2560" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page preview" /></div>}
-            <h3>{entry.title}</h3>
-            <p>{entry.detail}</p>
-            <div className="archive-card__foot mono"><span>{entry.stat}</span><span>{entry.location}</span></div>
-          </article>)}
+        <div className="archive-stage" data-active="01">
+          <div className="archive-stage__viewport">
+            <div className="archive-stage__head mono"><span>ARCHIVE / LIVING RECORD</span><span className="archive-stage__current" aria-live="polite">01 / {timeline[0].label}</span></div>
+            <div className="archive-stage__axis" aria-hidden="true"><i /></div>
+            <div className="archive-deck">
+              {timeline.map((entry, index) => <article className={`archive-card archive-card--${index + 1}`} data-archive-index={index} data-archive-label={`${entry.year} / ${entry.label}`} key={`${entry.year}-${entry.label}`}>
+                <div className="archive-card__top mono"><span>{entry.year}</span><span>{entry.label}</span></div>
+                {index === 2 && <div className="archive-card__image"><img src="/assets/status-nodeget-dark.png" width="2560" height="1440" loading="lazy" decoding="async" alt="Dark NodeGet status page preview" /></div>}
+                <h3>{entry.title}</h3>
+                <p>{entry.detail}</p>
+                <div className="archive-card__foot mono"><span>{entry.stat}</span><span>{entry.location}</span></div>
+              </article>)}
+            </div>
+            <div className="archive-stage__hint mono"><span>SCROLL / SELECT RECORD</span><span>TRACE PERSISTS → NEXT</span></div>
+          </div>
         </div>
         <div className="archive-foot mono"><span>STATIC EVIDENCE / PUBLIC SOURCES</span><span>REFRESHED {networkSummary.snapshot}</span></div>
       </section>
@@ -49,15 +56,23 @@ function DesktopExperience() {
       <section className="work section-paper" id="work" aria-labelledby="work-title">
         <div className="chapter-head mono"><span>02 / SELECTED WORK</span><span>THREE PUBLIC ENTRIES</span></div>
         <div className="work-intro grid-12"><span className="mono">THE SYSTEM BECOMES VISIBLE HERE</span><h2 id="work-title">Work is where the system becomes visible.</h2></div>
-        <div className="work-list">
-          {selectedWorks.map((item) => <a className={`work-scene work-scene--${item.kind}`} data-work-label={`${item.index} / ${item.title.replace("\n", " ")}`} href={item.href} target="_blank" rel="noreferrer" key={item.index}>
-            <div className="work-scene__head mono"><span>{item.index} / {item.meta}</span><span>{item.year} ↗</span></div>
-            <div className="work-scene__body">
-              <div className="work-copy"><h3>{splitTitle(item.title)}</h3><p>{item.detail}</p><span className="mono">{item.footnote}</span></div>
-              <WorkVisual item={item} />
+        <div className="work-sequence" data-active="01">
+          <div className="work-sequence__layout">
+            <div className="work-sequence__visual-column">
+              <div className="work-sequence__index mono"><span>WORK / SEQUENCE</span><strong className="work-sequence__current" aria-live="polite">01 / STATUS SYSTEM</strong><span>03 PROJECTS</span></div>
+              <div className="work-sequence__visual-stack">
+                {selectedWorks.map((item) => <div className={`work-sequence__visual-item work-sequence__visual-item--${item.kind}`} data-work-visual={item.index} aria-hidden="true" key={item.index}><WorkVisual item={item} /></div>)}
+              </div>
+              <div className="work-sequence__handoff mono"><span>CONTENT HANDOFF</span><strong className="work-sequence__handoff-current">ROWS → README TREE</strong></div>
             </div>
-            <div className="work-scene__foot mono"><span>OPEN SOURCE / PUBLIC TRACE</span><span>VIEW ENTRY ↗</span></div>
-          </a>)}
+            <div className="work-sequence__records">
+              {selectedWorks.map((item) => <a className={`work-scene work-sequence__record work-sequence__record--${item.kind}`} data-work-index={item.index} data-work-label={`${item.index} / ${item.title.replace("\n", " ")}`} href={item.href} target="_blank" rel="noreferrer" key={item.index}>
+                <div className="work-scene__head mono"><span>{item.index} / {item.meta}</span><span>{item.year} ↗</span></div>
+                <div className="work-scene__body"><div className="work-copy"><h3>{splitTitle(item.title)}</h3><p>{item.detail}</p><span className="mono">{item.footnote}</span></div></div>
+                <div className="work-scene__foot mono"><span>OPEN SOURCE / PUBLIC TRACE</span><span>VIEW ENTRY ↗</span></div>
+              </a>)}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -95,10 +110,40 @@ function DesktopExperience() {
 }
 
 function MobileExperience() {
+  const mobileRootRef = useRef<HTMLElement>(null);
   const mobileNodes = [statusSnapshot.nodes[0], statusSnapshot.nodes[3]];
 
+  useEffect(() => {
+    const root = mobileRootRef.current;
+    if (!root) return;
+
+    const intro = root.querySelector<HTMLElement>(".mobile-intro");
+    const targets = Array.from(root.querySelectorAll<HTMLElement>("[data-mobile-reveal]"));
+    const reveal = () => targets.forEach((target) => target.classList.add("is-visible"));
+    const introFrame = window.requestAnimationFrame(() => intro?.classList.add("is-ready"));
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || typeof IntersectionObserver === "undefined") {
+      reveal();
+      return () => window.cancelAnimationFrame(introFrame);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: .12, rootMargin: "0px 0px -8%" });
+
+    targets.forEach((target) => observer.observe(target));
+    return () => {
+      window.cancelAnimationFrame(introFrame);
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <main className="mobile-experience">
+    <main className="mobile-experience" ref={mobileRootRef}>
       <section className="mobile-intro" id="home" aria-labelledby="mobile-intro-title">
         <div className="mobile-intro__top"><span className="mono">QQ.SG</span><span className="mono">2026</span></div>
         <h1 className="mobile-intro__name" id="mobile-intro-title"><span>NIE</span><span>KAI</span><span>XIANG</span></h1>
@@ -127,7 +172,7 @@ function MobileExperience() {
           <div className="mobile-project__meta"><span>01</span><span>2026</span></div>
           <h3>STATUS<br />SYSTEM</h3>
           <div className="mobile-status__metric"><strong>{statusSnapshot.online}</strong><span>ONLINE / TOTAL</span></div>
-          <figure className="mobile-status__media">
+          <figure className="mobile-status__media" data-mobile-reveal="status">
             <img src="/assets/status-nodeget-mobile.png" width="840" height="1440" loading="lazy" decoding="async" alt="NodeGet status page card view detail" />
             <figcaption className="mono">NODEGET / CARD VIEW</figcaption>
           </figure>
@@ -147,7 +192,7 @@ function MobileExperience() {
           <div className="mobile-project__meta"><span>03</span><span>ARTICLE INDEX</span></div>
           <h3>NOTES<br />FROM EDGE</h3>
           <p className="mobile-notes__intro">博客公开归档里的系统、域名与 NodeGet 笔记。</p>
-          <ol className="mobile-notes__list">
+          <ol className="mobile-notes__list" data-mobile-reveal="notes">
             {publicData.notes.entries.map((entry) => <li key={entry.date}><span>{entry.date}</span><strong>{entry.title}</strong><p>{entry.excerpt}</p><small>{entry.meta}</small></li>)}
           </ol>
           <a className="mobile-project__link" href="https://www.niekaixiang.com" target="_blank" rel="noreferrer">NIEKAIXIANG.COM <span>↗</span></a>
