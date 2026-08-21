@@ -266,24 +266,38 @@ button { color: inherit; font: inherit; }
   .archive-card__image img { object-position: center; }
   .archive-card h3 { margin-top: auto; }
 
-  .field-map__land { fill: rgba(241, 240, 233, .026); stroke: rgba(241, 240, 233, .18); stroke-width: 1; vector-effect: non-scaling-stroke; }
-  .field-map__edge { fill: none; stroke: rgba(241, 240, 233, .1); stroke-width: 1; stroke-dasharray: 2 9; vector-effect: non-scaling-stroke; }
-  .field-transmission__backbone { fill: none; stroke: rgba(241, 240, 233, .14); stroke-width: 1; stroke-dasharray: 1 10; vector-effect: non-scaling-stroke; }
-  .field-transmission__route { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 1 8; opacity: 0; vector-effect: non-scaling-stroke; animation: field-transmission-route 3.8s ease-in-out forwards; }
-  .field-city__dot { fill: rgba(241, 240, 233, .48); }
-  .field-city__halo { fill: none; stroke: rgba(241, 240, 233, .24); stroke-width: 1; opacity: .4; vector-effect: non-scaling-stroke; }
-  .field-city__label { fill: rgba(241, 240, 233, .42); font: 500 8px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+  .field-map__land { fill: rgba(241, 240, 233, .026); stroke: rgba(241, 240, 233, .2); stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .field-map__graticule { fill: none; stroke: rgba(241, 240, 233, .075); stroke-width: 1; stroke-dasharray: 1 9; vector-effect: non-scaling-stroke; }
+  .field-transmission__underlay { fill: none; stroke: rgba(241, 240, 233, .35); stroke-width: 2.1; stroke-dasharray: 1 9; opacity: 0; transition: opacity .5s ease; vector-effect: non-scaling-stroke; }
+  .field-transmission__underlay.is-route-draw, .field-transmission__underlay.is-travel { opacity: .5; }
+  .field-transmission__underlay.is-receive { opacity: .28; }
+  .field-transmission__underlay.is-decay { opacity: .12; }
+  .field-transmission__underlay.is-idle { opacity: .13; }
+  .field-transmission__route { fill: none; stroke: var(--accent); stroke-width: 1.25; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; transition: stroke-dashoffset .48s cubic-bezier(.2,.7,.2,1), opacity .42s ease, stroke .42s ease; vector-effect: non-scaling-stroke; }
+  .field-transmission__route.is-route-draw, .field-transmission__route.is-travel { stroke-dashoffset: 0; opacity: .7; }
+  .field-transmission__route.is-receive { stroke-dashoffset: 0; opacity: .4; }
+  .field-transmission__route.is-decay { stroke-dashoffset: 0; opacity: .1; }
+  .field-transmission__route.is-idle { stroke: rgba(241, 240, 233, .42); stroke-dasharray: 1 10; stroke-dashoffset: 0; opacity: .18; }
+  .field-transmission__tail { fill: none; stroke: var(--accent); stroke-width: 2.3; stroke-linecap: round; stroke-dasharray: .075 .925; stroke-dashoffset: 1; opacity: 0; vector-effect: non-scaling-stroke; }
+  .field-transmission__tail.is-travel { animation: field-transmission-tail 2.35s linear forwards; }
+  .field-city__leader { fill: none; stroke: rgba(241, 240, 233, .2); stroke-width: .75; opacity: .35; vector-effect: non-scaling-stroke; }
+  .field-city__dot { fill: rgba(241, 240, 233, .5); transition: fill .35s ease; }
+  .field-city__halo { fill: none; stroke: rgba(241, 240, 233, .24); stroke-width: 1; opacity: .35; transition: opacity .35s ease, stroke .35s ease; vector-effect: non-scaling-stroke; }
+  .field-city__label { fill: rgba(241, 240, 233, .42); font: 500 8px/1 var(--mono); letter-spacing: .12em; opacity: .78; text-transform: uppercase; transition: fill .35s ease, opacity .35s ease; }
   .field-city.is-source .field-city__dot, .field-city.is-destination .field-city__dot { fill: var(--accent); }
   .field-city.is-source .field-city__halo, .field-city.is-destination .field-city__halo { stroke: var(--accent); opacity: .76; }
-  .field-city.is-source .field-city__label, .field-city.is-destination .field-city__label { fill: var(--foreground); }
+  .field-city.is-source .field-city__leader, .field-city.is-destination .field-city__leader { stroke: rgba(207, 255, 0, .62); opacity: .8; }
+  .field-city.is-source .field-city__label, .field-city.is-destination .field-city__label { fill: var(--foreground); opacity: 1; }
+  .field-transmission__packet-ring { fill: none; stroke: var(--accent); stroke-width: 1; opacity: 0; vector-effect: non-scaling-stroke; }
   .field-transmission__particle { fill: var(--accent); opacity: 0; }
   .field-transmission__pulse { fill: none; stroke: var(--accent); stroke-width: 1; opacity: 0; vector-effect: non-scaling-stroke; }
   .infrastructure-field__readout::after { position: absolute; top: 13px; left: -48px; width: 48px; height: 1px; background: rgba(241, 240, 233, .34); content: ""; }
 
-  @keyframes field-transmission-route {
-    0%, 100% { opacity: 0; stroke-dashoffset: 0; }
-    18% { opacity: .72; }
-    66% { opacity: .3; stroke-dashoffset: -18; }
+  @keyframes field-transmission-tail {
+    0% { stroke-dashoffset: 1; opacity: 0; }
+    12% { opacity: .72; }
+    72% { opacity: .28; }
+    100% { stroke-dashoffset: 0; opacity: 0; }
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -341,8 +355,10 @@ button { color: inherit; font: inherit; }
 
   @media (prefers-reduced-motion: reduce) {
     .site-menu nav a, .site-menu__label, .site-menu__descriptor, .site-menu__marker::before { transition: none; }
-    .field-transmission__route { animation: none; opacity: .24; }
-    .field-transmission__particle, .field-transmission__pulse { display: none; }
+    .field-transmission__underlay { opacity: .14; }
+    .field-transmission__route { transition: none; }
+    .field-transmission__route.is-idle { opacity: .28; }
+    .field-transmission__tail, .field-transmission__packet, .field-transmission__particle, .field-transmission__packet-ring, .field-transmission__pulse { display: none; }
     .archive-stage { min-height: 0; padding-bottom: 0; }
     .archive-stage__viewport { position: relative; top: auto; height: auto; min-height: 0; overflow: visible; padding-top: 62px; }
     .archive-stage__axis, .archive-stage__hint { display: none; }

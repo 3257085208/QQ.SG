@@ -1,42 +1,175 @@
 import { useEffect, useState } from "react";
 import { statusSnapshot } from "../data";
+import { WORLD_MAP_PATH } from "../data/worldMap";
 
-type FieldCity = {
+type GeoPoint = {
+  lat: number;
+  lon: number;
+};
+
+type FieldCity = GeoPoint & {
   id: string;
   name: string;
   short: string;
+  labelDx: number;
+  labelDy: number;
   x: number;
   y: number;
-  labelX: number;
-  labelY: number;
 };
 
-const fieldCities: FieldCity[] = [
-  { id: "hk", name: "Hong Kong", short: "HK", x: 640, y: 211, labelX: 648, labelY: 224 },
-  { id: "tw", name: "Taiwan", short: "TW", x: 654, y: 207, labelX: 663, labelY: 203 },
-  { id: "sh", name: "Shanghai", short: "SH", x: 651, y: 184, labelX: 660, labelY: 179 },
-  { id: "ly", name: "Longyan", short: "LY", x: 643, y: 199, labelX: 624, labelY: 211 },
-  { id: "fra", name: "Frankfurt", short: "FRA", x: 418, y: 145, labelX: 427, labelY: 139 },
-  { id: "lax", name: "Los Angeles", short: "LAX", x: 153, y: 176, labelX: 162, labelY: 190 },
-  { id: "nyc", name: "New York", short: "NYC", x: 246, y: 155, labelX: 255, labelY: 149 },
-  { id: "tyo", name: "Tokyo", short: "TYO", x: 694, y: 181, labelX: 704, labelY: 175 }
+type FieldCitySeed = Omit<FieldCity, "x" | "y">;
+
+const FIELD_MAP = {
+  left: 28,
+  right: 772,
+  top: 54,
+  bottom: 414
+} as const;
+
+function projectFieldPoint(lat: number, lon: number) {
+  return {
+    x: FIELD_MAP.left + ((lon + 180) / 360) * (FIELD_MAP.right - FIELD_MAP.left),
+    y: FIELD_MAP.top + ((90 - lat) / 180) * (FIELD_MAP.bottom - FIELD_MAP.top)
+  };
+}
+
+const fieldCitySeeds: FieldCitySeed[] = [
+  { id: "hk", name: "Hong Kong", short: "HK", lat: 22.3193, lon: 114.1694, labelDx: 10, labelDy: 14 },
+  { id: "tw", name: "Taipei", short: "TW", lat: 25.033, lon: 121.565, labelDx: 13, labelDy: -10 },
+  { id: "sh", name: "Shanghai", short: "SH", lat: 31.2304, lon: 121.4737, labelDx: 12, labelDy: -9 },
+  { id: "ly", name: "Longyan", short: "LY", lat: 25.0751, lon: 117.0172, labelDx: -26, labelDy: 15 },
+  { id: "fra", name: "Frankfurt", short: "FRA", lat: 50.1109, lon: 8.6821, labelDx: 10, labelDy: -8 },
+  { id: "lax", name: "Los Angeles", short: "LAX", lat: 34.0522, lon: -118.2437, labelDx: 10, labelDy: 14 },
+  { id: "nyc", name: "New York", short: "NYC", lat: 40.7128, lon: -74.006, labelDx: 10, labelDy: -8 },
+  { id: "tyo", name: "Tokyo", short: "TYO", lat: 35.6762, lon: 139.6503, labelDx: 12, labelDy: -10 }
 ];
+
+const fieldCities: FieldCity[] = fieldCitySeeds.map((city) => ({
+  ...city,
+  ...projectFieldPoint(city.lat, city.lon)
+}));
+
+type ProjectedPoint = {
+  x: number;
+  y: number;
+};
+
+type FieldRouteSegment = {
+  d: string;
+  length: number;
+};
 
 type FieldRoute = {
   source: FieldCity;
   destination: FieldCity;
   path: string;
+  segments: FieldRouteSegment[];
   sequence: number;
 };
 
+type FieldPhase = "idle" | "source" | "route-draw" | "travel" | "receive" | "decay";
+
+function toRadians(value: number) {
+  return value * (Math.PI / 180);
+}
+
+function toDegrees(value: number) {
+  return value * (180 / Math.PI);
+}
+
+function interpolateGreatCircle(source: GeoPoint, destination: GeoPoint, segments = 42): GeoPoint[] {
+  const phi1 = toRadians(source.lat);
+  const phi2 = toRadians(destination.lat);
+  const lambda1 = toRadians(source.lon);
+  const lambda2 = toRadians(destination.lon);
+  const distance = 2 * Math.asin(Math.min(1, Math.sqrt(
+    Math.pow(Math.sin((phi2 - phi1) / 2), 2) +
+    Math.cos(phi1) * Math.cos(phi2) * Math.pow(Math.sin((lambda2 - lambda1) / 2), 2)
+  )));
+
+  if (distance < 0.0001) return [source, destination];
+
+  const sinDistance = Math.sin(distance);
+  return Array.from({ length: segments + 1 }, (_, index) => {
+    const progress = index / segments;
+    const a = Math.sin((1 - progress) * distance) / sinDistance;
+    const b = Math.sin(progress * distance) / sinDistance;
+    const x = a * Math.cos(phi1) * Math.cos(lambda1) + b * Math.cos(phi2) * Math.cos(lambda2);
+    const y = a * Math.cos(phi1) * Math.sin(lambda1) + b * Math.cos(phi2) * Math.sin(lambda2);
+    const z = a * Math.sin(phi1) + b * Math.sin(phi2);
+
+    return {
+      lat: toDegrees(Math.atan2(z, Math.sqrt(x * x + y * y))),
+      lon: toDegrees(Math.atan2(y, x))
+    };
+  });
+}
+
+function projectRoutePoint(point: GeoPoint): ProjectedPoint {
+  return projectFieldPoint(point.lat, point.lon);
+}
+
+function formatProjectedPoint(point: ProjectedPoint) {
+  return `${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+}
+
+function makeRouteSegment(points: ProjectedPoint[]): FieldRouteSegment {
+  const length = points.slice(1).reduce((total, point, index) => {
+    const previous = points[index];
+    return total + Math.hypot(point.x - previous.x, point.y - previous.y);
+  }, 0);
+
+  return {
+    d: points.map((point, index) => `${index === 0 ? "M" : "L"}${formatProjectedPoint(point)}`).join(" "),
+    length
+  };
+}
+
+function buildRouteGeometry(source: FieldCity, destination: FieldCity) {
+  const points = interpolateGreatCircle(source, destination);
+  const projectedSegments: ProjectedPoint[][] = [[]];
+
+  points.forEach((point, index) => {
+    const projected = projectRoutePoint(point);
+
+    if (index === 0) {
+      projectedSegments[0].push(projected);
+      return;
+    }
+
+    const previous = points[index - 1];
+    if (Math.abs(point.lon - previous.lon) > 180) {
+      const nextLon = point.lon + (previous.lon > 0 ? 360 : -360);
+      const seamLon = previous.lon > 0 ? 180 : -180;
+      const progress = (seamLon - previous.lon) / (nextLon - previous.lon);
+      const seamLat = previous.lat + (point.lat - previous.lat) * progress;
+      const seamPoint = projectRoutePoint({ lat: seamLat, lon: seamLon });
+      const wrappedSeamPoint = projectRoutePoint({ lat: seamLat, lon: seamLon === 180 ? -180 : 180 });
+
+      projectedSegments[projectedSegments.length - 1].push(seamPoint);
+      projectedSegments.push([wrappedSeamPoint, projected]);
+      return;
+    }
+
+    projectedSegments[projectedSegments.length - 1].push(projected);
+  });
+
+  const segments = projectedSegments
+    .filter((segment) => segment.length > 1)
+    .map(makeRouteSegment);
+
+  return {
+    path: segments.map((segment) => segment.d).join(" "),
+    segments
+  };
+}
+
 function makeFieldRoute(source: FieldCity, destination: FieldCity, sequence: number): FieldRoute {
-  const direction = source.x < destination.x ? 1 : -1;
-  const controlX = (source.x + destination.x) / 2 + direction * 18;
-  const controlY = Math.max(48, Math.min(source.y, destination.y) - Math.max(38, Math.min(88, Math.abs(destination.x - source.x) * .12)));
+  const geometry = buildRouteGeometry(source, destination);
   return {
     source,
     destination,
-    path: `M${source.x} ${source.y} Q${controlX.toFixed(1)} ${controlY.toFixed(1)} ${destination.x} ${destination.y}`,
+    ...geometry,
     sequence
   };
 }
@@ -56,14 +189,77 @@ function chooseFieldRoute(current: FieldRoute): FieldRoute {
   return makeFieldRoute(source, destination, current.sequence + 1);
 }
 
+function FieldTransmissionPacket({ route, phase }: { route: FieldRoute; phase: FieldPhase }) {
+  if (phase !== "travel") return null;
+
+  const totalLength = route.segments.reduce((total, segment) => total + segment.length, 0);
+  let elapsed = 0;
+  const travelDuration = 2.35;
+
+  return (
+    <g className="field-transmission__packet" key={`packet-${route.sequence}`}>
+      {route.segments.map((segment, index) => {
+        const segmentDuration = Math.max(.24, travelDuration * (segment.length / totalLength));
+        const begin = elapsed;
+        elapsed += segmentDuration;
+
+        return (
+          <g key={`packet-segment-${route.sequence}-${index}`}>
+            <circle className="field-transmission__packet-ring" r="5">
+              <animateMotion dur={`${segmentDuration}s`} begin={`${begin}s`} path={segment.d} rotate="auto" fill="remove" />
+              <animate attributeName="opacity" values="0;.55;.22;0" dur={`${segmentDuration}s`} begin={`${begin}s`} fill="remove" />
+            </circle>
+            <circle className="field-transmission__particle" r="2.7">
+              <animateMotion dur={`${segmentDuration}s`} begin={`${begin}s`} path={segment.d} rotate="auto" fill="remove" />
+              <animate attributeName="opacity" values="0;1;1;0" dur={`${segmentDuration}s`} begin={`${begin}s`} fill="remove" />
+            </circle>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
 export function InfrastructureField() {
   const [route, setRoute] = useState<FieldRoute>(() => makeFieldRoute(fieldCities[0], fieldCities[4], 0));
+  const [phase, setPhase] = useState<FieldPhase>("idle");
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setRoute(chooseFieldRoute), 4800);
-    return () => window.clearInterval(timer);
+
+    let cancelled = false;
+    const timers = new Set<number>();
+    const later = (callback: () => void, delay: number) => {
+      const timer = window.setTimeout(() => {
+        timers.delete(timer);
+        if (!cancelled) callback();
+      }, delay);
+      timers.add(timer);
+    };
+
+    const startCycle = () => {
+      if (cancelled) return;
+      setPhase("source");
+      later(() => setPhase("route-draw"), 220);
+      later(() => setPhase("travel"), 620);
+      later(() => setPhase("receive"), 3_040);
+      later(() => setPhase("decay"), 3_500);
+      later(() => setPhase("idle"), 3_980);
+      later(() => {
+        setRoute((current) => chooseFieldRoute(current));
+        startCycle();
+      }, 4_560 + Math.random() * 680);
+    };
+
+    startCycle();
+    return () => {
+      cancelled = true;
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
   }, []);
+
+  const sourceActive = phase === "source" || phase === "route-draw" || phase === "travel";
+  const destinationActive = phase === "receive" || phase === "decay";
 
   return (
     <div className="infrastructure-field">
@@ -72,47 +268,56 @@ export function InfrastructureField() {
         <span>FIELD / 01</span>
       </div>
 
-      <svg className="infrastructure-field__graphic" viewBox="0 0 800 480" role="presentation" aria-hidden="true">
+      <svg
+        className="infrastructure-field__graphic"
+        viewBox="28 24 744 396"
+        role="presentation"
+        aria-hidden="true"
+        data-route={`${route.source.id}-${route.destination.id}`}
+        data-phase={phase}
+      >
         <g className="field-map" aria-hidden="true">
-          <path className="field-map__land" d="M46 126C58 106 82 90 111 84L141 88 164 101 181 121 173 136 153 142 145 160 129 169 119 185 101 178 96 161 79 151 61 148Z" />
-          <path className="field-map__land" d="M222 61L246 48 275 55 291 73 279 91 251 96 230 86 215 74Z" />
-          <path className="field-map__land" d="M230 218C247 226 260 247 260 270 258 296 246 323 231 350 218 374 203 392 190 401 179 390 177 369 184 344 190 320 183 297 188 274 198 249 214 233 230 218Z" />
-          <path className="field-map__land" d="M371 133C385 113 404 103 427 105L448 115 444 128 427 134 414 146 397 143 385 153 368 147Z" />
-          <path className="field-map__land" d="M423 128C451 107 487 96 531 94 571 91 614 99 657 109 701 118 739 130 764 151L777 169 764 182 742 184 721 200 698 196 674 211 652 205 634 217 611 202 590 188 563 176 533 168 505 157 476 158 451 147Z" />
-          <path className="field-map__land" d="M394 177C414 169 438 174 453 190 466 208 460 237 451 263 440 294 423 317 403 331 385 318 379 294 383 268 375 243 380 215 388 195Z" />
-          <path className="field-map__land" d="M626 314C650 302 684 305 709 318 727 329 729 348 708 362 684 373 651 365 630 350 617 337 615 325 626 314Z" />
-          <path className="field-map__edge" d="M303 150C339 122 362 105 390 99M535 231C564 223 588 228 615 244" />
+          <path className="field-map__land" d={WORLD_MAP_PATH} />
+          <path className="field-map__graticule" d="M28 144H772 M28 234H772 M28 324H772 M214 54V414 M400 54V414 M586 54V414" />
         </g>
 
-        <path className="field-transmission__backbone" d="M121 272C286 230 389 212 518 181S670 159 744 186" />
-        <path className="field-transmission__route" d={route.path} key={`route-${route.sequence}`} />
+        <path className={`field-transmission__underlay is-${phase}`} d={route.path} pathLength="1" />
+        <path className={`field-transmission__route is-${phase}`} d={route.path} pathLength="1" key={`route-${route.sequence}`} />
+        <path className={`field-transmission__tail is-${phase}`} d={route.path} pathLength="1" />
 
         <g className="field-cities">
           {fieldCities.map((city) => {
-            const isSource = city.id === route.source.id;
-            const isDestination = city.id === route.destination.id;
+            const isSource = sourceActive && city.id === route.source.id;
+            const isDestination = destinationActive && city.id === route.destination.id;
+            const labelX = city.x + city.labelDx;
+            const labelY = city.y + city.labelDy;
+            const leaderX = city.x + city.labelDx * .58;
+            const leaderY = city.y + city.labelDy * .58;
+
             return (
               <g className={`field-city${isSource ? " is-source" : ""}${isDestination ? " is-destination" : ""}`} key={city.id}>
+                <path className="field-city__leader" d={`M${city.x.toFixed(1)} ${city.y.toFixed(1)} L${leaderX.toFixed(1)} ${leaderY.toFixed(1)} L${labelX.toFixed(1)} ${(labelY - 3).toFixed(1)}`} />
                 <circle className="field-city__halo" cx={city.x} cy={city.y} r="7" />
                 <circle className="field-city__dot" cx={city.x} cy={city.y} r="2.6" />
-                <text className="field-city__label" x={city.labelX} y={city.labelY}>{city.short}</text>
+                <text className="field-city__label" x={labelX} y={labelY}>{city.short}</text>
               </g>
             );
           })}
         </g>
 
-        <circle className="field-transmission__particle" key={`particle-${route.sequence}`} r="3.2">
-          <animateMotion dur="3.8s" path={route.path} rotate="auto" />
-          <animate attributeName="opacity" values="0;1;1;0" dur="3.8s" repeatCount="1" />
-        </circle>
-        <circle className="field-transmission__pulse" key={`source-pulse-${route.sequence}`} cx={route.source.x} cy={route.source.y} r="5">
-          <animate attributeName="r" values="5;14;5" dur="3.8s" repeatCount="1" />
-          <animate attributeName="opacity" values=".7;0;0" dur="3.8s" repeatCount="1" />
-        </circle>
-        <circle className="field-transmission__pulse" key={`destination-pulse-${route.sequence}`} cx={route.destination.x} cy={route.destination.y} r="5">
-          <animate attributeName="r" values="5;14;5" begin="2.8s" dur="3.8s" repeatCount="1" />
-          <animate attributeName="opacity" values=".7;0;0" begin="2.8s" dur="3.8s" repeatCount="1" />
-        </circle>
+        <FieldTransmissionPacket route={route} phase={phase} />
+        {phase === "source" && (
+          <circle className="field-transmission__pulse" key={`source-pulse-${route.sequence}`} cx={route.source.x} cy={route.source.y} r="5">
+            <animate attributeName="r" values="5;15" dur=".72s" repeatCount="1" />
+            <animate attributeName="opacity" values=".7;0" dur=".72s" repeatCount="1" />
+          </circle>
+        )}
+        {phase === "receive" && (
+          <circle className="field-transmission__pulse" key={`destination-pulse-${route.sequence}`} cx={route.destination.x} cy={route.destination.y} r="5">
+            <animate attributeName="r" values="5;15" dur=".72s" repeatCount="1" />
+            <animate attributeName="opacity" values=".7;0" dur=".72s" repeatCount="1" />
+          </circle>
+        )}
       </svg>
 
       <div className="infrastructure-field__core">
