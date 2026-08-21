@@ -89,6 +89,7 @@ type FieldBurst = {
 };
 
 type FieldPhase = "idle" | "source" | "route-draw" | "travel" | "receive" | "decay";
+type FieldScenePhase = "idle" | "enter" | "dwell" | "handoff";
 
 const destinationRotation = ["fra", "tyo", "lax", "hk", "ams", "nyc", "sin", "kiv", "phx", "sh"];
 const BURST_TRAVEL_OFFSET = .62;
@@ -289,11 +290,28 @@ function FieldTransmissionPacket({ packet }: { packet: FieldPacket }) {
 }
 
 export function InfrastructureField() {
+  const fieldRef = useRef<HTMLDivElement>(null);
   const [burst, setBurst] = useState<FieldBurst>(() => makeFieldBurst(0, "fra"));
   const [phase, setPhase] = useState<FieldPhase>("idle");
+  const [scenePhase, setScenePhase] = useState<FieldScenePhase>("idle");
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const field = fieldRef.current;
+    if (!field) return;
+
+    const readScenePhase = () => {
+      const next = field.dataset.scenePhase;
+      if (next === "idle" || next === "enter" || next === "dwell" || next === "handoff") setScenePhase(next);
+    };
+
+    readScenePhase();
+    const observer = new MutationObserver(readScenePhase);
+    observer.observe(field, { attributes: true, attributeFilter: ["data-scene-phase"] });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || scenePhase === "idle") return;
 
     let cancelled = false;
     const timers = new Set<number>();
@@ -329,12 +347,12 @@ export function InfrastructureField() {
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, []);
+  }, [scenePhase !== "idle"]);
 
   const activeSourceIds = new Set(burst.routes.map((route) => route.source.id));
 
   return (
-    <div className="infrastructure-field">
+    <div className="infrastructure-field" ref={fieldRef}>
       <div className="infrastructure-field__top mono">
         <span>QQ.SG / PUBLIC INDEX</span>
         <span>FIELD / 01</span>

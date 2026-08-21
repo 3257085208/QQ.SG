@@ -47,8 +47,9 @@ function mountIntroMotion(root: HTMLElement) {
   const tracks = Array.from(root.querySelectorAll<HTMLElement>(".intro-track"));
   const signature = root.querySelector<HTMLElement>(".intro-signature");
   const signatureMask = root.querySelector<HTMLElement>(".intro-signature__mask");
+  const fieldRuntime = field?.querySelector<HTMLElement>(".infrastructure-field");
   const metadata = Array.from(root.querySelectorAll<HTMLElement>(".intro-topline, .intro-bottomline"));
-  if (!intro || !name || nameLines.length < 2 || !field || !handoff || !trackWindow || tracks.length !== 2 || !signature || !signatureMask) return;
+  if (!intro || !name || nameLines.length < 2 || !field || !fieldRuntime || !handoff || !trackWindow || tracks.length !== 2 || !signature || !signatureMask) return;
 
   gsap.set(nameLines, { transformOrigin: "center center" });
   gsap.set(tracks, { x: 0 });
@@ -58,6 +59,7 @@ function mountIntroMotion(root: HTMLElement) {
   const signatureMiddle = "polygon(0 44%, 16% 20%, 39% 2%, 62% 0, 82% 18%, 100% 43%, 100% 67%, 79% 96%, 50% 100%, 24% 86%, 0 69%)";
   const signatureFull = "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
   gsap.set(signatureMask, { clipPath: signatureStart });
+  gsap.set(fieldRuntime, { attr: { "data-scene-phase": "idle" } });
 
   const timeline = gsap.timeline({
     scrollTrigger: {
@@ -100,9 +102,13 @@ function mountIntroMotion(root: HTMLElement) {
     .to(trackWindow, { opacity: 0.28, y: "-1vh", duration: 0.055, ease: "none" }, "fieldEnter")
     .to(signature, { autoAlpha: 0, x: "1.4vw", y: "-1vh", scale: 1.01, duration: 0.075, ease: "none" }, "fieldEnter+=0.055")
     .to(trackWindow, { opacity: 0, y: "-4vh", duration: 0.075, ease: "none" }, "fieldEnter+=0.055")
+    .set(fieldRuntime, { attr: { "data-scene-phase": "enter" } }, "fieldEnter")
+    .set(fieldRuntime, { attr: { "data-scene-phase": "dwell" } }, "fieldDwell")
     .to(field, { scale: 1.004, duration: HERO_PHASE.handoff - HERO_PHASE.fieldDwell, ease: "none" }, "fieldDwell")
+    .set(fieldRuntime, { attr: { "data-scene-phase": "handoff" } }, "handoff")
     .to(handoff, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, "handoff+=0.02")
-    .to(field, { scale: 1.03, duration: HERO_PHASE.exit - HERO_PHASE.handoff - 0.08, ease: "none" }, "handoff+=0.08");
+    .to(field, { scale: 1.03, duration: HERO_PHASE.exit - HERO_PHASE.handoff - 0.08, ease: "none" }, "handoff+=0.08")
+    .set(fieldRuntime, { attr: { "data-scene-phase": "idle" } }, "exit");
 }
 
 function setArchiveActive(stage: HTMLElement, cards: HTMLElement[], current: HTMLElement | null, index: number, state: { index: number }) {
